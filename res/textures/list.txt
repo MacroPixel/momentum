@@ -1,0 +1,4 @@
+balloon = balloon.png 2:1:1
+player = player.png 2:8:2
+block_goop = goop_block.png 2:1:1
+block_leaf = colored_leaf.png 2:1:1
