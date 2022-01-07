@@ -67,13 +67,20 @@ class Player ( GameObject ):
       self.vel.x += 600 * engine.delta_time
     elif engine.get_key( pygame.K_a ):
       self.vel.x -= 600 * engine.delta_time
+    elif self.is_on_block():
+      self.vel.x *= 0.02 ** engine.delta_time
 
     # Vertical movement
-    if engine.get_key( pygame.K_SPACE, 1 ):
+    if self.is_on_block() and engine.get_key( pygame.K_SPACE ):
       self.vel.y = -600
 
     self.vel.y += 1000 * engine.delta_time
+
+    # Actually move (also do subimage)
     self.pos.a( self.vel.c().m( engine.delta_time ) )
+    self.image += abs( self.vel.x ) * engine.delta_time / 10
+    if abs( self.vel.x ) < 15:
+      self.image = 0
 
     if engine.get_key( pygame.K_k ):
       self.delete()
@@ -94,13 +101,17 @@ class Player ( GameObject ):
           if ( vector.x != 0 ):
             vel_factor.x = 0
           else:
-            vel_factor.y = -0.5
+            vel_factor.y = 0
 
     self.vel.m( vel_factor )
 
   def draw( self, engine ):
 
-    engine.draw_image( 'player', V2( 0, 0 ), self.pos )
+    engine.draw_image( 'player', V2( 1, floor( self.image ) % 8 ), self.pos )
+
+  def is_on_block( self ):
+
+    return c_block.is_block( self.pos.c().a( 0, GRID + 0.001 ).d( GRID ).i() )
 
 g_engine = Engine( ( 1280, 720 ), 'My Game!' )
 
