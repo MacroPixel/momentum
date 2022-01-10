@@ -7,12 +7,12 @@ from pygame.locals import RLEACCEL
 # Custom exception class
 class GameError ( Exception ):
 
+  # Store message
   def __init__( self, message ):
-
     self.message = message
 
+  # Print message
   def print( self ):
-
     print( '[ERROR] ' + self.message )
 
 # An Object that receives update() and draw() events
@@ -26,10 +26,13 @@ class GameObject:
   # Do other setup
   def create_instance( self, obj = '', layer = 0 ):
 
+    # Determines draw order
     self.layer = layer
 
+    # self.instances holds every active GameObject
     self.instances.append( self )
 
+    # Store object ID & store under ID in named_instances for future reference
     self.obj = obj
     if self.obj != '':
 
@@ -37,19 +40,19 @@ class GameObject:
         self.named_instances[ self.obj ] = []
       self.named_instances[ self.obj ].append( self )
 
+    # Insert into proper draw-order-position based on layer
     i = 0
     for i in range( len( self.draw_instances ) ):
       if self.draw_instances[i].layer < self.layer:
         break
-    
     self.draw_instances.insert( i, self )
 
   # Remove from lists
   def delete( self ):
 
+    # Only remove from lists that the object is in
     self.instances.remove( self )
     self.draw_instances.remove( self )
-    
     if self.obj != '':
       self.named_instances[ self.obj ].remove( self )
 
@@ -99,11 +102,12 @@ class Engine:
   # Initially set up Pygame & specify global options
   def __init__( self, size, caption ):
 
+    # Can't be changed for the time being
     self.screen_size = V2( size )
 
+    # Create the window with the desired screen size
     pygame.init()
     pygame.display.set_caption( caption )
-
     self.screen = pygame.display.set_mode( self.screen_size.l() )
     self.clock = pygame.time.Clock()
 
@@ -112,17 +116,23 @@ class Engine:
     self.sprites = {}
     spr_file = open( 'res/textures/list.txt' ).read().split( '\n' )
 
+    # Iterate through every line in the sprite file
+    # Sprites are listed as follows:
+    # [name] = [relative filepath] [scale]:[# vertical subimages]:[# horizontal subimages]
     for line in spr_file:
 
+      # Load the image and transform it based on the data in the file line
       line = line.split( ' = ' )
       surface = pygame.image.load( 'res/textures/' + line[1].split( ' ' )[0] )
       surface = pygame.transform.scale( surface, V2( surface.get_size() ).m( int( line[1].split( ' ' )[1].split( ':' )[0] ) ).l() )
       self.sprites[ line[0] ] = surface
 
+      # Use the dimensions of the image divided by the # of subimages to get the size of a square
       dims = V2( surface.get_size() )
       square_count = V2( int( line[1].split( ' ' )[1].split( ':' )[1] ), int( line[1].split( ' ' )[1].split( ':' )[2] ) )
       square_size = dims.c().d( square_count )
 
+      # Use the previous information to split the image up and append it to the image data
       self.images[ line[0] ] = [ [ surface.subsurface( ( xx * square_size.x, yy * square_size.y, *square_size.l() ) ) for xx in range( square_count.x ) ]
         for yy in range( square_count.y ) ]
 
@@ -133,7 +143,7 @@ class Engine:
     self.keys = pygame.key.get_pressed()
     self.fonts = {}
 
-  # Enter the main loop (called privately from constructor)
+  # Enter the main loop
   def run( self ):
 
     running = True
@@ -145,6 +155,7 @@ class Engine:
       self.keys_down = []
       self.keys_up = []
 
+      # EVENTS
       for event in pygame.event.get():
 
         # Quit the game
@@ -154,7 +165,6 @@ class Engine:
         # Log keypresses
         elif event.type == pygame.KEYDOWN:
           self.keys_down.append( event.key )
-
         elif event.type == pygame.KEYUP:
           self.keys_up.append( event.key )
 
@@ -166,10 +176,10 @@ class Engine:
 
       # After resetting the draw window, draw() can be called for all GameObjects
       self.screen.fill( ( 0, 0, 0 ) )
-
       for obj in GameObject.draw_instances:
         obj.draw( self )
       
+      # Swap buffers
       pygame.display.flip()
 
   # Gets the state of a key (check of 0 = "is down", 1 = "was pressed", 2 = "was released")
@@ -190,12 +200,14 @@ class Engine:
   # Shortcut for blitting transformed surface onto screen
   def draw_image_mod( self, sprite_id, frame, pos, scale = None, flip = None ):
 
+    # Check each transformation argument to see if image needs to be modified
     sprite = self.images[ sprite_id ][ frame.x ][ frame.y ]
     if ( scale != None ):
       sprite = pygame.transform.scale( sprite, V2( sprite.get_size() ).m( scale ).l() )
     if ( flip != None ):
       sprite = pygame.transform.flip( sprite, flip.x == -1, flip.y == -1 )
 
+    # Draw the modified surface
     self.screen.blit( sprite, pos.l() )
 
   # Creates a font under the name 'name:size'
@@ -206,6 +218,7 @@ class Engine:
   # Shortcut for blitting text to the screen (can choose origin :D)
   def draw_text( self, text, font, pos, color, anchor = ( 0, 0 ) ):
 
+    # position = input_position + ( anchor * dimensions )
     text_surf = self.fonts[ font ].render( text, True, color )
     pos.s( V2( anchor ).c().m( text_surf.get_size() ) )
     self.screen.blit( text_surf, pos.l() )

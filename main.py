@@ -4,17 +4,22 @@ import random
 from engine import *
 from constants import *
 
+# Controls basic game logic
+# Other controller objects exist for more specific game logic
 class Controller( GameObject ):
 
   def __init__( self, engine ):
 
+    # Create fonts
     super().create_instance()
     engine.create_font( 'res/misc/font_1.otf', 'main', 20 )
     engine.create_font( 'res/misc/font_1.otf', 'main', 12 )
 
+    # Debug mode can be toggled with right alt
     self.allow_debug = True
     self.debug = True
 
+  # Mostly just debug stuff
   def update( self, engine ):
 
     # Switch debug mode if allowed
@@ -34,10 +39,12 @@ class Controller( GameObject ):
     player.pos = V2( 0, 0 )
     player.vel = V2( 0, 0 )
 
+# Handles UI drawing & responses
 class UIController( GameObject ):
 
   def __init__( self ):
 
+    # State represents the UI menu
     super().create_instance( layer = -1000 )
     self.state = [ 1 ]
 
@@ -49,6 +56,8 @@ class UIController( GameObject ):
     if c_main.debug:
       engine.draw_text( 'Debug', 'main:12', engine.screen_size.c().s( 10, 10 ), ( 0, 100, 255 ), V2( 1, 1 ) )
 
+# Handles block storing/drawing
+# Blocks aren't actually objects, they're only entries in an array
 class BlockController( GameObject ):
 
   def __init__( self ):
@@ -104,34 +113,44 @@ class BlockController( GameObject ):
   def reload_chunks( self, player_pos ):
     pass
       
+  # Iterate through/draw all blocks
+  # May need to be redesigned later on for better performance
   def draw( self, engine ):
 
     for coord in self.blocks:
-      engine.draw_image( B_TEXTURES[ self.blocks[ coord ] ], V2( 0, 0 ), V2( *coord.split( ':' ) ).i().m( 32 ) )
+      engine.draw_image( B_TEXTURES[ self.blocks[ coord ] ], V2( 0, 0 ), str_to_vec( coord ).m( 32 ) )
 
+  # Either changes a block or removes it (by setting it to B_NULL)
   def set_block( self, pos, block_type ):
 
+    # Convert position & alter array
     pos = V2( pos )
     if block_type == B_NULL:
       self.blocks.pop( f'{ pos.x }:{ pos.y }' )
     else:
       self.blocks[ f'{ pos.x }:{ pos.y }' ] = block_type
 
-  def get_block_type( self, pos ):
-
-    return self.blocks[ f'{ pos.x }:{ pos.y }' ]
-
+  # Check whether a block exists at a position
   def is_block( self, pos ):
 
     return f'{ pos.x }:{ pos.y }' in self.blocks
 
+  # Get the block type of a position
+  # !!! WILL throw error if there isn't a block there
+  def get_block_type( self, pos ):
+
+    return self.blocks[ f'{ pos.x }:{ pos.y }' ]
+
+# It's you :D
 class Player ( GameObject ):
 
   def __init__( self ):
 
+    # Store image & physics details
     super().create_instance( obj = 'player' )
-    self.image = 0
     self.image_dir = 1
+    self.image_walk = 0
+    self.image_bob = 0
     self.pos = V2()
     self.vel = V2()
 
@@ -153,11 +172,16 @@ class Player ( GameObject ):
 
     # Actually move
     self.pos.a( self.vel.c().m( engine.delta_time ) )
-    self.image += abs( self.vel.x ) * engine.delta_time / 10
+    self.image_walk += abs( self.vel.x ) * engine.delta_time / 10
 
     # Set image details
+    # Walk is incremented while velocity >= 15, otherwise head bob is incremented
     if abs( self.vel.x ) < 15:
-      self.image = 0
+      self.image_walk = 0
+    if abs( self.vel.x ) < 15 and self.is_on_block():
+      self.image_bob += engine.delta_time * 0.8
+    else:
+      self.image_bob = 0
     if ( self.vel.x ) < -0.01:
       self.image_dir = -1
     elif ( self.vel.x > 0.01 ):
@@ -181,20 +205,27 @@ class Player ( GameObject ):
           self.pos.a( vector )
           if ( vector.x != 0 ):
             vel_factor.x = 0
-          else:
+          elif ( vector.y != 0 ):
             vel_factor.y = 0
-            # print( vector.l() )
 
     self.vel.m( vel_factor )
 
+  # Draw self at current position
+  # Leverages flip operations & sub-images
   def draw( self, engine ):
 
-    engine.draw_image_mod( 'player', V2( 1, floor( self.image ) % 8 ), self.pos, flip = V2( self.image_dir, 1 ) )
+    if abs( self.vel.x ) < 15:
+      engine.draw_image_mod( 'player', V2( 0, floor( self.image_bob ) % 2 ), self.pos, flip = V2( self.image_dir, 1 ) )
+    else:
+      engine.draw_image_mod( 'player', V2( 1, floor( self.image_walk ) % 8 ), self.pos, flip = V2( self.image_dir, 1 ) )
 
+
+  # Checks if the player has a block immediately (to a limited degree) below them
   def is_on_block( self ):
 
     return c_block.is_block( self.pos.c().a( 0, GRID + 0.001 ).d( GRID ).i() )
 
+# Vector / string transformation
 def vec_to_str( value ):
   return ':'.join( value.fn( lambda a: str( a ) ).l() )
 
@@ -203,7 +234,6 @@ def str_to_vec( value ):
 
 # I know global objects are considered bad practice, but I don't really care.
 g_engine = Engine( V2( 1280, 720 ), 'My Game!' )
-
 c_main = Controller( g_engine )
 c_ui = UIController()
 c_block = BlockController()
