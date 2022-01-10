@@ -10,5 +10,6 @@ B_TEXTURES = [
   'block_leaf'
   ]
 
-# The size of a grid square
+# The size of a block grid/chunk grid space
 GRID = 32
+C_GRID = 16

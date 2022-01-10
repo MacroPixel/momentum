@@ -4,6 +4,17 @@
 import pygame
 from pygame.locals import RLEACCEL
 
+# Custom exception class
+class GameError ( Exception ):
+
+  def __init__( self, message ):
+
+    self.message = message
+
+  def print( self ):
+
+    print( '[ERROR] ' + self.message )
+
 # An Object that receives update() and draw() events
 class GameObject:
 
@@ -11,7 +22,6 @@ class GameObject:
   instances = []
   draw_instances = []
   named_instances = {}
-  engine = None
 
   # Do other setup
   def create_instance( self, obj = '', layer = 0 ):
@@ -89,14 +99,12 @@ class Engine:
   # Initially set up Pygame & specify global options
   def __init__( self, size, caption ):
 
-    GameObject.engine = self
-
-    self.screen_size = size
+    self.screen_size = V2( size )
 
     pygame.init()
     pygame.display.set_caption( caption )
 
-    self.screen = pygame.display.set_mode( self.screen_size )
+    self.screen = pygame.display.set_mode( self.screen_size.l() )
     self.clock = pygame.time.Clock()
 
     # All sprites are loaded into a dictoinary
@@ -164,11 +172,6 @@ class Engine:
       
       pygame.display.flip()
 
-  # Shortcut for blitting surface onto screen
-  def draw_image( self, sprite_id, frame, pos ):
-
-    self.screen.blit( self.images[ sprite_id ][ frame.x ][ frame.y ], pos.l() )
-
   # Gets the state of a key (check of 0 = "is down", 1 = "was pressed", 2 = "was released")
   def get_key( self, key_id, check = 0 ):
 
@@ -179,13 +182,33 @@ class Engine:
     elif check == 2:
       return key_id in self.keys_up
 
+  # Shortcut for blitting surface onto screen
+  def draw_image( self, sprite_id, frame, pos ):
+
+    self.screen.blit( self.images[ sprite_id ][ frame.x ][ frame.y ], pos.l() )
+
+  # Shortcut for blitting transformed surface onto screen
+  def draw_image_mod( self, sprite_id, frame, pos, scale = None, flip = None ):
+
+    sprite = self.images[ sprite_id ][ frame.x ][ frame.y ]
+    if ( scale != None ):
+      sprite = pygame.transform.scale( sprite, V2( sprite.get_size() ).m( scale ).l() )
+    if ( flip != None ):
+      sprite = pygame.transform.flip( sprite, flip.x == -1, flip.y == -1 )
+
+    self.screen.blit( sprite, pos.l() )
+
+  # Creates a font under the name 'name:size'
   def create_font( self, filepath, name, size ):
 
     self.fonts[ f'{ name }:{ size }' ] = pygame.font.Font( filepath, size )
 
-  def draw_text( self, text, font, pos, color ):
+  # Shortcut for blitting text to the screen (can choose origin :D)
+  def draw_text( self, text, font, pos, color, anchor = ( 0, 0 ) ):
 
-    self.screen.blit( self.fonts[ font ].render( text, True, color ), V2( pos ).l() )
+    text_surf = self.fonts[ font ].render( text, True, color )
+    pos.s( V2( anchor ).c().m( text_surf.get_size() ) )
+    self.screen.blit( text_surf, pos.l() )
 
 # Compact vector class
 class V2:
@@ -279,8 +302,10 @@ def collision_get( pos1, pos2, dim1, dim2 ):
   overlap = V2( ( dim1.x + dim2.x ) * 0.5 - abs( pos1.x - pos2.x ), ( dim1.y + dim2.y ) * 0.5 - abs( pos1.y - pos2.y ) )
 
   if overlap.x < overlap.y:
-    overlap.m( -1 if pos1.x < pos2.x else 1, 0 )
+    overlap.x *= ( -1 if pos1.x < pos2.x else 1 )
+    overlap.y = 0
   else:
-    overlap.m( 0, -1 if pos1.y < pos2.y else 1 )
+    overlap.x = 0
+    overlap.y *= ( -1 if pos1.y < pos2.y else 1 )
 
   return overlap
