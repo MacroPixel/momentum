@@ -158,27 +158,24 @@ class Player ( GameObject ):
     
     # Horizontal movement
     if engine.get_key( pygame.K_d ):
-      self.vel.x += 600 * engine.delta_time
+      self.vel.x += 18 * engine.delta_time
     elif engine.get_key( pygame.K_a ):
-      self.vel.x -= 600 * engine.delta_time
+      self.vel.x -= 18 * engine.delta_time
     elif self.is_on_block():
       self.vel.x *= 0.02 ** engine.delta_time
 
     # Vertical movement
     if ( self.is_on_block() or c_main.debug ) and engine.get_key( pygame.K_SPACE ):
-      self.vel.y = -600
+      self.vel.y = -18
+    self.vel.y += 32 * engine.delta_time
 
-    self.vel.y += 1000 * engine.delta_time
-
-    # Actually move
-    self.pos.a( self.vel.c().m( engine.delta_time ) )
-    self.image_walk += abs( self.vel.x ) * engine.delta_time / 10
+    self.image_walk += abs( self.vel.x ) * engine.delta_time * 3
 
     # Set image details
-    # Walk is incremented while velocity >= 15, otherwise head bob is incremented
-    if abs( self.vel.x ) < 15:
+    # Walk is incremented while velocity >= 0.2, otherwise head bob is incremented
+    if abs( self.vel.x ) < 0.5:
       self.image_walk = 0
-    if abs( self.vel.x ) < 15 and self.is_on_block():
+    if abs( self.vel.x ) < 0.5 and self.is_on_block():
       self.image_bob += engine.delta_time * 0.8
     else:
       self.image_bob = 0
@@ -190,23 +187,39 @@ class Player ( GameObject ):
     if engine.get_key( pygame.K_k ):
       self.delete()
 
+    # Actually move
     # Perform collision detection on the 4 adjacent blocks
+    # This is done with multiple iterations to make it more precise
     vel_factor = V2( 1, 1 )
 
-    for xx in range( floor( self.pos.x / GRID ), ceil( self.pos.x / GRID ) + 1 ):
-      for yy in range( floor( self.pos.y / GRID ), ceil( self.pos.y / GRID ) + 1 ):
+    iterations = 5
+    for i in range( iterations ):
 
-        block_pos = V2( xx, yy )
-        grid_vec = V2( GRID, GRID )
+      self.pos.a( self.vel.c().m( engine.delta_time ).d( iterations ) )
 
-        if ( c_block.is_block( block_pos ) ):
+      # Loop through adjacent blocks
+      for block_pos in self.get_adjacent_blocks():
 
-          vector = collision_get( self.pos, block_pos.c().m( GRID ), grid_vec, grid_vec )
-          self.pos.a( vector )
-          if ( vector.x != 0 ):
-            vel_factor.x = 0
-          elif ( vector.y != 0 ):
-            vel_factor.y = 0
+        # Skip this position if there's no block there
+        if ( not c_block.is_block( block_pos ) ):
+          continue
+
+        # Store whether the block was an x-axis or y-axis collision
+        # This is detemined based off of whether the player is inside a block
+        # after their x-axis movement
+        is_x_axis = False
+        for alt_block_pos in self.get_adjacent_blocks( self.pos.c().s( 0, self.vel.y * engine.delta_time / iterations ) ):
+          if c_block.is_block( alt_block_pos ):
+            is_x_axis = True
+
+        overlap = collision_get( self.pos, block_pos, V2( 1, 1 ), V2( 1, 1 ) )
+
+        if ( is_x_axis ):
+          vel_factor.x = 0
+          self.pos.x += overlap.x
+        else:
+          vel_factor.y = 0
+          self.pos.y += overlap.y
 
     self.vel.m( vel_factor )
 
@@ -214,16 +227,26 @@ class Player ( GameObject ):
   # Leverages flip operations & sub-images
   def draw( self, engine ):
 
-    if abs( self.vel.x ) < 15:
-      engine.draw_image_mod( 'player', V2( 0, floor( self.image_bob ) % 2 ), self.pos, flip = V2( self.image_dir, 1 ) )
+    if abs( self.vel.x ) < 0.5:
+      engine.draw_image_mod( 'player', V2( 0, floor( self.image_bob ) % 2 ), self.pos.c().m( GRID ), flip = V2( self.image_dir, 1 ) )
     else:
-      engine.draw_image_mod( 'player', V2( 1, floor( self.image_walk ) % 8 ), self.pos, flip = V2( self.image_dir, 1 ) )
-
+      engine.draw_image_mod( 'player', V2( 1, floor( self.image_walk ) % 8 ), self.pos.c().m( GRID ), flip = V2( self.image_dir, 1 ) )
 
   # Checks if the player has a block immediately (to a limited degree) below them
   def is_on_block( self ):
 
-    return c_block.is_block( self.pos.c().a( 0, GRID + 0.001 ).d( GRID ).i() )
+    return c_block.is_block( self.pos.c().a( 0, 1.001 ).i() ) or c_block.is_block( self.pos.c().a( 1, 1.001 ).i() )
+
+  # Returns a list of the vectors of any blocks the player is inside of
+  def get_adjacent_blocks( self, position = None ):
+
+    if position == None:
+      position = self.pos
+    output = []
+    for xx in range( floor( position.x ), ceil( position.x ) + 1 ):
+      for yy in range( floor( position.y ), ceil( position.y ) + 1 ):    
+        output.append( V2( xx, yy ) )
+    return output
 
 # Vector / string transformation
 def vec_to_str( value ):

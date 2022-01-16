@@ -314,11 +314,7 @@ def collision_get( pos1, pos2, dim1, dim2 ):
 
   overlap = V2( ( dim1.x + dim2.x ) * 0.5 - abs( pos1.x - pos2.x ), ( dim1.y + dim2.y ) * 0.5 - abs( pos1.y - pos2.y ) )
 
-  if overlap.x < overlap.y:
-    overlap.x *= ( -1 if pos1.x < pos2.x else 1 )
-    overlap.y = 0
-  else:
-    overlap.x = 0
-    overlap.y *= ( -1 if pos1.y < pos2.y else 1 )
+  overlap.x *= ( -1 if pos1.x < pos2.x else 1 )
+  overlap.y *= ( -1 if pos1.y < pos2.y else 1 )
 
   return overlap
