@@ -1,8 +1,126 @@
-* 0:0
-goop 1 1
-* 1:0
-goop 0 0 0 1
+* -1:-1
+goop 5 15
+goop 6 15
+goop 7 15
+goop 8 15
+goop 9 15
+goop 10 15
+goop 11 15
+goop 12 15
+goop 13 15
+goop 14 15
+goop 15 15
 * -1:0
-goop 0 0 1 1
-* 1:1
-goop 0 0 1 0 2 0 3 0 4 0 5 0 6 0 7 0 8 0
+goop 5 1
+goop 6 1
+goop 7 1
+goop 8 1
+goop 9 1
+goop 10 1
+goop 11 1
+goop 12 1
+goop 13 1
+goop 14 1
+goop 15 1
+* 0:-1
+goop 0 15
+goop 1 15
+goop 2 15
+goop 3 15
+goop 4 15
+goop 5 15
+goop 6 15
+goop 7 15
+goop 8 15
+goop 9 15
+goop 10 15
+goop 11 15
+goop 12 15
+* 0:0
+goop 0 1
+goop 1 1
+goop 2 1
+goop 3 1
+goop 4 1
+goop 5 1
+goop 6 1
+goop 7 1
+goop 8 1
+goop 9 1
+goop 10 1
+goop 11 1
+goop 12 1
+* 1:-1
+goop 4 9
+goop 4 10
+goop 4 11
+goop 4 12
+goop 4 13
+goop 4 14
+goop 4 15
+goop 5 9
+goop 5 10
+goop 5 11
+goop 5 12
+goop 5 13
+goop 5 14
+goop 5 15
+goop 6 9
+goop 6 10
+goop 6 11
+goop 6 12
+goop 6 13
+goop 6 14
+goop 6 15
+goop 7 9
+goop 7 10
+goop 7 11
+goop 7 12
+goop 7 13
+goop 7 14
+goop 7 15
+goop 8 9
+goop 8 10
+goop 8 11
+goop 8 12
+goop 8 13
+goop 8 14
+goop 8 15
+goop 9 9
+goop 9 10
+goop 9 11
+goop 9 12
+goop 9 13
+goop 9 14
+goop 9 15
+* 1:0
+goop 4 0
+goop 4 1
+goop 4 2
+goop 4 3
+goop 4 4
+goop 5 0
+goop 5 1
+goop 5 2
+goop 5 3
+goop 5 4
+goop 6 0
+goop 6 1
+goop 6 2
+goop 6 3
+goop 6 4
+goop 7 0
+goop 7 1
+goop 7 2
+goop 7 3
+goop 7 4
+goop 8 0
+goop 8 1
+goop 8 2
+goop 8 3
+goop 8 4
+goop 9 0
+goop 9 1
+goop 9 2
+goop 9 3
+goop 9 4

@@ -100,7 +100,7 @@ class SpriteObject ( GameObject ):
 class Engine:
 
   # Initially set up Pygame & specify global options
-  def __init__( self, size, caption ):
+  def __init__( self, size, caption, icon_source = None, fps_limit = -1 ):
 
     # Can't be changed for the time being
     self.screen_size = V2( size )
@@ -110,6 +110,14 @@ class Engine:
     pygame.display.set_caption( caption )
     self.screen = pygame.display.set_mode( self.screen_size.l() )
     self.clock = pygame.time.Clock()
+    self.fps_clock = pygame.time.Clock()
+
+    # Set the application icon
+    if ( icon_source != None ):
+      pygame.display.set_icon( pygame.image.load( icon_source ) )
+
+    # Remember the max FPS
+    self.fps_limit = fps_limit
 
     # All sprites are loaded into a dictoinary
     self.images = {}
@@ -138,6 +146,8 @@ class Engine:
 
     # Other variables
     self.delta_time = 0
+    self.view_pos = V2()
+    self.view_size = V2( 1, 1 )
     self.keys_down = []
     self.keys_up = []
     self.keys = pygame.key.get_pressed()
@@ -182,6 +192,10 @@ class Engine:
       # Swap buffers
       pygame.display.flip()
 
+      # Limit FPS if necessary
+      if ( self.fps_limit > 0 ):
+        self.fps_clock.tick( self.fps_limit )
+
   # Gets the state of a key (check of 0 = "is down", 1 = "was pressed", 2 = "was released")
   def get_key( self, key_id, check = 0 ):
 
@@ -192,23 +206,37 @@ class Engine:
     elif check == 2:
       return key_id in self.keys_up
 
+  # Returns a sprite surface for other objects to use
+  def get_image( self, sprite_id, frame ):
+
+    return self.images[ sprite_id ][ frame.x ][ frame.y ]
+
   # Shortcut for blitting surface onto screen
+  def draw_surface( self, surf, pos ):
+
+    self.screen.blit( surf, pos.s( self.view_pos ).l() )
+
+  # Uses pre-defined sprite
   def draw_image( self, sprite_id, frame, pos ):
 
-    self.screen.blit( self.images[ sprite_id ][ frame.x ][ frame.y ], pos.l() )
+    self.draw_surface( self.images[ sprite_id ][ frame.x ][ frame.y ], pos )
 
   # Shortcut for blitting transformed surface onto screen
-  def draw_image_mod( self, sprite_id, frame, pos, scale = None, flip = None ):
+  def draw_surface_mod( self, surf, pos, scale = None, flip = None ):
 
     # Check each transformation argument to see if image needs to be modified
-    sprite = self.images[ sprite_id ][ frame.x ][ frame.y ]
     if ( scale != None ):
-      sprite = pygame.transform.scale( sprite, V2( sprite.get_size() ).m( scale ).l() )
+      surf = pygame.transform.scale( surf, V2( surf.get_size() ).m( scale ).l() )
     if ( flip != None ):
-      sprite = pygame.transform.flip( sprite, flip.x == -1, flip.y == -1 )
+      surf = pygame.transform.flip( surf, flip.x == -1, flip.y == -1 )
 
     # Draw the modified surface
-    self.screen.blit( sprite, pos.l() )
+    self.screen.blit( surf, pos.s( self.view_pos ).l() )
+
+  # Uses pre-defined surface
+  def draw_image_mod( self, sprite_id, frame, pos, scale = None, flip = None ):
+
+    self.draw_surface_mod( self.images[ sprite_id ][ frame.x ][ frame.y ], pos, scale, flip )
 
   # Creates a font under the name 'name:size'
   def create_font( self, filepath, name, size ):
@@ -318,3 +346,8 @@ def collision_get( pos1, pos2, dim1, dim2 ):
   overlap.y *= ( -1 if pos1.y < pos2.y else 1 )
 
   return overlap
+
+# Gets the key of a value in a dictionary
+def key_value( dictionary, value ):
+
+  return list( dictionary.keys() )[ list( dictionary.values() ).index( value ) ]
