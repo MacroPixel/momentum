@@ -41,6 +41,10 @@ class Controller( GameObject ):
       if ( engine.get_key( pygame.K_k, 1 ) ):
         c_block.rewrite_level()
 
+      # Block operation
+      if ( engine.get_key( pygame.K_b, 1 ) ):
+        c_block.block_debug( pygame.mouse.get_pos(), engine.view_pos )
+
   # Reset the player & reload blocks
   def restart( self, player ):
 
@@ -208,7 +212,6 @@ class BlockController( GameObject ):
         engine.draw_surface( self.chunk_buffers[ vec_to_str( chunk_pos ) ], chunk_pos.c().m( C_GRID * GRID ) )
 
   # Creates a surface for easy-drawing
-  # I've decided to postpone implementing this until there's enough blocks for it to make a difference
   def load_chunk( self, chunk_pos, engine ):
     
     # Initialize it with an empty surface
@@ -227,10 +230,58 @@ class BlockController( GameObject ):
   # Returns either None or a surface representing a block sprite
   def render_block( self, block_pos, engine ):
 
-    if self.is_block( block_pos ):
-      return engine.get_image( B_TEXTURES[ self.blocks[ vec_to_str( block_pos ) ] ], V2( 0, 0 ) )
-    else:
+    # Only bother with a texture if a block exists here
+    if not self.is_block( block_pos ):
       return None
+
+    # Start with the sprite's base image
+    sprite_id = B_TEXTURES[ self.blocks[ vec_to_str( block_pos ) ] ]
+    surf = engine.get_image( sprite_id, V2( 0, 0 ) ).copy()
+
+    # Find the binary representation of the block's neighbors
+    # An outline only appears if there's no neighbor along a certain side
+    neighbors = [ False for i in range( 8 ) ]
+    offsets = ( ( 1, 0 ), ( 1, -1 ), ( 0, -1 ), ( -1, -1 ), ( -1, 0 ), ( -1, 1 ), ( 0, 1 ), ( 1, 1 ) )
+
+    # Check for adjacent blocks
+    # (0 = right, 2 = up, 4 = left, 6 = down)
+    # (1 = up/right, 3 = up/left, you get the idea)
+    for i in range( 0, 8 ):
+      neighbors[ i ] = self.is_block( block_pos.c().a( offsets[i] ) )
+
+    # Draw corners/line intersections
+    for i in range( 0, 8, 2 ):
+
+      corner_neighbors = [ neighbors[ i ], neighbors[ ( i + 1 ) % 8 ], neighbors[ ( i + 2 ) % 8 ] ]
+
+      if ( corner_neighbors == [ False, False, False ] or corner_neighbors == [ False, True, False ] ):
+
+        corner_surf = engine.get_image( sprite_id, V2( 0, 3 ) ).copy()
+        corner_surf = pygame.transform.rotate( corner_surf, ( i + 6 ) * 45 )
+        surf.blit( corner_surf, ( 0, 0 ) )
+
+      elif ( corner_neighbors == [ True, False, True ] ):
+
+        corner_surf = engine.get_image( sprite_id, V2( 0, 1 ) ).copy()
+        corner_surf = pygame.transform.rotate( corner_surf, ( i + 6 ) * 45 )
+        surf.blit( corner_surf, ( 0, 0 ) )
+
+    # Draw outlines
+    for i in range( 0, 8, 2 ):
+
+      right_neighbors = [ neighbors[ i ], neighbors[ ( i + 2 ) % 8 ] ]
+
+      if ( right_neighbors[0] != right_neighbors[1] ):
+
+        line_surf = engine.get_image( sprite_id, V2( 0, 2 ) ).copy()
+        line_surf = pygame.transform.flip( line_surf, False, right_neighbors[1] )
+        if right_neighbors[0]:
+          line_surf = pygame.transform.rotate( line_surf, ( i + 6 ) * 45 )
+        else:
+          line_surf = pygame.transform.rotate( line_surf, ( i + 4 ) * 45 )
+        surf.blit( line_surf, ( 0, 0 ) )
+
+    return surf
 
   # Either changes a block or removes it (by setting it to B_NULL)
   def set_block( self, pos, block_type ):
@@ -238,8 +289,11 @@ class BlockController( GameObject ):
     # Convert position & alter array
     pos = V2( pos )
     if block_type == B_NULL:
-      self.blocks.pop( vec_to_str( pos ) )
-      self.block_meta.pop( vec_to_str( pos ) )
+
+      if self.is_block( pos ):
+
+        self.blocks.pop( vec_to_str( pos ) )
+        self.block_meta.pop( vec_to_str( pos ) )
     else:
 
       # Initialize the block data
@@ -261,7 +315,27 @@ class BlockController( GameObject ):
   # !!! WILL throw error if there isn't a block there
   def get_block_type( self, pos ):
 
-    return self.blocks[ f'{ pos.x }:{ pos.y }' ]
+    return self.blocks[ vec_to_str( pos ) ]
+
+  # Performs an operation on the block the player is hovering over
+  def block_debug( self, cursor_pos, view ):
+
+    block_pos = V2( cursor_pos ).a( view ).fn( lambda a: int( floor( a / GRID ) ) )
+
+    if ( self.is_block( block_pos ) ):
+
+      # Find the binary representation of the block's neighbors
+      # An outline only appears if there's no neighbor along a certain side
+      neighbors = [ False for i in range( 8 ) ]
+      offsets = ( ( 1, 0 ), ( 1, 1 ), ( 0, 1 ), ( -1, 1 ), ( -1, 0 ), ( -1, -1 ), ( 0, -1 ), ( 1, -1 ) )
+
+      # Check for adjacent blocks
+      # (0 = right, 2 = down, 4 = left, 6 = up)
+      # (1 = down/right, 3 = down/left, you get the idea)
+      for i in range( 0, 8 ):
+        neighbors[ i ] = self.is_block( block_pos.c().a( offsets[i] ) )
+
+      print( neighbors )
 
 # It's you :D
 class Player ( GameObject ):

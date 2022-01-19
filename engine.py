@@ -332,6 +332,8 @@ class V2:
     c = V2( self.x, self.y )
     return c
 
+# MISCELLANEOUS FUNCTIONS
+
 # Checks for a collision between two rectangles defined by their position and dimensions (using AABB, of course)
 def collision_check( pos1, pos2, dim1, dim2 ):
 
