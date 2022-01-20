@@ -185,7 +185,7 @@ class Engine:
       # tick() is called 10 times a second for all GameObjects
 
       # After resetting the draw window, draw() can be called for all GameObjects
-      self.screen.fill( ( 0, 0, 0 ) )
+      self.screen.fill( ( 21, 21, 21 ) )
       for obj in GameObject.draw_instances:
         obj.draw( self )
       

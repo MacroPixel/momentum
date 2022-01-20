@@ -30,19 +30,19 @@ class Controller( GameObject ):
     if self.debug:
       
       # Restart
-      if ( engine.get_key( pygame.K_r, 1 ) ):
+      if ( engine.get_key( pygame.K_RCTRL, 1 ) ):
         self.restart( self.get_instance( 'player' ) )
 
-      # Reload level
-      if ( engine.get_key( pygame.K_l, 1 ) ):
-        c_block.load_level()
-
       # Rewrite level
-      if ( engine.get_key( pygame.K_k, 1 ) ):
+      if ( engine.get_key( pygame.K_F7, 1 ) ):
         c_block.rewrite_level()
 
+      # Reload level
+      if ( engine.get_key( pygame.K_F8, 1 ) ):
+        c_block.load_level()
+
       # Block operation
-      if ( engine.get_key( pygame.K_b, 1 ) ):
+      if ( engine.get_key( pygame.K_BACKQUOTE, 1 ) ):
         c_block.block_debug( pygame.mouse.get_pos(), engine.view_pos )
 
   # Reset the player & reload blocks
@@ -380,32 +380,38 @@ class Player ( GameObject ):
 
   def update( self, engine ):
     
-    # Horizontal movement
-    if engine.get_key( pygame.K_d ):
+    # Horizontal momentum
+    if engine.get_key( BINDS[ 'move_right' ] ):
       self.vel.x += PLAYER_HSPEED * engine.delta_time
-    elif engine.get_key( pygame.K_a ):
+    elif engine.get_key( BINDS[ 'move_left' ] ):
       self.vel.x -= PLAYER_HSPEED * engine.delta_time
     elif self.is_on_block():
       self.vel.x *= ( 1 / PLAYER_FRICTION ) ** engine.delta_time
 
-    # Vertical movement
-    if ( self.is_on_block() or c_main.debug ) and engine.get_key( pygame.K_SPACE ):
+    # Vertical momentum
+    if ( self.is_on_block() or c_main.debug ) and engine.get_key( BINDS[ 'jump' ] ):
 
       # Jump
       self.vel.y = -PLAYER_JUMP_POWER
 
       # Jumping also gives a boost to horizontal speed
-      if self.is_on_block() and engine.get_key( pygame.K_d ):
+      if self.is_on_block() and engine.get_key( BINDS[ 'move_right' ] ):
         self.vel.x += PLAYER_HSPEED_BOOST
-      elif self.is_on_block() and engine.get_key( pygame.K_a ):
+      elif self.is_on_block() and engine.get_key( BINDS[ 'move_left' ] ):
         self.vel.x -= PLAYER_HSPEED_BOOST
 
     self.vel.y += GRAVITY * engine.delta_time
 
-    self.image_walk += abs( self.vel.x ) * engine.delta_time * 3
+    # Abilities
+    if ( engine.get_key( BINDS[ 'attack' ], 1 ) ):
+      self.attack()
+
+    if ( engine.get_key( BINDS[ 'invert' ], 1 ) ):
+      self.invert()
 
     # Set image details
     # Walk is incremented while velocity >= 0.2, otherwise head bob is incremented
+    self.image_walk += abs( self.vel.x ) * engine.delta_time * 3
     if abs( self.vel.x ) < 0.5:
       self.image_walk = 0
     if abs( self.vel.x ) < 0.5 and self.is_on_block():
@@ -436,6 +442,18 @@ class Player ( GameObject ):
     #   engine.view_pos.x = self.pos.x * GRID - engine.screen_size.x / 2 + VIEW_BOUNDS[0]
     engine.view_pos = V2( self.pos.x * GRID - engine.screen_size.x / 2, self.pos.y * GRID - engine.screen_size.y / 2 ).i()
 
+  # ABILITIES
+
+  def attack( self ):
+
+    # Comes at a cost of velocity
+    self.vel.x *= PLAYER_HSPEED_ATTACK_FACTOR
+
+  # Rotates velocity vector 90 degrees counterclockwise
+  def invert( self ):
+
+    self.vel.x, self.vel.y = self.vel.y, -self.vel.x
+
   # Draw self at current position
   # Leverages flip operations & sub-images
   # Also drawn slightly higher than the player's position because its hitbox isn't centered
@@ -461,8 +479,11 @@ class Player ( GameObject ):
       position = self.pos
     output = []
 
-    for xx in range( floor( position.x + ( 1 - PLAYER_HITBOX[0] ) / 2 ), ceil( position.x + ( 1 + PLAYER_HITBOX[0] ) / 2 ) ):
-      for yy in range( floor( position.y + ( 1 - PLAYER_HITBOX[1] ) / 2 ), ceil( position.y + ( 1 + PLAYER_HITBOX[1] ) / 2 ) ):    
+    bound_1 = position.c().a( V2( PLAYER_HITBOX ).c().m( -1 ).a( 1 ).d( 2 ) ).a( 0.000001 )
+    bound_2 = position.c().a( V2( PLAYER_HITBOX ).c().a( 1 ).d( 2 ) ).s( 0.000001 )
+
+    for xx in range( int( floor( bound_1.x ) ), int( ceil( bound_2.x ) ) ):
+      for yy in range( int( floor( bound_1.y ) ), int( ceil( bound_2.y ) ) ):    
         output.append( V2( xx, yy ) )
     return output
 
@@ -481,10 +502,12 @@ class Player ( GameObject ):
       # Push the player out based on their position within the block
       # The is_x_axis argument determines the axis they're pushed along
       if ( is_x_axis ):
-        self.pos.x = block_pos.x + ( -1 if self.pos.x < block_pos.x else 1 ) * ( 1 + PLAYER_HITBOX[0] ) / 2
+        direction = -1 if self.pos.x < block_pos.x else 1
+        self.pos.x = block_pos.x + direction * ( 1 + PLAYER_HITBOX[0] ) / 2
         self.vel.x = 0
       else:
-        self.pos.y = block_pos.y + ( -1 if self.pos.y < block_pos.y else 1 ) * ( 1 + PLAYER_HITBOX[1] ) / 2
+        direction = -1 if self.pos.y < block_pos.y else 1
+        self.pos.y = block_pos.y + direction * ( 1 + PLAYER_HITBOX[1] ) / 2
         self.vel.y = 0
 
 # Vector / string transformation

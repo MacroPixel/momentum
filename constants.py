@@ -1,3 +1,5 @@
+from pygame.locals import *
+
 # Block IDs
 B_NULL = 0
 B_DEFAULT = 1
@@ -47,7 +49,7 @@ B_DRAW_MODES = [
 ]
 
 # The size of a block grid/chunk grid space
-GRID = 32
+GRID = 48
 C_GRID = 16
 
 # How far the player has to go to the side of the screen
@@ -62,9 +64,19 @@ RENDER_BOUNDS = ( 20, 20 )
 GRAVITY = 32
 
 # Player movement constants
-PLAYER_HSPEED = 10
-PLAYER_HSPEED_BOOST = 3
-PLAYER_FRICTION = 5000
-PLAYER_JUMP_POWER = 18
+PLAYER_HSPEED = 8
+PLAYER_HSPEED_BOOST = 1
+PLAYER_HSPEED_ATTACK_FACTOR = 0.4
+PLAYER_FRICTION = 20000
+PLAYER_JUMP_POWER = 19
 
-PLAYER_HITBOX = ( 30 / 32, 28 / 30 )
+PLAYER_HITBOX = ( 44 / 48, 44 / 48 )
+
+# Keybinds (will probably be moved to settings object in the future)
+BINDS = {
+  'move_left': K_a,
+  'move_right': K_d,
+  'jump': K_SPACE,
+  'attack': K_k,
+  'invert': K_f
+}
