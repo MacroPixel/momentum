@@ -25,24 +25,23 @@ B_COLORS = [
   ( 127, 127, 127, 255 ),
   ( 255, 127, 255, 255 ),
   ( 0, 0, 0, 255 ),
-  ( 0, 0, 0, 255 ),
-  ( 0, 0, 0, 255 ),
-  ( 0, 0, 0, 255 )
+  ( 127, 63, 0, 255 ),
+  ( 127, 0, 0, 255 ),
+  ( 191, 255, 255, 255 )
 ]
 
 # Determines how the sprite of a block type conencts
 # to those of other blocks with the same type
 BDM_DEF_OVERLAY = 0
 BDM_DEF_REPLACE = 1
-BDM_DEF_OUTLINE = 2
-BDM_SINGLE_OVERLAY = 3
+BDM_SINGLE_OVERLAY = 2
 
 B_DRAW_MODES = [
   None,
   BDM_SINGLE_OVERLAY,
   BDM_DEF_REPLACE,
   BDM_DEF_OVERLAY,
-  BDM_DEF_OUTLINE,
+  BDM_DEF_OVERLAY,
   BDM_DEF_OVERLAY,
   BDM_DEF_REPLACE
 ]
@@ -67,3 +66,5 @@ PLAYER_HSPEED = 10
 PLAYER_HSPEED_BOOST = 3
 PLAYER_FRICTION = 5000
 PLAYER_JUMP_POWER = 18
+
+PLAYER_HITBOX = ( 30 / 32, 28 / 30 )

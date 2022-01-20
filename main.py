@@ -163,7 +163,7 @@ class BlockController( GameObject ):
         # Otherwise, create the appropriate block based on color
         else:
           for i in range( 1, B_TOTAL ):
-            if block_surf.get_at( pos.l() ) == B_COLORS[ i ]:
+            if block_surf.get_at( pos.l() ) == B_COLORS[i]:
               keys[ vec_to_str( pos ) ] = i
 
     # Store the real position of every block,
@@ -215,7 +215,7 @@ class BlockController( GameObject ):
   def load_chunk( self, chunk_pos, engine ):
     
     # Initialize it with an empty surface
-    surf = pygame.Surface( ( C_GRID * GRID, C_GRID * GRID ) )
+    surf = pygame.Surface( ( C_GRID * GRID, C_GRID * GRID ), pygame.SRCALPHA, 32 )
     self.chunk_buffers[ vec_to_str( chunk_pos ) ] = surf
 
     # Draw every block onto it
@@ -235,13 +235,16 @@ class BlockController( GameObject ):
       return None
 
     # Start with the sprite's base image
-    sprite_id = B_TEXTURES[ self.blocks[ vec_to_str( block_pos ) ] ]
-    surf = engine.get_image( sprite_id, V2( 0, 0 ) ).copy()
+    sprite_id = B_TEXTURES[ self.get_block_type( block_pos ) ]
+    variant = self.block_meta[ vec_to_str( block_pos ) ][ 'var' ]
+    draw_mode = B_DRAW_MODES[ self.get_block_type( block_pos ) ]
+    surf = engine.get_image( sprite_id, V2( variant, 0 ) ).copy()
 
     # Find the binary representation of the block's neighbors
     # An outline only appears if there's no neighbor along a certain side
     neighbors = [ False for i in range( 8 ) ]
     offsets = ( ( 1, 0 ), ( 1, -1 ), ( 0, -1 ), ( -1, -1 ), ( -1, 0 ), ( -1, 1 ), ( 0, 1 ), ( 1, 1 ) )
+    regions = ( ( GRID / 2, 0 ), ( 0, 0 ), ( 0, GRID / 2 ), ( GRID / 2, GRID / 2 ) )
 
     # Check for adjacent blocks
     # (0 = right, 2 = up, 4 = left, 6 = down)
@@ -256,15 +259,31 @@ class BlockController( GameObject ):
 
       if ( corner_neighbors == [ False, False, False ] or corner_neighbors == [ False, True, False ] ):
 
-        corner_surf = engine.get_image( sprite_id, V2( 0, 3 ) ).copy()
-        corner_surf = pygame.transform.rotate( corner_surf, ( i + 6 ) * 45 )
-        surf.blit( corner_surf, ( 0, 0 ) )
+        if draw_mode in [ BDM_SINGLE_OVERLAY, BDM_DEF_OVERLAY ]:
+
+          corner_surf = engine.get_image( sprite_id, V2( 0, 3 ) ).copy()
+          corner_surf = pygame.transform.rotate( corner_surf, ( i + 6 ) * 45 )
+          surf.blit( corner_surf, ( 0, 0 ) )
+
+        elif draw_mode == BDM_DEF_REPLACE:
+
+          corner_surf = engine.get_image( sprite_id, V2( variant, 4 ) ).copy()
+          rect = ( regions[ i // 2 ][0], regions[ i // 2 ][1], GRID / 2, GRID / 2 )
+          surf = stitch_images( surf, corner_surf, rect )
 
       elif ( corner_neighbors == [ True, False, True ] ):
 
-        corner_surf = engine.get_image( sprite_id, V2( 0, 1 ) ).copy()
-        corner_surf = pygame.transform.rotate( corner_surf, ( i + 6 ) * 45 )
-        surf.blit( corner_surf, ( 0, 0 ) )
+        if draw_mode in [ BDM_SINGLE_OVERLAY, BDM_DEF_OVERLAY ]:
+
+          corner_surf = engine.get_image( sprite_id, V2( 0, 1 ) ).copy()
+          corner_surf = pygame.transform.rotate( corner_surf, ( i + 6 ) * 45 )
+          surf.blit( corner_surf, ( 0, 0 ) )
+
+        elif draw_mode == BDM_DEF_REPLACE:
+
+          corner_surf = engine.get_image( sprite_id, V2( variant, 1 ) ).copy()
+          rect = ( regions[ i // 2 ][0], regions[ i // 2 ][1], GRID / 2, GRID / 2 )
+          surf = stitch_images( surf, corner_surf, rect )
 
     # Draw outlines
     for i in range( 0, 8, 2 ):
@@ -273,13 +292,22 @@ class BlockController( GameObject ):
 
       if ( right_neighbors[0] != right_neighbors[1] ):
 
-        line_surf = engine.get_image( sprite_id, V2( 0, 2 ) ).copy()
-        line_surf = pygame.transform.flip( line_surf, False, right_neighbors[1] )
-        if right_neighbors[0]:
-          line_surf = pygame.transform.rotate( line_surf, ( i + 6 ) * 45 )
-        else:
-          line_surf = pygame.transform.rotate( line_surf, ( i + 4 ) * 45 )
-        surf.blit( line_surf, ( 0, 0 ) )
+        if draw_mode in [ BDM_SINGLE_OVERLAY, BDM_DEF_OVERLAY ]:
+
+          line_surf = engine.get_image( sprite_id, V2( 0, 2 ) ).copy()
+          line_surf = pygame.transform.flip( line_surf, False, right_neighbors[1] )
+          if right_neighbors[0]:
+            line_surf = pygame.transform.rotate( line_surf, ( i + 6 ) * 45 )
+          else:
+            line_surf = pygame.transform.rotate( line_surf, ( i + 4 ) * 45 )
+          surf.blit( line_surf, ( 0, 0 ) )
+
+        elif draw_mode == BDM_DEF_REPLACE:
+
+          subimage = 2 if ( ( i % 4 == 0 ) != right_neighbors[0] ) else 3
+          line_surf = engine.get_image( sprite_id, V2( 0, subimage ) ).copy()
+          rect = ( regions[ ( i // 2 ) % 4 ][0], regions[ ( i // 2 ) % 4 ][1], GRID / 2, GRID / 2 )
+          surf = stitch_images( surf, line_surf, rect )
 
     return surf
 
@@ -301,7 +329,7 @@ class BlockController( GameObject ):
       self.block_meta[ vec_to_str( pos ) ] = {}
 
       # Do any further setup
-      if ( B_DRAW_MODES[ block_type ] in [ BDM_DEF_OVERLAY, BDM_DEF_REPLACE, BDM_DEF_OUTLINE ] ):
+      if ( B_DRAW_MODES[ block_type ] in [ BDM_DEF_OVERLAY, BDM_DEF_REPLACE ] ):
         self.block_meta[ vec_to_str( pos ) ][ 'var' ] = random.randint( 0, 2 )
       else:
         self.block_meta[ vec_to_str( pos ) ][ 'var' ] = 0
@@ -410,18 +438,21 @@ class Player ( GameObject ):
 
   # Draw self at current position
   # Leverages flip operations & sub-images
+  # Also drawn slightly higher than the player's position because its hitbox isn't centered
   def draw( self, engine ):
 
     if abs( self.vel.x ) < 0.5:
-      engine.draw_image_mod( 'player', V2( 0, floor( self.image_bob ) % 2 ), self.pos.c().m( GRID ), flip = V2( self.image_dir, 1 ) )
+      engine.draw_image_mod( 'player', V2( 0, floor( self.image_bob ) % 2 ), self.pos.c().s( 0, ( 1 - PLAYER_HITBOX[1] ) / 2 ).m( GRID ), flip = V2( self.image_dir, 1 ) )
     else:
-      engine.draw_image_mod( 'player', V2( 1, floor( self.image_walk ) % 8 ), self.pos.c().m( GRID ), flip = V2( self.image_dir, 1 ) )
+      engine.draw_image_mod( 'player', V2( 1, floor( self.image_walk ) % 8 ), self.pos.c().s( 0, ( 1 - PLAYER_HITBOX[1] ) / 2 ).m( GRID ), flip = V2( self.image_dir, 1 ) )
 
   # Checks if the player has a block immediately (to a limited degree) below them
   def is_on_block( self ):
 
-    return ( c_block.is_block( V2( int( floor( self.pos.x ) ), int( floor( self.pos.y + 1 ) ) ) )
-      or c_block.is_block( V2( int( ceil( self.pos.x ) ), int( floor( self.pos.y + 1 ) ) ) ) )
+    for xx in range( floor( self.pos.x + ( 1 - PLAYER_HITBOX[0] ) / 2 ), ceil( self.pos.x + ( 1 + PLAYER_HITBOX[0] ) / 2 ) ):
+      if ( c_block.is_block( V2( xx, int( floor( self.pos.y + ( 1 + PLAYER_HITBOX[1] ) / 2 ) ) ) ) ):
+        return True
+    return False
 
   # Returns a list of the vectors of any blocks the player is inside of
   def get_adjacent_blocks( self, position = None ):
@@ -429,8 +460,9 @@ class Player ( GameObject ):
     if position == None:
       position = self.pos
     output = []
-    for xx in range( floor( position.x ), ceil( position.x ) + 1 ):
-      for yy in range( floor( position.y ), ceil( position.y ) + 1 ):    
+
+    for xx in range( floor( position.x + ( 1 - PLAYER_HITBOX[0] ) / 2 ), ceil( position.x + ( 1 + PLAYER_HITBOX[0] ) / 2 ) ):
+      for yy in range( floor( position.y + ( 1 - PLAYER_HITBOX[1] ) / 2 ), ceil( position.y + ( 1 + PLAYER_HITBOX[1] ) / 2 ) ):    
         output.append( V2( xx, yy ) )
     return output
 
@@ -449,10 +481,10 @@ class Player ( GameObject ):
       # Push the player out based on their position within the block
       # The is_x_axis argument determines the axis they're pushed along
       if ( is_x_axis ):
-        self.pos.x = block_pos.x + ( -1 if self.pos.x < block_pos.x else 1 )
+        self.pos.x = block_pos.x + ( -1 if self.pos.x < block_pos.x else 1 ) * ( 1 + PLAYER_HITBOX[0] ) / 2
         self.vel.x = 0
       else:
-        self.pos.y = block_pos.y + ( -1 if self.pos.y < block_pos.y else 1 )
+        self.pos.y = block_pos.y + ( -1 if self.pos.y < block_pos.y else 1 ) * ( 1 + PLAYER_HITBOX[1] ) / 2
         self.vel.y = 0
 
 # Vector / string transformation
@@ -461,6 +493,17 @@ def vec_to_str( value ):
 
 def str_to_vec( value ):
   return V2( value.split( ':' ) ).i()
+
+# Combines two surfaces together
+# The second surface replaces the first one in the region specified by "rect"
+# Note that it replaces the surface's pixels instead of drawing over it
+def stitch_images( primary_surf, secondary_surf, rect ):
+
+  secondary_surf = secondary_surf.subsurface( rect ).copy()
+
+  primary_surf.fill( ( 0, 0, 0, 0 ), rect = rect )
+  primary_surf.blit( secondary_surf, rect[0:2] )
+  return primary_surf
 
 # I know global objects are considered bad practice, but I don't really care.
 g_engine = Engine( V2( 1280, 720 ), 'Untitled Platformer', icon_source = 'res/textures/icon.png', fps_limit = -1 )
