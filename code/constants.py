@@ -12,24 +12,24 @@ B_TOTAL = 7
 
 # Block textures (listed in order of ID)
 B_TEXTURES = [
-  None,
-  'block_default',
-  'block_goop',
-  'block_leaf',
-  'block_wood',
-  'block_lava',
-  'block_cloud'
+    None,
+    'block_default',
+    'block_goop',
+    'block_leaf',
+    'block_wood',
+    'block_lava',
+    'block_cloud'
 ]
 
 # The color of each block when being loaded in from a PNG
 B_COLORS = [
-  None,
-  ( 127, 127, 127, 255 ),
-  ( 255, 127, 255, 255 ),
-  ( 0, 0, 0, 255 ),
-  ( 127, 63, 0, 255 ),
-  ( 127, 0, 0, 255 ),
-  ( 191, 255, 255, 255 )
+    None,
+    ( 127, 127, 127, 255 ),
+    ( 255, 127, 255, 255 ),
+    ( 0, 0, 0, 255 ),
+    ( 127, 63, 0, 255 ),
+    ( 127, 0, 0, 255 ),
+    ( 191, 255, 255, 255 )
 ]
 
 # Determines how the sprite of a block type conencts
@@ -39,13 +39,23 @@ BDM_DEF_REPLACE = 1
 BDM_SINGLE_OVERLAY = 2
 
 B_DRAW_MODES = [
-  None,
-  BDM_SINGLE_OVERLAY,
-  BDM_DEF_REPLACE,
-  BDM_DEF_OVERLAY,
-  BDM_DEF_OVERLAY,
-  BDM_DEF_OVERLAY,
-  BDM_DEF_REPLACE
+    None,
+    BDM_SINGLE_OVERLAY,
+    BDM_DEF_REPLACE,
+    BDM_DEF_OVERLAY,
+    BDM_DEF_OVERLAY,
+    BDM_DEF_OVERLAY,
+    BDM_DEF_REPLACE
+]
+
+# Internal names of each block
+B_STRINGS = [
+    'default',
+    'goop',
+    'leaf',
+    'wood',
+    'lava',
+    'cloud'
 ]
 
 # The size of a block grid/chunk grid space
@@ -74,9 +84,9 @@ PLAYER_HITBOX = ( 44 / 48, 44 / 48 )
 
 # Keybinds (will probably be moved to settings object in the future)
 BINDS = {
-  'move_left': K_a,
-  'move_right': K_d,
-  'jump': K_SPACE,
-  'attack': K_k,
-  'invert': K_f
+    'move_left': K_a,
+    'move_right': K_d,
+    'jump': K_SPACE,
+    'attack': K_k,
+    'invert': K_i
 }
