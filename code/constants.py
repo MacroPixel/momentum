@@ -50,6 +50,7 @@ B_DRAW_MODES = [
 
 # Internal names of each block
 B_STRINGS = [
+    None,
     'default',
     'goop',
     'leaf',

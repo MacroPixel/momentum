@@ -36,7 +36,7 @@ class Controller( Game_Object ):
             
             # Restart
             if ( self.engine.get_key( pygame.K_RCTRL, 1 ) ):
-                self.restart( self.get_instance( 'player' ) )
+                self.restart( self.engine.get_instance( 'player' ) )
 
             # Rewrite level
             if ( self.engine.get_key( pygame.K_F7, 1 ) ):

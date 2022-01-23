@@ -241,6 +241,7 @@ class BlockController():
 
                 self.__blocks.pop( utils.vec_to_str( pos ) )
                 self.__block_meta.pop( utils.vec_to_str( pos ) )
+
         else:
 
             # Initialize the block data
