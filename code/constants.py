@@ -60,16 +60,16 @@ B_STRINGS = [
 ]
 
 # The size of a block grid/chunk grid space
-GRID = 48
+GRID = 16
 C_GRID = 16
 
 # How far the player has to go to the side of the screen
 # for the view to scroll
 VIEW_BOUNDS = ( 128, 64 )
 
-# The maximum range (in block coords) beyond the screen
+# The maximum range (in block coords) away from the center
 # within which the game should attempt to render blocks
-RENDER_BOUNDS = ( 20, 20 )
+RENDER_BOUNDS = ( 3, 2 )
 
 # General physics constants
 GRAVITY = 32
@@ -82,6 +82,7 @@ PLAYER_FRICTION = 20000
 PLAYER_JUMP_POWER = 19
 
 PLAYER_HITBOX = ( 44 / 48, 44 / 48 )
+COLLISION_EPSILON = 0.000001
 
 # Keybinds (will probably be moved to settings object in the future)
 BINDS = {
@@ -91,3 +92,8 @@ BINDS = {
     'attack': K_k,
     'invert': K_i
 }
+
+# Used by controller's pause_level variable
+PAUSE_NONE = 0
+PAUSE_NORMAL = 1
+PAUSE_TOTAL = 2

@@ -36,26 +36,26 @@ class BlockController():
                 pass
 
             elif line[0] == '*':
-                current_chunk = line.split( '* ' )[1].split( ':' )
                 try:
-                    current_chunk = f'{ int( current_chunk[0] ) }:{ int( current_chunk[1] ) }'
+                    current_chunk = utils.vec_to_str( V2( line.split( '* ' )[1].split( ':' ) ) )
                     self.__chunks[ current_chunk ] = []
                 except ( ValueError, IndexError ):
-                    raise GameError( 'Invalid chunk format' )
+                    raise RuntimeError( 'Invalid chunk format' )
 
             # Create objects under chunk
             else:
 
                 # If chunk isn't active
                 if ( current_chunk == '' ):
-                    raise GameError( 'No chunk was specified' )
+                    raise RuntimeError( 'No chunk was specified' )
 
                 # Otherwise, store the block name & loop through coordinates
                 block_id = B_STRINGS.index( line.split( ' ' )[0] )
                 for i in range( 1, len( line.split( ' ' ) ), 2 ):
 
                     # Create block & store position under current chunk
-                    temp_pos = V2( line.split( ' ' )[ i:i + 2 ] ).i().a( utils.str_to_vec( current_chunk ).m( C_GRID ) )
+                    chunk_coords = utils.str_to_vec( current_chunk ).m( C_GRID )
+                    temp_pos = V2( line.split( ' ' )[ i:i + 2 ] ).i().a( chunk_coords )
                     self.set_block( temp_pos, block_id )
                     self.__chunks[ current_chunk ].append( utils.vec_to_str( temp_pos ) )
 
@@ -110,11 +110,13 @@ class BlockController():
             
     # Iterate through/draw all blocks
     # Blocks are drawn based off of chunk buffers stored in memory
-    def draw( self, engine ):
+    def draw( self, engine, controller ):
 
         # Draw chunks within the proper bound
-        bound_1 = engine.view_pos.c().s( RENDER_BOUNDS * GRID ).fn( lambda a: floor( a / GRID / C_GRID ) )
-        bound_2 = engine.view_pos.c().a( engine.screen_size ).a( RENDER_BOUNDS * GRID ).fn( lambda a: floor( a / GRID / C_GRID ) )
+        # Bound is specified in blocks offset from view center (via RENDER_BOUNDS)
+        bound_1 = engine.view_pos.c().fn( lambda a: round( a / GRID / C_GRID ) ).s( RENDER_BOUNDS )
+        bound_2 = engine.view_pos.c().fn( lambda a: round( a / GRID / C_GRID ) ).a( RENDER_BOUNDS )
+
         for xx in range( bound_1.x, bound_2.x + 1 ):
             for yy in range( bound_1.y, bound_2.y + 1 ):
 
@@ -128,7 +130,7 @@ class BlockController():
                 if ( utils.vec_to_str( chunk_pos ) not in self.__chunk_buffers ):
                     self.load_chunk( chunk_pos, engine )
 
-                engine.draw_surface( self.__chunk_buffers[ utils.vec_to_str( chunk_pos ) ], chunk_pos.c().m( C_GRID * GRID ) )
+                engine.draw_surface( self.__chunk_buffers[ utils.vec_to_str( chunk_pos ) ], chunk_pos.c().m( C_GRID * GRID ), False )
 
     # Creates a surface for easy-drawing
     def load_chunk( self, chunk_pos, engine ):

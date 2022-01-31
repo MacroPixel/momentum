@@ -5,15 +5,15 @@ import pygame
 from pygame.locals import RLEACCEL
 import os
 
-from vector import *
-from game_object import *
+from .game_object import *
+from .vector import *
 
 # Abstracts most of the Pygame stuff away
 class Engine:
 
     # Initially set up Pygame & specify global options
     # def __init__( self, size, caption, icon_source = None, fps_limit = -1, root_dir = '' ):
-    def __init__( self, size, caption, *args, **kwargs ):
+    def __init__( self, size, caption, room_dict, start_room, *args, **kwargs ):
 
         # Can't be changed for the time being
         self._screen_size = V2( size )
@@ -48,11 +48,16 @@ class Engine:
         # Other variables
         self._delta_time = 0
         self._view_pos = V2()
-        self._view_size = V2( 1, 1 )
+        self._view_zoom = self.dict_search( kwargs, 'zoom_level', V2( 1, 1 ) )
         self.__keys_down = []
         self.__keys_up = []
         self.__keys = pygame.key.get_pressed()
         self.__fonts = {}
+
+        # Goto a room
+        # This is when the user's code is used
+        self.__room_dict = room_dict
+        self.load_room( start_room )
 
     # Enter the main loop
     def run( self ):
@@ -91,7 +96,7 @@ class Engine:
                 obj.draw()
             
             # Swap buffers
-            pygame.display.flip()
+            pygame.display.update()
 
             # Limit FPS if necessary
             if ( self.fps_limit > 0 ):
@@ -111,8 +116,10 @@ class Engine:
         # Insert into proper draw-order-position based on layer
         i = 0
         for i in range( len( self.__draw_instances ) ):
-            if self.__draw_instances[i].layer < game_object.layer:
+            if self.__draw_instances[i].layer > game_object.layer:
                 break
+        else:
+            i += 1
         self.__draw_instances.insert( i, game_object )
 
     # Removes a GameObject from memory
@@ -138,31 +145,10 @@ class Engine:
         return self.__sprites[ sprite_id ][ frame.x ][ frame.y ]
 
     # Shortcut for blitting surface onto screen
-    def draw_surface( self, surf, pos ):
-
-        self.__screen.blit( surf, pos.s( self._view_pos ).l() )
-
-    # Uses pre-defined sprite
-    def draw_sprite( self, sprite_id, frame, pos ):
-
-        self.draw_surface( self.__sprites[ sprite_id ][ frame.x ][ frame.y ], pos )
+    from ._engine_draw import draw_surface
 
     # Shortcut for blitting transformed surface onto screen
-    def draw_surface_mod( self, surf, pos, scale = None, flip = None ):
-
-        # Check each transformation argument to see if sprite needs to be modified
-        if ( scale != None ):
-            surf = pygame.transform.scale( surf, V2( surf.get_size() ).m( scale ).l() )
-        if ( flip != None ):
-            surf = pygame.transform.flip( surf, flip.x == -1, flip.y == -1 )
-
-        # Draw the modified surface
-        self.__screen.blit( surf, pos.s( self._view_pos ).l() )
-
-    # Uses pre-defined surface
-    def draw_sprite_mod( self, sprite_id, frame, pos, scale = None, flip = None ):
-
-        self.draw_surface_mod( self.__sprites[ sprite_id ][ frame.x ][ frame.y ], pos, scale, flip )
+    from ._engine_draw import draw_sprite
 
     # Creates a font under the name 'name:size'
     def create_font( self, filepath, name, size ):
@@ -170,11 +156,7 @@ class Engine:
         self.__fonts[ f'{ name }:{ size }' ] = pygame.font.Font( self.get_path( filepath ), size )
 
     # Shortcut for blitting text to the screen (can choose origin :D)
-    def draw_text( self, text, font, pos, color, anchor = ( 0, 0 ) ):
-
-        text_surf = self.__fonts[ font ].render( text, True, color )
-        pos.s( V2( anchor ).c().m( text_surf.get_size() ) )
-        self.__screen.blit( text_surf, pos.l() )
+    from ._engine_draw import draw_text
 
     # Appends the input to the root directory
     def get_path( self, directory ):
@@ -195,18 +177,22 @@ class Engine:
         # [name] = [relative filepath] [scale]:[# vertical subimages]:[# horizontal subimages]
         for line in spr_file:
 
+            # Parse through the data within the line of text]
+            internal_name, line = line.split( ' = ' )
+            filename, line = line.split( ' ' )
+            dimensions = [ int( a ) for a in line.split( ':' ) ]
+
             # Load the image and transform it based on the data in the file line
-            line = line.split( ' = ' )
-            surface = pygame.image.load( self.get_path( '/textures/' + line[1].split( ' ' )[0] ) )
-            surface = pygame.transform.scale( surface, V2( surface.get_size() ).m( int( line[1].split( ' ' )[1].split( ':' )[0] ) ).l() )
+            surface = pygame.image.load( self.get_path( '/textures/' + filename ) )
+            surface = pygame.transform.scale( surface, V2( surface.get_size() ).l() )
 
             # Use the dimensions of the sprite divided by the # of subimages to get the size of a square
             dims = V2( surface.get_size() )
-            square_count = V2( int( line[1].split( ' ' )[1].split( ':' )[1] ), int( line[1].split( ' ' )[1].split( ':' )[2] ) )
+            square_count = V2( dimensions )
             square_size = dims.c().d( square_count )
 
             # Use the previous information to split the sprite up and append it to the sprite data
-            self.__sprites[ line[0] ] = [ [ surface.subsurface( ( xx * square_size.x, yy * square_size.y, *square_size.l() ) ) for xx in range( square_count.x ) ]
+            self.__sprites[ internal_name ] = [ [ surface.subsurface( ( xx * square_size.x, yy * square_size.y, *square_size.l() ) ) for xx in range( square_count.x ) ]
                 for yy in range( square_count.y ) ]
 
     # Returns one or multiple instances of a type
@@ -222,6 +208,17 @@ class Engine:
             return None
         return self.__named_instances[ instance_id ]
 
+    # Loading a room clears all objects and runs a custom function
+    # The function is stored in self.__room_dict under a string
+    def load_room( self, room_function ):
+
+        # Delete all objects (makes a copy of list so it can be altered during loop)
+        for obj in [ o for o in self.__instances ]:
+            self.delete_instance( obj )
+
+        # Executes inputted function
+        self.__room_dict[ room_function ]( self )
+
     # Returns a value from a dictionary if found,
     # otherwise returns the default value passed into the function
     @staticmethod
@@ -232,11 +229,15 @@ class Engine:
     # Getters and setters
     @property
     def screen_size( self ):
-        return self._screen_size
+        return self._screen_size.c()
 
     @property
     def fps_limit( self ):
         return self._fps_limit
+
+    @property
+    def fps_current( self ):
+        return self.__clock.get_fps()
 
     @fps_limit.setter
     def fps_limit( self, value ):
@@ -260,5 +261,5 @@ class Engine:
         self._view_pos = V2( value )
 
     @property
-    def view_size( self ):
-        return self._view_size
+    def view_zoom( self ):
+        return self._view_zoom

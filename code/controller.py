@@ -1,7 +1,7 @@
 from basic_imports import *
 
-from controller_block import *
-from controller_ui import *
+from _controller_block import *
+from _controller_ui import *
 
 # Controls basic game logic
 # Other controller objects exist for more specific game logic
@@ -12,20 +12,28 @@ class Controller( Game_Object ):
         # Initialize GameObject
         super().__init__( engine, 'controller' )
 
+        # Pause level determines the amount of movement allowed
+        self.pause_level = PAUSE_NONE
+
         # Initialize specialized sub-controllers
         self.__c_block = BlockController( self.engine.get_path( '/data/blocks.txt' ) )
         self.__c_ui = UIController()
 
-        # Create fonts
-        engine.create_font( '/misc/font_1.otf', 'main', 20 )
-        engine.create_font( '/misc/font_1.otf', 'main', 12 )
-
         # Debug mode can be toggled with right alt
         self.__allow_debug = True
         self._debug = True
+        self._advanced_info = False
 
     # Mostly just debug stuff
     def update( self ):
+
+        # Toggle pause
+        if self.engine.get_key( pygame.K_ESCAPE, 1 ):
+
+            if self.pause_level == PAUSE_NONE:
+                self.pause_level = PAUSE_NORMAL
+            elif self.pause_level == PAUSE_NORMAL:
+                self.pause_level = PAUSE_NONE
 
         # Switch debug mode if allowed
         if self.__allow_debug and self.engine.get_key( pygame.K_RALT, 1 ):
@@ -49,6 +57,10 @@ class Controller( Game_Object ):
             # Block operation
             if ( self.engine.get_key( pygame.K_BACKQUOTE, 1 ) ):
                 c_block.block_debug( pygame.mouse.get_pos(), self.engine.view_pos )
+
+            # Toggle advanced info
+            if ( self.engine.get_key( pygame.K_F5, 1 ) ):
+                self._advanced_info = not self.advanced_info
 
     # Reset the player & reload blocks
     def restart( self, player ):
@@ -75,10 +87,25 @@ class Controller( Game_Object ):
     # Draw blocks/UI
     def draw( self ):
 
-        self.__c_block.draw( self.engine )
-        self.__c_ui.draw( self.engine )
+        self.__c_block.draw( self.engine, self )
+        self.__c_ui.draw( self.engine, self )
 
     # Getters/setters
     @property
     def debug( self ):
         return self._debug
+
+    @property
+    def advanced_info( self ):
+        return self._advanced_info
+
+    @property
+    def pause_level( self ):
+        return self._pause_level
+
+    @pause_level.setter
+    def pause_level( self, value ):
+
+        if not isinstance( value, int ) or not ( 0 <= value < PAUSE_TOTAL ):
+            raise ValueError( 'Invalid pause level' )
+        self._pause_level = value

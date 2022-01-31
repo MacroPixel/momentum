@@ -6,7 +6,7 @@ class Player ( Game_Object ):
     def __init__( self, engine ):
 
         # Store image & physics details
-        super().__init__( engine, 'player' )
+        super().__init__( engine, 'player', layer = 1 )
         self._image_dir = 1
         self._image_walk = 0
         self._image_bob = 0
@@ -14,6 +14,10 @@ class Player ( Game_Object ):
         self._vel = V2()
 
     def update( self ):
+
+        # Don't bother if game is paused
+        if self.engine.get_instance( 'controller' ).pause_level >= PAUSE_NORMAL:
+            return
         
         # Horizontal momentum
         if self.engine.get_key( BINDS[ 'move_right' ] ):
@@ -24,7 +28,8 @@ class Player ( Game_Object ):
             self.vel.x *= ( 1 / PLAYER_FRICTION ) ** self.engine.delta_time
 
         # Vertical momentum
-        if ( self.is_on_block() or self.engine.get_instance( 'controller' ).debug ) and self.engine.get_key( BINDS[ 'jump' ] ):
+        can_jump = ( self.is_on_block() and self.engine.get_key( BINDS[ 'jump' ] ) )
+        if ( can_jump ):
 
             # Jump
             self.vel.y = -PLAYER_JUMP_POWER
@@ -73,9 +78,7 @@ class Player ( Game_Object ):
             self.push_out( is_x_axis = False )
 
         # Update view
-        # if ( self.pos.x * GRID + GRID / 2 < engine.view_pos.x + engine.screen_size.x / 2 - VIEW_BOUNDS[0] ):
-        #   engine.view_pos.x = self.pos.x * GRID - engine.screen_size.x / 2 + VIEW_BOUNDS[0]
-        self.engine.view_pos = V2( self.pos.x * GRID - self.engine.screen_size.x / 2, self.pos.y * GRID - self.engine.screen_size.y / 2 ).i()
+        self.engine.view_pos = self.pos.c().m( GRID )
 
     # ABILITIES
 
@@ -95,15 +98,15 @@ class Player ( Game_Object ):
     def draw( self ):
 
         if abs( self.vel.x ) < 0.5:
-            self.engine.draw_sprite_mod( 'player', V2( 0, floor( self.image_bob ) % 2 ), self.pos.c().s( 0, ( 1 - PLAYER_HITBOX[1] ) / 2 ).m( GRID ), flip = V2( self.image_dir, 1 ) )
+            self.engine.draw_sprite( 'player', V2( 0, floor( self.image_bob ) % 2 ), self.pos.c().s( 0, ( 1 - PLAYER_HITBOX[1] ) / 2 ).m( GRID ), False, flip = V2( self.image_dir, 1 ) )
         else:
-            self.engine.draw_sprite_mod( 'player', V2( 1, floor( self.image_walk ) % 8 ), self.pos.c().s( 0, ( 1 - PLAYER_HITBOX[1] ) / 2 ).m( GRID ), flip = V2( self.image_dir, 1 ) )
+            self.engine.draw_sprite( 'player', V2( 1, floor( self.image_walk ) % 8 ), self.pos.c().s( 0, ( 1 - PLAYER_HITBOX[1] ) / 2 ).m( GRID ), False, flip = V2( self.image_dir, 1 ) )
 
     # Checks if the player has a block immediately (to a limited degree) below them
     def is_on_block( self ):
 
         controller = self.engine.get_instance( 'controller' )
-        for xx in range( floor( self.pos.x + ( 1 - PLAYER_HITBOX[0] ) / 2 ), ceil( self.pos.x + ( 1 + PLAYER_HITBOX[0] ) / 2 ) ):
+        for xx in range( floor( self.pos.x + ( 1 - PLAYER_HITBOX[0] ) / 2 + COLLISION_EPSILON ), ceil( self.pos.x + ( 1 + PLAYER_HITBOX[0] ) / 2 - COLLISION_EPSILON ) ):
             if ( controller.is_block( V2( xx, int( floor( self.pos.y + ( 1 + PLAYER_HITBOX[1] ) / 2 ) ) ) ) ):
                 return True
         return False
@@ -115,8 +118,8 @@ class Player ( Game_Object ):
             position = self.pos
         output = []
 
-        bound_1 = position.c().a( V2( PLAYER_HITBOX ).c().m( -1 ).a( 1 ).d( 2 ) ).a( 0.000001 )
-        bound_2 = position.c().a( V2( PLAYER_HITBOX ).c().a( 1 ).d( 2 ) ).s( 0.000001 )
+        bound_1 = position.c().a( V2( PLAYER_HITBOX ).c().m( -1 ).a( 1 ).d( 2 ) ).a( COLLISION_EPSILON )
+        bound_2 = position.c().a( V2( PLAYER_HITBOX ).c().a( 1 ).d( 2 ) ).s( COLLISION_EPSILON )
 
         for xx in range( int( floor( bound_1.x ) ), int( ceil( bound_2.x ) ) ):
             for yy in range( int( floor( bound_1.y ) ), int( ceil( bound_2.y ) ) ):    
