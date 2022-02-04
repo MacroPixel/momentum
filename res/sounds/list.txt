@@ -1,0 +1,1 @@
+punch = SOUND punch_1.wav punch_2.wav punch_3.wav punch_4.wav punch_5.wav punch_6.wav

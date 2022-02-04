@@ -1,9 +1,6 @@
-# I put "engine" in very heavy quotes since this is a paper-thin abstraction
-# over normal python code, but I also don't know what else to call it
-
+import os
 import pygame
 from pygame.locals import RLEACCEL
-import os
 
 from .game_object import *
 from .vector import *
@@ -40,6 +37,12 @@ class Engine:
         self.__sprites = {}
         self.__load_sprites()
 
+        # All sound objects are stored in self.__sound_paths
+        # 32 sounds can be played at once
+        pygame.mixer.set_num_channels( 32 )
+        self.__sounds = {}
+        self.__load_sounds()
+
         # Holds a reference to every GameObject
         self.__instances = []
         self.__draw_instances = []
@@ -53,6 +56,7 @@ class Engine:
         self.__keys_up = []
         self.__keys = pygame.key.get_pressed()
         self.__fonts = {}
+        self.__zoom_buffer = {}
 
         # Goto a room
         # This is when the user's code is used
@@ -100,7 +104,7 @@ class Engine:
 
             # Limit FPS if necessary
             if ( self.fps_limit > 0 ):
-                self.fps_clock.tick( self.fps_limit )
+                self.__fps_clock.tick( self.fps_limit )
 
     # Stores a GameObject for later usage
     def add_instance( self, game_object ):
@@ -139,30 +143,6 @@ class Engine:
         elif check == 2:
             return key_id in self.__keys_up
 
-    # Returns a sprite surface for other objects to use
-    def get_sprite( self, sprite_id, frame ):
-
-        return self.__sprites[ sprite_id ][ frame.x ][ frame.y ]
-
-    # Shortcut for blitting surface onto screen
-    from ._engine_draw import draw_surface
-
-    # Shortcut for blitting transformed surface onto screen
-    from ._engine_draw import draw_sprite
-
-    # Creates a font under the name 'name:size'
-    def create_font( self, filepath, name, size ):
-
-        self.__fonts[ f'{ name }:{ size }' ] = pygame.font.Font( self.get_path( filepath ), size )
-
-    # Shortcut for blitting text to the screen (can choose origin :D)
-    from ._engine_draw import draw_text
-
-    # Appends the input to the root directory
-    def get_path( self, directory ):
-
-        return self.__root_dir + directory
-
     # Initially loads the sprites into memory
     # Should only be called once
     def __load_sprites( self ):
@@ -173,11 +153,11 @@ class Engine:
         spr_file = open( self.get_path( '/textures/list.txt' ) ).read().split( '\n' )
 
         # Iterate through every line in the sprite file
-        # sprites are listed as follows:
+        # Sprites are listed as follows:
         # [name] = [relative filepath] [scale]:[# vertical subimages]:[# horizontal subimages]
         for line in spr_file:
 
-            # Parse through the data within the line of text]
+            # Parse through the data within the line of text
             internal_name, line = line.split( ' = ' )
             filename, line = line.split( ' ' )
             dimensions = [ int( a ) for a in line.split( ':' ) ]
@@ -194,6 +174,63 @@ class Engine:
             # Use the previous information to split the sprite up and append it to the sprite data
             self.__sprites[ internal_name ] = [ [ surface.subsurface( ( xx * square_size.x, yy * square_size.y, *square_size.l() ) ) for xx in range( square_count.x ) ]
                 for yy in range( square_count.y ) ]
+
+    # Initially loads the sounds into memory
+    # Should only be called once
+    def __load_sounds( self ):
+
+        if ( len( self.__sounds ) != 0 ):
+            raise ValueError( 'Sounds have already been initialized' )
+
+        sound_file = open( self.get_path( '/sounds/list.txt' ) ).read().split( '\n' )
+
+        # Iterate through every line in the sound file
+        # Sounds are listed as follows:
+        # [name] = [SOUND/MUSIC] [relative filepath] [relative filepath] [relative filepath] [relative filepath] ...
+        # Allows multiple filepaths to be specified
+        for line in sound_file:
+
+            # Parse through the data within the line of text
+            internal_name, line = line.split( ' = ' )
+            is_music_str = line.split( ' ' )[0]
+            filenames = line.split( ' ' )[1:]
+
+            # Determine if it's a sound or a song
+            if ( is_music_str in [ 'SOUND', 'MUSIC' ] ):
+                is_music = ( is_music_str == 'MUSIC' )
+            else:
+                raise ValueError( 'Invalid argument, should be SOUND or MUSIC' )
+
+            # Load all the sound's variants
+            sounds = []
+            for filename in filenames:
+                sounds.append( pygame.mixer.Sound( self.get_path( '/sounds/' + filename ) ) )
+
+            # Append it to the sound data
+            self.__sounds[ internal_name ] = sounds
+
+    # Returns a sprite surface for other objects to use
+    def get_sprite( self, sprite_id, frame ):
+
+        return self.__sprites[ sprite_id ][ frame.x ][ frame.y ]
+
+    # Drawing methods (preferred over pygame ones because they account for the game view)
+    from ._engine_draw import draw_surface
+    from ._engine_draw import draw_sprite
+    from ._engine_draw import draw_text
+
+    # Creates a font under the name 'name:size'
+    def create_font( self, filepath, name, size ):
+
+        self.__fonts[ f'{ name }:{ size }' ] = pygame.font.Font( self.get_path( filepath ), size )
+
+    # Sound methods
+    from ._engine_mixer import play_sound
+
+    # Appends the input to the root directory
+    def get_path( self, directory ):
+
+        return self.__root_dir + directory
 
     # Returns one or multiple instances of a type
     def get_instance( self, instance_id ):
@@ -262,4 +299,14 @@ class Engine:
 
     @property
     def view_zoom( self ):
-        return self._view_zoom
+        return self._view_zoom.c()
+
+    @view_zoom.setter
+    def view_zoom( self, value ):
+
+        # Clear the buffer containing the zoomed in surfaces
+        if ( V2( value ).l() != self.view_zoom.l() ):
+            self.__zoom_buffer = {}
+
+        # Change the zoom
+        self._view_zoom = V2( value )

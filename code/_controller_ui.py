@@ -11,7 +11,14 @@ class UIController():
     def draw( self, engine, controller ):
 
         if self.__state[0] == 1:
+
+            # Pause text
             engine.draw_text( '[ESC] Pause', 'main:20', V2( 20, 20 ), True )
+
+            # Death text
+            if ( not controller.engine.get_instance( 'player' ).is_alive ):
+                engine.draw_text( 'You Died', 'main:50', engine.screen_size.c().d( 2 ), True, ( 255, 100, 100 ), anchor = V2( 0.5, 0.5 ) )
+
 
             # Debug text
             if controller.debug:
@@ -20,5 +27,4 @@ class UIController():
 
                 # Advanced info
                 if controller.advanced_info:
-
                   engine.draw_text( f'FPS: { floor( engine.fps_current ) }', 'main:12', engine.screen_size.c().m( 1, 0 ).a( -10, 10 ), True, anchor = V2( 1, 0 ) )

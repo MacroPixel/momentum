@@ -60,10 +60,10 @@ class BlockController():
                     self.__chunks[ current_chunk ].append( utils.vec_to_str( temp_pos ) )
 
     # Recreates the level data from a PNG image
-    def rewrite_level( self ):
+    def rewrite_level( self, controller ):
 
         # Load the PNG into memory
-        block_surf = pygame.image.load( 'res/data/blocks.png' )
+        block_surf = pygame.image.load( controller.engine.get_path( '/data/blocks.png' ) )
 
         keys = {} # The position of every block in the PNG
         origin = V2( 0, 0 ) # Where the player spawns
@@ -99,14 +99,14 @@ class BlockController():
             chunks[ chunk_str ][ utils.vec_to_str( new_pos.c().s( chunk_pos.c().m( C_GRID ) ) ) ] = keys[ pos ]
 
         # Actually write to the file
-        file = open( 'res/data/blocks.txt', 'w' )
+        file = open( controller.engine.get_path( '/data/blocks.txt' ), 'w' )
         for chunk in chunks:
 
             file.write( f'* { chunk }\n' )
 
             for block_pos in chunks[ chunk ]:
 
-                file.write( f'{ B_STRINGS( chunks[ chunk ][ block_pos ] ) } { block_pos.replace( ":", " " ) }\n' )
+                file.write( f'{ B_STRINGS[ chunks[ chunk ][ block_pos ] ] } { block_pos.replace( ":", " " ) }\n' )
             
     # Iterate through/draw all blocks
     # Blocks are drawn based off of chunk buffers stored in memory

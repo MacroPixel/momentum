@@ -10,8 +10,12 @@ class Player ( Game_Object ):
         self._image_dir = 1
         self._image_walk = 0
         self._image_bob = 0
+        self._image_attack = 0
         self._pos = V2()
         self._vel = V2()
+
+        # Other variables
+        self._is_alive = True
 
     def update( self ):
 
@@ -20,12 +24,20 @@ class Player ( Game_Object ):
             return
         
         # Horizontal momentum
-        if self.engine.get_key( BINDS[ 'move_right' ] ):
-            self.vel.x += PLAYER_HSPEED * self.engine.delta_time
-        elif self.engine.get_key( BINDS[ 'move_left' ] ):
-            self.vel.x -= PLAYER_HSPEED * self.engine.delta_time
+        # PLAYER_HSPEED defines the base speed
+        # The player experiences a deficit of momentum when they're not standing on a block
+        # This is defined as PLAYER_HSPEED_AIR_FACTOR
+        # Friction (only when on block) works by pretending they're holding the key
+        # in the opposite direction they're moving
+        velocity_factor = 1
+        if ( not self.is_on_block() ):
+            velocity_factor *= PLAYER_HSPEED_AIR_FACTOR
+        if ( self.engine.get_key( BINDS[ 'move_right' ] ) ):
+            self.vel.x += PLAYER_HSPEED * self.engine.delta_time * velocity_factor
+        elif ( self.engine.get_key( BINDS[ 'move_left' ] ) ):
+            self.vel.x -= PLAYER_HSPEED * self.engine.delta_time * velocity_factor
         elif self.is_on_block():
-            self.vel.x *= ( 1 / PLAYER_FRICTION ) ** self.engine.delta_time
+            self.vel.x = max( abs( self.vel.x ) - ( PLAYER_HSPEED * self.engine.delta_time * velocity_factor ), 0 ) * ( -1 if self.vel.x < 0 else 1 )
 
         # Vertical momentum
         can_jump = ( self.is_on_block() and self.engine.get_key( BINDS[ 'jump' ] ) )
@@ -49,6 +61,10 @@ class Player ( Game_Object ):
         if ( self.engine.get_key( BINDS[ 'invert' ], 1 ) ):
             self.invert()
 
+        # Damage
+        if ( self.engine.get_key( pygame.K_n, 1 ) ):
+            self.die()
+
         # Set image details
         # Walk is incremented while velocity >= 0.2, otherwise head bob is incremented
         self._image_walk += abs( self.vel.x ) * self.engine.delta_time * 3
@@ -63,19 +79,16 @@ class Player ( Game_Object ):
         elif ( self.vel.x > 0.01 ):
             self._image_dir = 1
 
+        # If attack is > 0, it goes through 1 frame every 0.05 seconds
+        if ( self.image_attack > 0 ):
+            self._image_attack = max( 0, self._image_attack - self.engine.delta_time / 0.05 )
+
         # Actually move
         # Perform collision detection on the 4 adjacent blocks
         # This is done with multiple iterations to make it more precise
         vel_factor = V2( 1, 1 )
 
-        iterations = 5
-        for i in range( iterations ):
-
-            self.pos.x += self.vel.x * self.engine.delta_time / iterations
-            self.push_out( is_x_axis = True )
-
-            self.pos.y += self.vel.y * self.engine.delta_time / iterations
-            self.push_out( is_x_axis = False )
+        utils.move_solid( self.pos, self.vel, V2( PLAYER_HITBOX ), self.engine )
 
         # Update view
         self.engine.view_pos = self.pos.c().m( GRID )
@@ -86,21 +99,41 @@ class Player ( Game_Object ):
 
         # Comes at a cost of velocity
         self.vel.x *= PLAYER_HSPEED_ATTACK_FACTOR
+        self.engine.play_sound( 'punch' )
+
+        # Play attack animation
+        self._image_attack = 3
 
     # Rotates velocity vector 90 degrees counterclockwise
     def invert( self ):
 
         self.vel.x, self.vel.y = self.vel.y, -self.vel.x
 
+    # OTHER BEHAVIOR
+
+    # Creates an object that displays UI and eventually restarts the level
+    def die( self ):
+
+        self._is_alive = False
+
     # Draw self at current position
     # Leverages flip operations & sub-images
     # Also drawn slightly higher than the player's position because its hitbox isn't centered
     def draw( self ):
 
-        if abs( self.vel.x ) < 0.5:
-            self.engine.draw_sprite( 'player', V2( 0, floor( self.image_bob ) % 2 ), self.pos.c().s( 0, ( 1 - PLAYER_HITBOX[1] ) / 2 ).m( GRID ), False, flip = V2( self.image_dir, 1 ) )
+        # TODO: fit hitbox precision error leading to player being drawn in ground
+
+        hitbox_offset = V2( 0, ( 1 - PLAYER_HITBOX[1] ) / 2 )
+        draw_pos = self.pos.c().s( hitbox_offset ).m( GRID )
+
+        if ( self._image_attack > 0 ):
+            draw_image = V2( 2, min( 2, 2 - floor( self.image_attack ) ) )
+        elif abs( self.vel.x ) < 0.5:
+            draw_image = V2( 0, floor( self.image_bob ) % 2 )
         else:
-            self.engine.draw_sprite( 'player', V2( 1, floor( self.image_walk ) % 8 ), self.pos.c().s( 0, ( 1 - PLAYER_HITBOX[1] ) / 2 ).m( GRID ), False, flip = V2( self.image_dir, 1 ) )
+            draw_image = V2( 1, floor( self.image_walk ) % 8 )
+
+        self.engine.draw_sprite( 'player', draw_image, draw_pos, False, flip = V2( self.image_dir, 1 ) )
 
     # Checks if the player has a block immediately (to a limited degree) below them
     def is_on_block( self ):
@@ -111,44 +144,12 @@ class Player ( Game_Object ):
                 return True
         return False
 
-    # Returns a list of the vectors of any blocks the player is inside of
-    def get_adjacent_blocks( self, position = None ):
+    # Resets all properties after level restart
+    def restart( self ):
 
-        if position == None:
-            position = self.pos
-        output = []
-
-        bound_1 = position.c().a( V2( PLAYER_HITBOX ).c().m( -1 ).a( 1 ).d( 2 ) ).a( COLLISION_EPSILON )
-        bound_2 = position.c().a( V2( PLAYER_HITBOX ).c().a( 1 ).d( 2 ) ).s( COLLISION_EPSILON )
-
-        for xx in range( int( floor( bound_1.x ) ), int( ceil( bound_2.x ) ) ):
-            for yy in range( int( floor( bound_1.y ) ), int( ceil( bound_2.y ) ) ):    
-                output.append( V2( xx, yy ) )
-        return output
-
-    # Push the player out of any adjacent blocks
-    def push_out( self, is_x_axis ):
-
-        controller = self.engine.get_instance( 'controller' )
-        adjacent_blocks = self.get_adjacent_blocks()
-
-        # For every grid space the player is inside of
-        for block_pos in adjacent_blocks:
-
-            # Only continue if a block occupies this grid space
-            if ( not controller.is_block( block_pos ) ):
-                continue
-
-            # Push the player out based on their position within the block
-            # The is_x_axis argument determines the axis they're pushed along
-            if ( is_x_axis ):
-                direction = -1 if self.pos.x < block_pos.x else 1
-                self.pos.x = block_pos.x + direction * ( 1 + PLAYER_HITBOX[0] ) / 2
-                self.vel.x = 0
-            else:
-                direction = -1 if self.pos.y < block_pos.y else 1
-                self.pos.y = block_pos.y + direction * ( 1 + PLAYER_HITBOX[1] ) / 2
-                self.vel.y = 0
+        self.pos = V2( 0, 0 )
+        self.vel = V2( 0, 0 )
+        self._is_alive = True
 
     # Getters/setters
     @property
@@ -177,5 +178,13 @@ class Player ( Game_Object ):
         return self._image_walk
 
     @property
+    def image_attack( self ):
+        return self._image_attack
+
+    @property
     def image_bob( self ):
         return self._image_bob
+
+    @property
+    def is_alive( self ):
+        return self._is_alive

@@ -11,6 +11,7 @@ class Menu_Controller ( Game_Object ):
         engine.create_font( '/misc/font_1.otf', 'main', 20 )
         engine.create_font( '/misc/font_1.otf', 'main', 12 )
         engine.create_font( '/misc/font_1.otf', 'main', 36 )
+        engine.create_font( '/misc/font_1.otf', 'main', 50 )
 
     def update( self ):
         

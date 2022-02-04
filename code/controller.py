@@ -3,6 +3,8 @@ from basic_imports import *
 from _controller_block import *
 from _controller_ui import *
 
+from enemy_jomper import *
+
 # Controls basic game logic
 # Other controller objects exist for more specific game logic
 class Controller( Game_Object ):
@@ -10,7 +12,7 @@ class Controller( Game_Object ):
     def __init__( self, engine ):
 
         # Initialize GameObject
-        super().__init__( engine, 'controller' )
+        super().__init__( engine, 'controller', layer = 10 )
 
         # Pause level determines the amount of movement allowed
         self.pause_level = PAUSE_NONE
@@ -39,34 +41,41 @@ class Controller( Game_Object ):
         if self.__allow_debug and self.engine.get_key( pygame.K_RALT, 1 ):
             self._debug = not self.debug
 
+        # Restart the game if player is dead
+        if ( self.engine.get_key( K_SPACE, 1 ) and not self.engine.get_instance( 'player' ).is_alive ):
+            self.restart()
+
         # Debug features
         if self.debug:
             
             # Restart
             if ( self.engine.get_key( pygame.K_RCTRL, 1 ) ):
-                self.restart( self.engine.get_instance( 'player' ) )
+                self.restart()
 
             # Rewrite level
             if ( self.engine.get_key( pygame.K_F7, 1 ) ):
-                c_block.rewrite_level()
+                self.__c_block.rewrite_level( self )
 
             # Reload level
             if ( self.engine.get_key( pygame.K_F8, 1 ) ):
-                c_block.load_level()
+                self.__c_block.load_level( self.engine.get_path( '/data/blocks.txt' ) )
 
             # Block operation
             if ( self.engine.get_key( pygame.K_BACKQUOTE, 1 ) ):
-                c_block.block_debug( pygame.mouse.get_pos(), self.engine.view_pos )
+                self.__c_block.block_debug( pygame.mouse.get_pos(), self.engine.view_pos )
 
             # Toggle advanced info
             if ( self.engine.get_key( pygame.K_F5, 1 ) ):
                 self._advanced_info = not self.advanced_info
 
-    # Reset the player & reload blocks
-    def restart( self, player ):
+            # Misc operation
+            if ( self.engine.get_key( pygame.K_F6, 1 ) ):
+                Jomper( self.engine, self.engine.get_instance( 'player' ).pos.c() )
 
-        player.pos = V2( 0, 0 )
-        player.vel = V2( 0, 0 )
+    # Reset the player & reload blocks
+    def restart( self ):
+
+        self.engine.get_instance( 'player' ).restart()
 
     # Check whether a block exists at a position
     def is_block( self, pos ):
@@ -109,3 +118,7 @@ class Controller( Game_Object ):
         if not isinstance( value, int ) or not ( 0 <= value < PAUSE_TOTAL ):
             raise ValueError( 'Invalid pause level' )
         self._pause_level = value
+
+    @property
+    def is_player_dead( self ):
+        return self._is_player_dead
