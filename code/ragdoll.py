@@ -20,7 +20,7 @@ class Ragdoll( Game_Object ):
         # It's measured in degrees/second
         self._rotation = 0
         self._rotation_speed = random.randrange( 45, 50 )
-        self._rotation_speed *= max( abs( self.vel.x ), abs( self.vel.y ) ) * ( -1 if self.vel.x > 0 else 1 )
+        self._rotation_speed *= max( abs( self.vel.x ) + 0.5, abs( self.vel.y ) + 0.5 ) * ( -1 if self.vel.x > 0 else 1 )
         self._anchor = anchor
 
         # Sprite of parent object

@@ -22,6 +22,7 @@ class Entity( Game_Object ):
         # Entity-dependent stuff works for this instance
         self.entity_dies_to_spikes = True # Whether the enemy can survive spikes
         self.entity_destroy_on_death = True # Whether the enemy's GameObject is destroyed upon death
+        self.entity_gravity_multiplier = 1 # Can be used to alter or disable gravity
 
         # Other
         self.controller = self.engine.get_instance( 'controller' )
@@ -29,6 +30,9 @@ class Entity( Game_Object ):
     # Moves based on position and velocity
     # Can also perform events common to all entities, such as death
     def entity_update( self, iterations = 5 ):
+
+        # First, apply gravity
+        self.vel.y += GRAVITY * self.engine.delta_time * self.entity_gravity_multiplier
 
         # The push functions aren't run until after the iteration is done
         # This prevents them from being executed more than once

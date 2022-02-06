@@ -32,8 +32,8 @@ class Player ( Entity ):
             self.update_normal()
 
         # Update view regardless
-        self.engine.view_pos.x = utils.lerp( self.engine.view_pos.x, self.pos.x * GRID, 0.9, self.engine.delta_time * 10 )
-        self.engine.view_pos.y = utils.lerp( self.engine.view_pos.y, self.pos.y * GRID, 0.9, self.engine.delta_time * 10 )
+        self.engine.view_pos.x = utils.lerp( self.engine.view_pos.x, self.pos.x * GRID, 0.85, self.engine.delta_time * 10 )
+        self.engine.view_pos.y = utils.lerp( self.engine.view_pos.y, self.pos.y * GRID, 0.85, self.engine.delta_time * 10 )
         self.engine.view_pos.fn( lambda a: round( a, 2 ) )
 
     # Actions to perform every frame if game is unpaused
@@ -67,8 +67,6 @@ class Player ( Entity ):
                 self.vel.x += PLAYER_HSPEED_BOOST
             elif self.is_on_block() and self.engine.get_key( BINDS[ 'move_left' ] ):
                 self.vel.x -= PLAYER_HSPEED_BOOST
-
-        self.vel.y += GRAVITY * self.engine.delta_time
 
         # Abilities
         if ( self.engine.get_key( BINDS[ 'attack' ], 1 ) ):

@@ -4,6 +4,7 @@ from pygame.locals import RLEACCEL
 
 from .game_object import *
 from .vector import *
+from .bitmap_font import *
 
 # Abstracts most of the Pygame stuff away
 class Engine:
@@ -57,6 +58,7 @@ class Engine:
         self.__keys_up = []
         self.__keys = pygame.key.get_pressed()
         self.__fonts = {}
+        self.__bitmap_fonts = {}
         self.__zoom_buffer = {}
 
         # Goto a room
@@ -247,11 +249,18 @@ class Engine:
     from ._engine_draw import draw_surface
     from ._engine_draw import draw_sprite
     from ._engine_draw import draw_text
+    from ._engine_draw import draw_text_bitmap
 
     # Creates a font under the name 'name:size'
+    # Loads it from an external .ttf or .otf file
     def create_font( self, filepath, name, size ):
 
         self.__fonts[ f'{ name }:{ size }' ] = pygame.font.Font( self.get_path( filepath ), size )
+
+    # Creates a bitmap font from a .PNG
+    def create_bitmap_font( self, filepath, name, space_width = None ):
+
+        self.__bitmap_fonts[ name ] = Bitmap_Font( self.get_path( filepath ), space_width = space_width )
 
     # Sound methods
     from ._engine_mixer import play_sound

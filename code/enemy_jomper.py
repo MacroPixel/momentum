@@ -13,9 +13,6 @@ class Jomper ( Enemy ):
         if ( self.engine.get_instance( 'controller' ).pause_level >= PAUSE_NORMAL ):
             return
 
-        # Vertical movement (gravity only)
-        self.vel.y += GRAVITY * self.engine.delta_time
-
         # Actually move
         Entity.entity_update( self, iterations = 1 )
 

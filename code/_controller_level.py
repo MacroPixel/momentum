@@ -146,10 +146,14 @@ class LevelController():
         bound_1 = self.__engine.view_pos.c().fn( lambda a: round( a / GRID / C_GRID ) ).s( RENDER_BOUNDS )
         bound_2 = self.__engine.view_pos.c().fn( lambda a: round( a / GRID / C_GRID ) ).a( RENDER_BOUNDS )
 
+        # Iterate through every chunk within the bounds
+        # All positions are stored in a list so chunk unloading can be performed
+        chunk_list = []
         for xx in range( bound_1.x, bound_2.x + 1 ):
             for yy in range( bound_1.y, bound_2.y + 1 ):
 
                 chunk_pos = V2( xx, yy )
+                chunk_list.append( chunk_pos )
 
                 # Don't bother if the chunk has no data within it
                 if ( chunk_pos not in self.__chunks ):
@@ -158,6 +162,12 @@ class LevelController():
                 # Otherwise, load the chunk if it's unloaded
                 if ( chunk_pos not in self.__loaded_chunks ):
                     self.load_chunk( chunk_pos )
+
+        # Unload any chunks that aren't within the bounds
+        for chunk_pos in self.__loaded_chunks:
+
+            if ( chunk_pos not in chunk_list ):
+                self.unload_chunk( chunk_pos )
 
     # Loading a chunk involves spawning enemies
     # and creating a surface buffer for fast drawing
@@ -179,6 +189,14 @@ class LevelController():
 
         # Create the surface buffer
         self.__c_block.create_buffer( chunk_pos )
+
+    # Undoes chunk loading
+    def unload_chunk( self, chunk_pos ):
+
+        self.__loaded_chunks.remove( chunk_pos )
+
+        # Delete the surface buffer
+        self.__c_block.delete_buffer( chunk_pos )
             
     # Only responsible for drawing blocks
     # Since enemies are their own objects, they're capable of drawing themselves

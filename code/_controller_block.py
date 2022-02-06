@@ -44,6 +44,11 @@ class BlockController():
                 if ( self.level_controller.is_block( block_pos ) ):
                     surf.blit( self.render_block( block_pos ), ( xx * GRID, yy * GRID ) )
 
+    # Deletes a surface when it's no longer needed
+    def delete_buffer( self, chunk_pos ):
+
+        del self.__chunk_buffers[ chunk_pos ]
+
     # Returns either None or a surface representing a block sprite
     def render_block( self, block_pos ):
 
