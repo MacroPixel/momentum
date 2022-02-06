@@ -1,21 +1,22 @@
 import os
 from pygame.locals import *
 
-# Block IDs
-B_NULL = 0
-B_DEFAULT = 1
-B_GOOP = 2
-B_LEAF = 3
-B_WOOD = 4
-B_LAVA = 5
-B_CLOUD = 6
-B_BOUNCE = 7
-B_SPRING = 8
-B_TOTAL = 9
+# Internal names of each block
+# Every other block array uses the order of this list
+# They cannot share the name of an enemy
+B_STRINGS = [
+    'default',
+    'goop',
+    'leaf',
+    'wood',
+    'lava',
+    'cloud',
+    'bounce',
+    'spring'
+]
 
 # Block textures (listed in order of ID)
 B_TEXTURES = [
-    None,
     'block_default',
     'block_goop',
     'block_leaf',
@@ -28,7 +29,6 @@ B_TEXTURES = [
 
 # The color of each block when being loaded in from a PNG
 B_COLORS = [
-    None,
     ( 127, 127, 127, 255 ),
     ( 255, 127, 255, 255 ),
     ( 0, 0, 0, 255 ),
@@ -46,7 +46,6 @@ BDM_DEF_REPLACE = 1
 BDM_SINGLE_OVERLAY = 2
 
 B_DRAW_MODES = [
-    None,
     BDM_SINGLE_OVERLAY,
     BDM_DEF_REPLACE,
     BDM_DEF_OVERLAY,
@@ -57,24 +56,42 @@ B_DRAW_MODES = [
     BDM_SINGLE_OVERLAY
 ]
 
-# Internal names of each block
-B_STRINGS = [
-    None,
-    'default',
-    'goop',
-    'leaf',
-    'wood',
-    'lava',
-    'cloud',
-    'bounce',
-    'spring'
+# Keys are blocks that allow bouncing
+# Values are the bounce factor
+B_BOUNCE = {
+    'bounce': 0.7
+}
+
+# Internal names of each enemy
+# Every other block array uses the order of this list
+# They cannot share the name of an enemy
+ENEMY_STRINGS = [
+    'jomper'
 ]
 
-# Blocks that cause bouncing
-B_BOUNCE = [
-    'bounce'
+# The color of each enemy when being loaded in from a PNG
+ENEMY_COLORS = [
+    ( 255, 63, 255 )
 ]
-BOUNCE_FACTOR = 0.7
+
+# A string representation of each enemy class
+ENEMY_CLASSES = [
+    'Jomper'
+]
+
+# Object arrays use the block and enemy arrays
+# The blocks are listed first, and then the enemies
+
+# Internal names of each object
+O_STRINGS = B_STRINGS + ENEMY_STRINGS
+
+# The color of each object when being loaded in from a PNG
+O_COLORS = B_COLORS + ENEMY_COLORS
+
+# Different UI levels
+UI_LEVEL = 0
+UI_PAUSE = 1
+UI_DEAD = 2
 
 # The size of a block grid/chunk grid space
 GRID = 16
@@ -94,7 +111,7 @@ GRAVITY = 32
 # Player movement constants
 PLAYER_HSPEED = 18
 PLAYER_HSPEED_AIR_FACTOR = 0.2
-PLAYER_HSPEED_BOOST = 1
+PLAYER_HSPEED_BOOST = 3
 PLAYER_HSPEED_ATTACK_FACTOR = 0.4
 PLAYER_FRICTION = 20000
 PLAYER_JUMP_POWER = 19

@@ -19,6 +19,10 @@ class Menu_Controller ( Game_Object ):
         if ( self.engine.get_key( pygame.K_SPACE, 1 ) ):
             self.engine.load_room( 'main' )
 
+        # Quit if escape is pressed
+        if ( self.engine.get_key( pygame.K_ESCAPE, 1 ) ):
+            self.engine.close_app()
+
     # Draw the "press space" text
     def draw( self ):
 

@@ -76,7 +76,7 @@ class utils:
         # Defaults to canceling velocity if nothing else is mentioned
         for xy in 'xy': # Doing it this way reduces boilerplate code
 
-            if eval( f'{xy}_push_block' ):
+            if eval( f'{xy}_push_block' ) is not None:
 
                 # Execute the custom function
                 if eval( f'{xy}_push_func' ):
@@ -109,11 +109,11 @@ class utils:
             if ( is_x_axis ):
                 direction = -1 if pos.x < block_pos.x else 1
                 pos.x = block_pos.x + direction * ( 1 + hitbox.x ) / 2
-                return controller.get_block_type( block_pos )
+                return controller.get_object_type( block_pos )
             else:
                 direction = -1 if pos.y < block_pos.y else 1
                 pos.y = block_pos.y + direction * ( 1 + hitbox.y ) / 2
-                return controller.get_block_type( block_pos )
+                return controller.get_object_type( block_pos )
         return None
 
     # Returns a list of the vectors of any blocks the position is inside of
@@ -129,3 +129,46 @@ class utils:
             for yy in range( int( floor( bound_1.y ) ), int( ceil( bound_2.y ) ) ):    
                 output.append( V2( xx, yy ) )
         return output
+
+    # Converts chunk coords to object coords
+    # Requires the chunk coords and the relative object coords
+    @staticmethod
+    def chunk_pos_to_block( chunk_pos, relative_pos ):
+
+        return chunk_pos.c().m( C_GRID ).a( relative_pos )
+
+    # Converts object coords to chunk coords
+    # Returns the chunk coords and the relative object coords
+    @staticmethod
+    def block_pos_to_chunk( obj_pos ):
+
+        chunk_pos = obj_pos.c().fn( lambda a: a // C_GRID )
+        relative_pos = obj_pos.c().fn( lambda a: a % C_GRID )
+        return ( chunk_pos, relative_pos )
+
+    # Get an ID given a string
+    @staticmethod
+    def b_id( string ): # Block
+        return B_STRINGS.index( string )
+    @staticmethod
+    def e_id( string ): # Enemy
+        return ENEMY_STRINGS.index( string )
+    @staticmethod
+    def o_id( string ): # Object
+        return O_STRINGS.index( string )
+
+    # Checks and converts a object ID to a block ID
+    def obj_id_to_block( obj_id ):
+
+        if obj_id < len( B_STRINGS ):
+            return obj_id
+        else:
+            return None
+
+    # Checks and converts a object ID to a enemy ID
+    def obj_id_to_enemy( enemy_id ):
+
+        if ( len( B_STRINGS ) <= enemy_id < len( O_STRINGS ) ):
+            return enemy_id - len( B_STRINGS )
+        else:
+            return None

@@ -78,3 +78,16 @@ class V2:
   def c( self ):
     c = V2( self.x, self.y )
     return c
+
+  # Return a string
+  def __str__( self ):
+    return f'V2: ( { self.x }, { self.y } )'
+
+  # Allows using as key in dictionary
+  # Simply hashes a tuple representation of the vector
+  def __hash__( self ):
+    return hash( ( self.x, self.y ) )
+
+  # Compares two vectors
+  def __eq__( self, other ):
+    return self.x == other.x and self.y == other.y

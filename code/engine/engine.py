@@ -66,8 +66,8 @@ class Engine:
     # Enter the main loop
     def run( self ):
 
-        running = True
-        while running:
+        self.__is_running = True
+        while self.__is_running:
 
             # Reset necessary variables
             self._delta_time = min( 0.1, self.__clock.tick() / 1000 )
@@ -80,7 +80,7 @@ class Engine:
 
                 # Quit the game
                 if event.type == pygame.QUIT:
-                    running = False
+                    self.__is_running = False
 
                 # Log keypresses
                 elif event.type == pygame.KEYDOWN:
@@ -255,6 +255,11 @@ class Engine:
 
         # Executes inputted function
         self.__room_dict[ room_function ]( self )
+
+    # Closes the game
+    def close_app( self ):
+
+        self.__is_running = False
 
     # Returns a value from a dictionary if found,
     # otherwise returns the default value passed into the function

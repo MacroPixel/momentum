@@ -40,9 +40,9 @@ def draw_surface( self, surf, pos, is_ui, scale = None, flip = None, anchor = V2
         self._Engine__zoom_buffer[ surf_hash ] = surf
 
     # Check each transformation argument to see if sprite needs to be modified
-    if ( scale != None ):
+    if ( scale is not None ):
         surf = pygame.transform.scale( surf, V2( surf.get_size() ).m( scale ).l() )
-    if ( flip != None ):
+    if ( flip is not None ):
         surf = pygame.transform.flip( surf, flip.x == -1, flip.y == -1 )
 
     # Shift the position based off of the anchor

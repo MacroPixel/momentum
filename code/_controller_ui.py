@@ -3,28 +3,42 @@ from basic_imports import *
 # Handles UI drawing & responses
 class UIController():
 
-    def __init__( self ):
+    def __init__( self, controller ):
 
-        # State represents the UI menu
-        self.__state = [ 1 ]
+        # Parent objects
+        self._controller = controller
+        self.__engine = self.controller.engine
 
-    def draw( self, engine, controller ):
+    def draw( self ):
 
-        if self.__state[0] == 1:
+        # Normal level UI
+        if ( self.controller.pause_level == PAUSE_NONE ):
 
             # Pause text
-            engine.draw_text( '[ESC] Pause', 'main:20', V2( 20, 20 ), True )
+            self.__engine.draw_text( '[ESC] Pause', 'main:20', V2( 20, 20 ), True )
 
             # Death text
-            if ( not controller.engine.get_instance( 'player' ).is_alive ):
-                engine.draw_text( 'You Died', 'main:50', engine.screen_size.c().d( 2 ), True, ( 255, 100, 100 ), anchor = V2( 0.5, 0.5 ) )
-
+            if ( not self.__engine.get_instance( 'player' ).is_alive ):
+                self.__engine.draw_text( 'You Died', 'main:50', self.__engine.screen_size.c().d( 2 ), True, ( 255, 100, 100 ), anchor = V2( 0.5, 0.5 ) )
 
             # Debug text
-            if controller.debug:
+            if self.controller.debug:
 
-                engine.draw_text( 'Debug', 'main:12', engine.screen_size.c().s( 10, 10 ), True, ( 0, 100, 255 ), anchor = V2( 1, 1 ) )
+                self.__engine.draw_text( 'Debug', 'main:12', self.__engine.screen_size.c().s( 10, 10 ), True, ( 0, 100, 255 ), anchor = V2( 1, 1 ) )
 
                 # Advanced info
-                if controller.advanced_info:
-                  engine.draw_text( f'FPS: { floor( engine.fps_current ) }', 'main:12', engine.screen_size.c().m( 1, 0 ).a( -10, 10 ), True, anchor = V2( 1, 0 ) )
+                if self.controller.advanced_info:
+                  self.__engine.draw_text( f'FPS: { floor( self.__engine.fps_current ) }', 'main:12', self.__engine.screen_size.c().m( 1, 0 ).a( -10, 10 ), True, anchor = V2( 1, 0 ) )
+
+        # Pause menu UI
+        elif ( self.controller.pause_level == PAUSE_NORMAL ):
+
+            # Resume text
+            self.__engine.draw_text( '[ESC] Resume', 'main:20', V2( 20, 20 ), True )
+
+            # Quit text
+            self.__engine.draw_text( '[Q] Quit', 'main:20', V2( 20, 50 ), True )
+
+    @property
+    def controller( self ):
+        return self._controller
