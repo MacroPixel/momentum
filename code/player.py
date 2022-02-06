@@ -1,27 +1,43 @@
 from basic_imports import *
+from entity import *
 
 # It's you :D
-class Player ( Game_Object ):
+class Player ( Entity ):
 
     def __init__( self, engine ):
 
+        super().__init__( engine, 'player', V2(), V2(), V2( PLAYER_HITBOX ) )
+        self.entity_destroy_on_death = False
+
         # Store image & physics details
-        super().__init__( engine, 'player', layer = 1 )
         self._image_dir = 1
         self._image_walk = 0
         self._image_bob = 0
         self._image_attack = 0
-        self._pos = V2()
-        self._vel = V2()
 
         # Other variables
         self._is_alive = True
 
+        # Debug variables
+        self._is_invulnerable = False
+
     def update( self ):
 
-        # Don't bother if game is paused
-        if self.engine.get_instance( 'controller' ).pause_level >= PAUSE_NORMAL:
+        # Cancel if game is paused
+        if ( self.engine.get_instance( 'controller' ).pause_level >= PAUSE_NORMAL ):
             return
+
+        # Only move if player is alive
+        if ( self.is_alive ):
+            self.update_normal()
+
+        # Update view regardless
+        self.engine.view_pos.x = utils.lerp( self.engine.view_pos.x, self.pos.x * GRID, 0.9, self.engine.delta_time * 10 )
+        self.engine.view_pos.y = utils.lerp( self.engine.view_pos.y, self.pos.y * GRID, 0.9, self.engine.delta_time * 10 )
+        self.engine.view_pos.fn( lambda a: round( a, 2 ) )
+
+    # Actions to perform every frame if game is unpaused
+    def update_normal( self ):
         
         # Horizontal momentum
         # PLAYER_HSPEED defines the base speed
@@ -88,10 +104,7 @@ class Player ( Game_Object ):
         # This is done with multiple iterations to make it more precise
         vel_factor = V2( 1, 1 )
 
-        utils.move_solid( self.pos, self.vel, V2( PLAYER_HITBOX ), self.engine )
-
-        # Update view
-        self.engine.view_pos = self.pos.c().m( GRID )
+        Entity.entity_update( self )
 
     # ABILITIES
 
@@ -114,7 +127,10 @@ class Player ( Game_Object ):
     # Creates an object that displays UI and eventually restarts the level
     def die( self ):
 
-        self._is_alive = False
+        # Only die if vulnerable
+        if ( not self.is_invulnerable ):
+            self._is_alive = False
+            super().die()
 
     # Draw self at current position
     # Leverages flip operations & sub-images
@@ -122,6 +138,10 @@ class Player ( Game_Object ):
     def draw( self ):
 
         # TODO: fit hitbox precision error leading to player being drawn in ground
+
+        # Don't draw unless alive
+        if ( not self.is_alive ):
+            return
 
         hitbox_offset = V2( 0, ( 1 - PLAYER_HITBOX[1] ) / 2 )
         draw_pos = self.pos.c().s( hitbox_offset ).m( GRID )
@@ -133,14 +153,17 @@ class Player ( Game_Object ):
         else:
             draw_image = V2( 1, floor( self.image_walk ) % 8 )
 
-        self.engine.draw_sprite( 'player', draw_image, draw_pos, False, flip = V2( self.image_dir, 1 ) )
+        self.engine.draw_sprite( 'player', draw_image, draw_pos.c(), False, flip = V2( self.image_dir, 1 ) )
+
+        # Store the sprite for usage in ragdoll
+        self.update_ragdoll( 'player', draw_pos.c().d( GRID ), self.image_dir == -1 )
 
     # Checks if the player has a block immediately (to a limited degree) below them
     def is_on_block( self ):
 
         controller = self.engine.get_instance( 'controller' )
         for xx in range( floor( self.pos.x + ( 1 - PLAYER_HITBOX[0] ) / 2 + COLLISION_EPSILON ), ceil( self.pos.x + ( 1 + PLAYER_HITBOX[0] ) / 2 - COLLISION_EPSILON ) ):
-            if ( controller.is_block( V2( xx, int( floor( self.pos.y + ( 1 + PLAYER_HITBOX[1] ) / 2 ) ) ) ) ):
+            if ( controller.is_solid( V2( xx, int( floor( self.pos.y + ( 1 + PLAYER_HITBOX[1] ) / 2 ) ) ) ) ):
                 return True
         return False
 
@@ -150,24 +173,6 @@ class Player ( Game_Object ):
         self.pos = V2( 0, 0 )
         self.vel = V2( 0, 0 )
         self._is_alive = True
-
-    # Getters/setters
-    @property
-    def pos( self ):
-        return self._pos
-
-    @property
-    def vel( self ):
-        return self._vel
-
-    # Position & velocity can only be set to new vectors
-    @pos.setter
-    def pos( self, value ):
-        self._pos = V2( value )
-
-    @vel.setter
-    def vel( self, value ):
-        self._vel = V2( value )
 
     @property
     def image_dir( self ):
@@ -188,3 +193,7 @@ class Player ( Game_Object ):
     @property
     def is_alive( self ):
         return self._is_alive
+
+    @property
+    def is_invulnerable( self ):
+        return self._is_invulnerable

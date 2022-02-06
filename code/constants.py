@@ -1,6 +1,12 @@
 import os
 from pygame.locals import *
 
+# Layers for draw order
+# Smaller layer = further back
+LAYER_ENTITY = 2
+LAYER_RAGDOLL = 3
+LAYER_UI = 3
+
 # Internal names of each block
 # Every other block array uses the order of this list
 # They cannot share the name of an enemy
@@ -12,7 +18,8 @@ B_STRINGS = [
     'lava',
     'cloud',
     'bounce',
-    'spring'
+    'spring',
+    'spikes'
 ]
 
 # Block textures (listed in order of ID)
@@ -24,7 +31,8 @@ B_TEXTURES = [
     'block_lava',
     'block_cloud',
     'block_bounce',
-    'block_spring'
+    'block_spring',
+    'block_saw'
 ]
 
 # The color of each block when being loaded in from a PNG
@@ -36,24 +44,37 @@ B_COLORS = [
     ( 127, 0, 0, 255 ),
     ( 191, 255, 255, 255 ),
     ( 255, 0, 255, 255 ),
-    ( 127, 255, 127, 255 )
+    ( 127, 255, 127, 255 ),
+    ( 255, 127, 127, 255 )
 ]
 
 # Determines how the sprite of a block type conencts
 # to those of other blocks with the same type
-BDM_DEF_OVERLAY = 0
-BDM_DEF_REPLACE = 1
-BDM_SINGLE_OVERLAY = 2
+BDM_SINGLE = 0
+BDM_SINGLE_OVERLAY = 1
+BDM_3VAR_OVERLAY = 2
+BDM_3VAR_REPLACE = 3
 
 B_DRAW_MODES = [
     BDM_SINGLE_OVERLAY,
-    BDM_DEF_REPLACE,
-    BDM_DEF_OVERLAY,
-    BDM_DEF_OVERLAY,
-    BDM_DEF_OVERLAY,
-    BDM_DEF_REPLACE,
+    BDM_3VAR_REPLACE,
+    BDM_3VAR_OVERLAY,
+    BDM_3VAR_OVERLAY,
+    BDM_3VAR_OVERLAY,
+    BDM_3VAR_REPLACE,
     BDM_SINGLE_OVERLAY,
-    BDM_SINGLE_OVERLAY
+    BDM_SINGLE_OVERLAY,
+    BDM_SINGLE
+]
+
+# List of blocks that don't connect to blocks of different types
+B_NO_CONNECT = [
+    'spikes'
+]
+
+# List of blocks that entities can go through
+B_PASSABLE = [
+    'spikes'
 ]
 
 # Keys are blocks that allow bouncing
@@ -61,6 +82,11 @@ B_DRAW_MODES = [
 B_BOUNCE = {
     'bounce': 0.7
 }
+
+# List of blocks that kill entities
+B_HAZARD = [
+    'spikes'
+]
 
 # Internal names of each enemy
 # Every other block array uses the order of this list

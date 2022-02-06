@@ -12,6 +12,8 @@ class Game_Object:
         self._layer = layer
         self._object_id = object_id
         self._engine = engine
+        self.__tags = []
+        self.__exists = True
 
         # Add the GameObject to the Engine
         self.engine.add_instance( self )
@@ -19,7 +21,9 @@ class Game_Object:
     # Remove from lists
     def delete( self ):
 
-        self.engine.delete_instance( self )
+        if self.__exists:
+            self.engine.delete_instance( self )
+        self.__exists = False
 
     # Called once a frame
     def update( self ):

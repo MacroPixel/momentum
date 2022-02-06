@@ -1,6 +1,7 @@
 from basic_imports import *
 from _controller_block import *
 from enemy_list import *
+import random
 
 # Contained within/controlled by Controller
 # Handles level loading, blocks, and enemies
@@ -133,7 +134,7 @@ class LevelController():
             # Write all the block strings
             for block_pos in chunks[ chunk ]:
 
-                output_string = O_STRINGS[ chunks[ chunk ][ block_pos ] ]
+                output_string = utils.o_string( chunks[ chunk ][ block_pos ] )
                 output_pos = utils.vec_to_str( block_pos ).replace( ':', ' ' )
                 file.write( f'{ output_string } { output_pos }\n' )
 
@@ -198,7 +199,7 @@ class LevelController():
 
         # Do any necessary block setup
         if ( block_id is not None ):
-            if ( B_DRAW_MODES[ block_id ] in [ BDM_DEF_OVERLAY, BDM_DEF_REPLACE ] ):
+            if ( B_DRAW_MODES[ block_id ] in [ BDM_3VAR_OVERLAY, BDM_3VAR_REPLACE ] ):
                 self.__object_meta[ pos ][ 'var' ] = random.randint( 0, 2 )
             else:
                 self.__object_meta[ pos ][ 'var' ] = 0

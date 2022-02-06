@@ -12,7 +12,7 @@ class Controller( Game_Object ):
     def __init__( self, engine ):
 
         # Initialize GameObject
-        super().__init__( engine, 'controller', layer = 10 )
+        super().__init__( engine, 'controller', layer = LAYER_UI )
 
         # Pause level determines the amount of movement allowed
         self.pause_level = PAUSE_NONE
@@ -45,24 +45,24 @@ class Controller( Game_Object ):
         if ( self.engine.get_key( K_q, 1 ) and self.pause_level == PAUSE_NORMAL ):
             self.engine.load_room( 'frontend' )
 
-        # Restart the game if player is dead
-        if ( self.engine.get_key( K_SPACE, 1 ) and not self.engine.get_instance( 'player' ).is_alive ):
-            self.restart()
+        # Restart the game if player is dead and game is unpaused
+        if ( self.pause_level == PAUSE_NONE and self.engine.get_key( K_SPACE, 1 ) and not self.engine.get_instance( 'player' ).is_alive ):
+            self.goto_checkpoint()
 
         # Debug features
         if self.debug:
             
-            # Restart
+            # Return to checkpoint
             if ( self.engine.get_key( pygame.K_RCTRL, 1 ) ):
-                self.restart()
+                self.goto_checkpoint()
 
             # Rewrite level
             if ( self.engine.get_key( pygame.K_F7, 1 ) ):
                 self.__c_level.rewrite_level()
 
-            # Reload level
+            # Reset level
             if ( self.engine.get_key( pygame.K_F8, 1 ) ):
-                self.__c_level.load_level()
+                self.reset_level()
 
             # Block operation
             if ( self.engine.get_key( pygame.K_BACKQUOTE, 1 ) ):
@@ -72,17 +72,34 @@ class Controller( Game_Object ):
             if ( self.engine.get_key( pygame.K_F5, 1 ) ):
                 self._advanced_info = not self.advanced_info
 
-            # Misc operation
+            # Misc operation 1
             if ( self.engine.get_key( pygame.K_F6, 1 ) ):
-                Jomper( self.engine, self.engine.get_instance( 'player' ).pos.c() )
+                Jomper( self.engine, self.engine.get_instance( 'player' ).pos.c().a( 0.5 ) )
+
+            # Misc operation 2
+            if ( self.engine.get_key( pygame.K_F9, 1 ) ):
+                for enemy in self.engine.get_tagged_instances( 'enemy' ):
+                    enemy.pos = self.engine.get_instance( 'player' ).pos.c()
 
         # Perform sub-class updates
         self.__c_level.update()
 
-    # Reset the player & reload blocks
-    def restart( self ):
+    # Reset the player
+    def goto_checkpoint( self ):
 
         self.engine.get_instance( 'player' ).restart()
+
+    def reset_level( self ):
+
+        # Reset tiles
+        self.__c_level.load_level()
+
+        # Erase all enemies
+        for enemy in [ e for e in self.engine.get_tagged_instances( 'enemy' ) ]:
+            enemy.delete()
+
+        # Reset player
+        self.goto_checkpoint()
 
     # Check whether anything exists at a position
     def is_object( self, pos ):
@@ -105,10 +122,15 @@ class Controller( Game_Object ):
 
         return self.__c_level.get_object_type( pos )
 
+    # Check whether a non-passable block exists at a position
+    def is_solid( self, pos ):
+
+        return self.__c_level.is_block( pos ) and utils.b_string( utils.obj_id_to_block( self.__c_level.get_object_type( pos ) ) ) not in B_PASSABLE
+
     # Performs an operation on the block the player is hovering over
     def block_debug( self, cursor_pos, view ):
 
-        self.__c_level.get_block_type( cursor_pos, view )
+        pass
 
     # Draw blocks/UI
     def draw( self ):

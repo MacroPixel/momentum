@@ -15,7 +15,7 @@ def __to_screen_coord( self, pos ):
 
 # Shortcut for blitting transformed surface onto screen
 # Every other draw function leads to this one
-def draw_surface( self, surf, pos, is_ui, scale = None, flip = None, anchor = V2( 0, 0 ), no_store = False ):
+def draw_surface( self, surf, pos, is_ui, scale = None, flip = None, rotation = None, anchor = V2( 0, 0 ), no_store = False ):
 
     surf_hash = hash( surf )
 
@@ -44,6 +44,8 @@ def draw_surface( self, surf, pos, is_ui, scale = None, flip = None, anchor = V2
         surf = pygame.transform.scale( surf, V2( surf.get_size() ).m( scale ).l() )
     if ( flip is not None ):
         surf = pygame.transform.flip( surf, flip.x == -1, flip.y == -1 )
+    if ( rotation is not None ):
+        surf = pygame.transform.rotozoom( surf, rotation, 1 )
 
     # Shift the position based off of the anchor
     pos.s( anchor.c().m( surf.get_size() ) )
@@ -52,14 +54,14 @@ def draw_surface( self, surf, pos, is_ui, scale = None, flip = None, anchor = V2
     self._Engine__screen.blit( surf, pos.l() )
 
 # Uses pre-defined surface
-def draw_sprite( self, sprite_id, frame, pos, is_ui, scale = None, flip = None, anchor = V2( 0, 0 ), no_store = False ):
+def draw_sprite( self, sprite_id, frame, pos, is_ui, scale = None, flip = None, rotation = None, anchor = V2( 0, 0 ), no_store = False ):
 
     sprite_surf = self._Engine__sprites[ sprite_id ][ frame.x ][ frame.y ]
-    self.draw_surface( sprite_surf, pos, is_ui, scale, flip, anchor )
+    self.draw_surface( sprite_surf, pos, is_ui, scale, flip, rotation, anchor )
 
 # Shortcut for blitting text to the screen
 # Passes the surface into draw_surface instead of drawing it from the function
-def draw_text( self, text, font, pos, is_ui, color = ( 255, 255, 255 ), scale = None, flip = None, anchor = V2( 0, 0 ), no_store = False ):
+def draw_text( self, text, font, pos, is_ui, color = ( 255, 255, 255 ), scale = None, flip = None, rotation = None, anchor = V2( 0, 0 ), no_store = False ):
 
     text_surf = self._Engine__fonts[ font ].render( text, True, color )
-    self.draw_surface( text_surf, pos, is_ui, scale, flip, anchor )
+    self.draw_surface( text_surf, pos, is_ui, scale, flip, rotation, anchor )

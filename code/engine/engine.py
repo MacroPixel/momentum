@@ -47,6 +47,7 @@ class Engine:
         self.__instances = []
         self.__draw_instances = []
         self.__named_instances = {}
+        self.__tagged_instances = {}
 
         # Other variables
         self._delta_time = 0
@@ -117,6 +118,9 @@ class Engine:
             self.__named_instances[ game_object.object_id ] = []
         self.__named_instances[ game_object.object_id ].append( game_object )
 
+        # Tags can be added via "Engine.tag_instance( game_object, tag )"
+        game_object._Game_Object__tags = []
+
         # Insert into proper draw-order-position based on layer
         i = 0
         for i in range( len( self.__draw_instances ) ):
@@ -132,6 +136,31 @@ class Engine:
         self.__instances.remove( game_object )
         self.__draw_instances.remove( game_object )
         self.__named_instances[ game_object.object_id ].remove( game_object )
+
+        for tag in game_object._Game_Object__tags:
+            self.__tagged_instances[ tag ].remove( game_object )
+
+    # Adds a tag, which marks an object's properties, to an game object
+    # Safe to call on objects that already have the tag
+    def tag_instance( self, game_object, tag ):
+
+        # "tagged_instances" stores a tag and all the game objects that have it
+        # This implementation is very similar to __named_instances
+        game_object._Game_Object__tags.append( tag )
+        if tag not in self.__tagged_instances:
+            self.__tagged_instances[ tag ] = []
+        if game_object not in self.__tagged_instances[ tag ]:
+            self.__tagged_instances[ tag ].append( game_object )
+
+    # Removes a tag from an instance
+    # Safe to call on objects that don't have the tag
+    def untag_instance( self, game_object, tag ):
+
+        # "tagged_instances" stores a tag and all the game objects that have it
+        # This implementation is very similar to __named_instances
+        game_object._GameObject__tags.remove( tag )
+        if tag in self.__tagged_instances and game_object in self.__tagged_instances[ tag ]:
+            self.__tagged_instances[ tag ].remove( game_object )
 
     # Gets the state of a key (check of 0 = "is down", 1 = "was pressed", 2 = "was released")
     def get_key( self, key_id, check = 0 ):
@@ -242,8 +271,21 @@ class Engine:
     def get_instances( self, instance_id ):
 
         if ( instance_id not in self.__named_instances or len( self.__named_instances[ instance_id ] ) == 0 ):
-            return None
+            return []
         return self.__named_instances[ instance_id ]
+
+    # Returns one or multiple instances with a tag
+    def get_tagged_instance( self, tag ):
+
+        if ( tag not in self.__tagged_instances or len( self.__tagged_instances[ tag ] ) == 0 ):
+            return None
+        return self.__tagged_instances[ tag ][0]
+
+    def get_tagged_instances( self, tag ):
+
+        if ( tag not in self.__tagged_instances or len( self.__tagged_instances[ tag ] ) == 0 ):
+            return []
+        return self.__tagged_instances[ tag ]
 
     # Loading a room clears all objects and runs a custom function
     # The function is stored in self.__room_dict under a string
@@ -315,3 +357,15 @@ class Engine:
 
         # Change the zoom
         self._view_zoom = V2( value )
+
+    @property
+    def view_bound_min( self ):
+
+        # Return the top-left of the visible screen in pixel non-screen coordinates
+        return self.view_pos.c().s( self.screen_size.d( 2 ).d( self.view_zoom ) )
+
+    @property
+    def view_bound_max( self ):
+
+        # Return the bottom-right of the visible screen in pixel non-screen coordinates
+        return self.view_pos.c().a( self.screen_size.d( 2 ).d( self.view_zoom ) )

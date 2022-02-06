@@ -5,6 +5,13 @@ from math import floor, ceil
 # For miscellaneous functions
 class utils:
 
+    # Linear interpolation
+    # d argument can act as delta time
+    @staticmethod
+    def lerp( a, b, x, d = 1 ):
+
+        return ( b + ( a - b ) * ( ( 1 - x ) ** d ) )
+
     # Checks for a collision between two rectangles defined by their position and dimensions (using AABB, of course)
     @staticmethod
     def collision_check( pos1, pos2, dim1, dim2 ):
@@ -49,87 +56,6 @@ class utils:
         primary_surf.blit( secondary_surf, rect[0:2] )
         return primary_surf
 
-    # Takes the position, velocity, engine, and hitbox of an object
-    # And adds to the position with respect to collisions
-    @staticmethod
-    def move_solid( pos, vel, hitbox, engine, iterations = 5, x_push_func = None, y_push_func = None ):
-
-        # The push functions aren't run until after the iteration is done
-        # This prevents them from being executed more than once
-        # These variables keep track of whether a push has occured along an axis
-        # and which block it was
-        x_push_block = y_push_block = None
-
-        for i in range( iterations ):
-
-            pos.x += vel.x * engine.delta_time / iterations
-            temp_block = utils.__push_out( pos, vel, hitbox, engine, True, x_push_func )
-            if ( temp_block != None ):
-                x_push_block = temp_block
-
-            pos.y += vel.y * engine.delta_time / iterations
-            temp_block = utils.__push_out( pos, vel, hitbox, engine, False, y_push_func )
-            if ( temp_block != None ):
-                y_push_block = temp_block
-
-        # Perform the aforementioned push functions
-        # Defaults to canceling velocity if nothing else is mentioned
-        for xy in 'xy': # Doing it this way reduces boilerplate code
-
-            if eval( f'{xy}_push_block' ) is not None:
-
-                # Execute the custom function
-                if eval( f'{xy}_push_func' ):
-                    exec( f'{xy}_push_func()' )
-                
-                # Cancel the velocity if it's a normal block
-                block_type = B_STRINGS[ eval( f'{xy}_push_block' ) ]
-                if ( block_type not in B_BOUNCE ):
-                    exec( f'vel.{xy} = 0' )
-                elif ( block_type in B_BOUNCE ):
-                    exec( f'vel.{xy} *= -BOUNCE_FACTOR' )
-
-    # Push the player out of any adjacent blocks
-    # Returns whether a push-put occured
-    @staticmethod
-    def __push_out( pos, vel, hitbox, engine, is_x_axis, push_func ):
-
-        controller = engine.get_instance( 'controller' )
-        adjacent_blocks = utils.__get_adjacent_blocks( pos, hitbox )
-
-        # For every grid space the position is inside of
-        for block_pos in adjacent_blocks:
-
-            # Only continue if a block occupies this grid space
-            if ( not controller.is_block( block_pos ) ):
-                continue
-
-            # Push out based on their position within the block
-            # The is_x_axis argument determines the axis it's pushed along
-            if ( is_x_axis ):
-                direction = -1 if pos.x < block_pos.x else 1
-                pos.x = block_pos.x + direction * ( 1 + hitbox.x ) / 2
-                return controller.get_object_type( block_pos )
-            else:
-                direction = -1 if pos.y < block_pos.y else 1
-                pos.y = block_pos.y + direction * ( 1 + hitbox.y ) / 2
-                return controller.get_object_type( block_pos )
-        return None
-
-    # Returns a list of the vectors of any blocks the position is inside of
-    @staticmethod
-    def __get_adjacent_blocks( pos, hitbox ):
-
-        output = []
-
-        bound_1 = pos.c().a( hitbox.c().m( -1 ).a( 1 ).d( 2 ) ).a( COLLISION_EPSILON )
-        bound_2 = pos.c().a( hitbox.c().a( 1 ).d( 2 ) ).s( COLLISION_EPSILON )
-
-        for xx in range( int( floor( bound_1.x ) ), int( ceil( bound_2.x ) ) ):
-            for yy in range( int( floor( bound_1.y ) ), int( ceil( bound_2.y ) ) ):    
-                output.append( V2( xx, yy ) )
-        return output
-
     # Converts chunk coords to object coords
     # Requires the chunk coords and the relative object coords
     @staticmethod
@@ -148,14 +74,25 @@ class utils:
 
     # Get an ID given a string
     @staticmethod
+    def o_id( string ): # Object
+        return O_STRINGS.index( string )
+    @staticmethod
     def b_id( string ): # Block
         return B_STRINGS.index( string )
     @staticmethod
     def e_id( string ): # Enemy
         return ENEMY_STRINGS.index( string )
+
+    # Get a string given an ID
     @staticmethod
-    def o_id( string ): # Object
-        return O_STRINGS.index( string )
+    def o_string( o_id ):
+        return O_STRINGS[ o_id ]
+    @staticmethod
+    def b_string( b_id ):
+        return B_STRINGS[ b_id ]
+    @staticmethod
+    def e_string( e_id ):
+        return E_STRINGS[ e_id ]
 
     # Checks and converts a object ID to a block ID
     def obj_id_to_block( obj_id ):

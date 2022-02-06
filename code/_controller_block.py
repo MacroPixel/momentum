@@ -67,7 +67,28 @@ class BlockController():
         # (0 = right, 2 = up, 4 = left, 6 = down)
         # (1 = up/right, 3 = up/left, you get the idea)
         for i in range( 0, 8 ):
-            neighbors[ i ] = self.level_controller.is_block( block_pos.c().a( offsets[i] ) )
+            
+            # Default to not connecting
+            neighbors[ i ] = False
+            other_pos = block_pos.c().a( offsets[i] )
+
+            # Exit if no block
+            if ( not self.level_controller.is_block( other_pos ) ):
+                continue
+            other_id = utils.obj_id_to_block( self.level_controller.get_object_type( other_pos ) )
+
+            # Automatically connect if both block types are the same
+            if ( block_id == other_id ):
+                neighbors[ i ] = True
+                continue
+            
+            # Connect if both types are connectable
+            if ( utils.b_string( block_id ) not in B_NO_CONNECT and utils.b_string( other_id ) not in B_NO_CONNECT ):
+                neighbors[ i ] = True
+                continue
+
+            # Otherwise, don't connect
+            # (Just do nothing since neighbors[i] is already false)
 
         # Draw corners/line intersections
         draw_mode = B_DRAW_MODES[ block_id ]
@@ -77,31 +98,31 @@ class BlockController():
 
             if ( corner_neighbors == [ False, False, False ] or corner_neighbors == [ False, True, False ] ):
 
-                if draw_mode in [ BDM_SINGLE_OVERLAY, BDM_DEF_OVERLAY ]:
+                if draw_mode in [ BDM_SINGLE_OVERLAY, BDM_3VAR_OVERLAY ]:
 
                     corner_surf = self.__engine.get_sprite( sprite_id, V2( 0, 3 ) ).copy()
                     corner_surf = pygame.transform.rotate( corner_surf, ( i + 6 ) * 45 )
                     surf.blit( corner_surf, ( 0, 0 ) )
 
-                elif draw_mode == BDM_DEF_REPLACE:
+                elif draw_mode == BDM_3VAR_REPLACE:
 
                     corner_surf = self.__engine.get_sprite( sprite_id, V2( variant, 4 ) ).copy()
                     rect = ( regions[ i // 2 ][0], regions[ i // 2 ][1], GRID / 2, GRID / 2 )
-                    surf = stitch_sprites( surf, corner_surf, rect )
+                    surf = utils.stitch_sprites( surf, corner_surf, rect )
 
             elif ( corner_neighbors == [ True, False, True ] ):
 
-                if draw_mode in [ BDM_SINGLE_OVERLAY, BDM_DEF_OVERLAY ]:
+                if draw_mode in [ BDM_SINGLE_OVERLAY, BDM_3VAR_OVERLAY ]:
 
                     corner_surf = self.__engine.get_sprite( sprite_id, V2( 0, 1 ) ).copy()
                     corner_surf = pygame.transform.rotate( corner_surf, ( i + 6 ) * 45 )
                     surf.blit( corner_surf, ( 0, 0 ) )
 
-                elif draw_mode == BDM_DEF_REPLACE:
+                elif draw_mode == BDM_3VAR_REPLACE:
 
                     corner_surf = self.__engine.get_sprite( sprite_id, V2( variant, 1 ) ).copy()
                     rect = ( regions[ i // 2 ][0], regions[ i // 2 ][1], GRID / 2, GRID / 2 )
-                    surf = stitch_sprites( surf, corner_surf, rect )
+                    surf = utils.stitch_sprites( surf, corner_surf, rect )
 
         # Draw outlines
         for i in range( 0, 8, 2 ):
@@ -110,7 +131,7 @@ class BlockController():
 
             if ( right_neighbors[0] != right_neighbors[1] ):
 
-                if draw_mode in [ BDM_SINGLE_OVERLAY, BDM_DEF_OVERLAY ]:
+                if draw_mode in [ BDM_SINGLE_OVERLAY, BDM_3VAR_OVERLAY ]:
 
                     line_surf = self.__engine.get_sprite( sprite_id, V2( 0, 2 ) ).copy()
                     line_surf = pygame.transform.flip( line_surf, False, right_neighbors[1] )
@@ -120,12 +141,12 @@ class BlockController():
                         line_surf = pygame.transform.rotate( line_surf, ( i + 4 ) * 45 )
                     surf.blit( line_surf, ( 0, 0 ) )
 
-                elif draw_mode == BDM_DEF_REPLACE:
+                elif draw_mode == BDM_3VAR_REPLACE:
 
                     subimage = 2 if ( ( i % 4 == 0 ) != right_neighbors[0] ) else 3
                     line_surf = self.__engine.get_sprite( sprite_id, V2( 0, subimage ) ).copy()
                     rect = ( regions[ ( i // 2 ) % 4 ][0], regions[ ( i // 2 ) % 4 ][1], GRID / 2, GRID / 2 )
-                    surf = stitch_sprites( surf, line_surf, rect )
+                    surf = utils.stitch_sprites( surf, line_surf, rect )
 
         return surf
 

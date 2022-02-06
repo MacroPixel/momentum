@@ -8,3 +8,4 @@ block_lava = volcano_block_sheet.png 4:3
 block_cloud = cloud_block_sheet.png 5:3
 block_spring = spring_block_sheet.png 4:1
 block_bounce = bounce_block_sheet.png 4:1
+block_saw = temp_spike.png 1:1
