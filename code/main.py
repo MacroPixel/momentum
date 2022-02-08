@@ -1,10 +1,10 @@
-import os
-os.environ[ 'PYGAME_HIDE_SUPPORT_PROMPT' ] = ''
+from engine.engine import *
+
 import pygame
+import os
 from math import floor, ceil, sin, cos
 import random
 
-from engine.engine import *
 from constants import *
 from rooms import *
 

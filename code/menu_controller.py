@@ -24,4 +24,3 @@ class Menu_Controller ( Game_Object ):
     def draw( self ):
 
         self.engine.draw_text_bitmap( 'PRESS SPACE', 'main', 4, self.engine.screen_size.d( 2 ), True, anchor = V2( 0.5, 0.5 ) )
-        self.engine.draw_text_bitmap( 'the quick brown fox jumps over the lazy dog', 'main', 2, self.engine.screen_size.d( 2 ).a( 0, 150 ), True, anchor = V2( 0.5, 0.5 ) )

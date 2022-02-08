@@ -3,8 +3,9 @@ from pygame.locals import *
 
 # Layers for draw order
 # Smaller layer = further back
-LAYER_ENTITY = 2
-LAYER_RAGDOLL = 3
+LAYER_BLOCK = 0
+LAYER_ENTITY = 1
+LAYER_RAGDOLL = 2
 LAYER_UI = 3
 
 # Internal names of each block
@@ -112,7 +113,10 @@ ENEMY_CLASSES = [
 O_STRINGS = B_STRINGS + ENEMY_STRINGS
 
 # The color of each object when being loaded in from a PNG
+# Allows the colors of other special objects that don't
+# fall into either category (e.g. checkpoints)
 O_COLORS = B_COLORS + ENEMY_COLORS
+O_COLOR_CHECKPOINT = ( 63, 255, 191 )
 
 # Different UI levels
 UI_LEVEL = 0

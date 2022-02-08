@@ -18,8 +18,7 @@ class Entity( Game_Object ):
         self.__ragdoll_pos = None
         self.__ragdoll_anchor = V2( 0.5, 0.5 )
 
-        # These variables determine how collisions and other
-        # Entity-dependent stuff works for this instance
+        # Allow customization of entity behavior
         self.entity_dies_to_spikes = True # Whether the enemy can survive spikes
         self.entity_destroy_on_death = True # Whether the enemy's GameObject is destroyed upon death
         self.entity_gravity_multiplier = 1 # Can be used to alter or disable gravity
@@ -147,7 +146,7 @@ class Entity( Game_Object ):
     def update_ragdoll( self, surf, pos, flip = False, anchor = None ):
 
         if isinstance( surf, str ):
-            surf = self.engine.get_sprite( surf, V2( 0, 0 ) )
+            surf = self.engine.get_sprite( surf, V2( 0, 0 ) ).copy()
 
         if flip:
             surf = pygame.transform.flip( surf, True, False )

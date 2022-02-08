@@ -13,7 +13,7 @@ class Ragdoll( Game_Object ):
         self._pos = pos.c().a( anchor )
 
         # Keeps the velocity of parent object, but has a limit of 15
-        self._vel = vel.c().fn( lambda a: min( abs( a ), 15 ) * ( -1 if a < 0 else 1 ) )
+        self._vel = vel.c().fn( lambda a: min( abs( a ), 15 ) * ( -1 if a < 0 else 1 ) ).s( 0, 1 )
 
         # Rotation speed matches the direction of x-velocity
         # Its magnitude is proportional to max( abs( x_vel ), abs( y_vel ) )

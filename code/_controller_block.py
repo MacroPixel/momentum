@@ -26,14 +26,14 @@ class BlockController():
 
         # Loop through every loaded chunk and draw it
         for chunk_pos in self.__chunk_buffers:
-            self.__engine.draw_surface( self.__chunk_buffers[ chunk_pos ], chunk_pos.c().m( C_GRID * GRID ), False )
+            self.__engine.draw_surface( self.__chunk_buffers[ chunk_pos ], chunk_pos.c().m( C_GRID * GRID ), False, buffer_key = chunk_pos )
 
     # Creates a surface for easy-drawing
     def create_buffer( self, chunk_pos ):
         
         # Initialize it with an empty surface
         surf = pygame.Surface( ( C_GRID * GRID, C_GRID * GRID ), pygame.SRCALPHA, 32 )
-        self.__chunk_buffers[ chunk_pos ] = surf
+        self.__chunk_buffers[ chunk_pos.c() ] = surf
 
         # Draw every block onto it
         for xx in range( C_GRID ):
@@ -47,7 +47,7 @@ class BlockController():
     # Deletes a surface when it's no longer needed
     def delete_buffer( self, chunk_pos ):
 
-        del self.__chunk_buffers[ chunk_pos ]
+        self.__chunk_buffers.pop( chunk_pos )
 
     # Returns either None or a surface representing a block sprite
     def render_block( self, block_pos ):

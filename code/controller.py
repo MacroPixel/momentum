@@ -5,6 +5,8 @@ from _controller_ui import *
 
 from enemy_jomper import *
 
+import random
+
 # Controls basic game logic
 # Other controller objects exist for more specific game logic
 class Controller( Game_Object ):
@@ -20,6 +22,10 @@ class Controller( Game_Object ):
         # Initialize specialized sub-controllers
         self.__c_level = LevelController( self )
         self.__c_ui = UIController( self )
+
+        # Death messages are loaded from res/data/death_strings.txt
+        self.__death_strings = open( self.engine.get_path( '/data/death_strings.txt' ) ).read().split( '\n' )
+        self._death_string_current = 'ERROR'
 
         # Debug mode can be toggled with right alt
         self.__allow_debug = True
@@ -64,9 +70,9 @@ class Controller( Game_Object ):
             if ( self.engine.get_key( pygame.K_F8, 1 ) ):
                 self.reset_level()
 
-            # Block operation
+            # Object operation
             if ( self.engine.get_key( pygame.K_BACKQUOTE, 1 ) ):
-                self.__c_level.block_debug( pygame.mouse.get_pos(), self.engine.view_pos )
+                self.__c_level.object_debug()
 
             # Toggle advanced info
             if ( self.engine.get_key( pygame.K_F5, 1 ) ):
@@ -138,6 +144,11 @@ class Controller( Game_Object ):
         self.__c_level.draw()
         self.__c_ui.draw()
 
+    # Choose a new death message
+    def new_death_string( self ):
+
+        self._death_string_current = self.__death_strings[ random.randint( 0, len( self.__death_strings ) - 1 ) ]
+
     # Getters/setters
     @property
     def debug( self ):
@@ -161,3 +172,7 @@ class Controller( Game_Object ):
     @property
     def is_player_dead( self ):
         return self._is_player_dead
+
+    @property
+    def death_string( self ):
+        return self._death_string_current

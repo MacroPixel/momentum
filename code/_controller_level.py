@@ -1,6 +1,7 @@
 from basic_imports import *
 from _controller_block import *
 from enemy_list import *
+from checkpoint import *
 import random
 
 # Contained within/controlled by Controller
@@ -85,7 +86,20 @@ class LevelController():
                 for rel_coord in object_positions:
                     self.__set_object( utils.chunk_pos_to_block( chunk_coords, rel_coord ), object_id )
 
-    # Recreates the level data from a PNG image# Recreates the level data from a PNG image
+        # Create checkpoints
+        checkpoint_data = open( self.controller.engine.get_path( '/data/checkpoints.txt' ) ).read().split( '\n' )
+
+        for line in checkpoint_data:
+
+            # If blank line, do nothing
+            if len( line ) == 0:
+                pass
+
+            # Otherwise, create checkpoint
+            else:
+                Checkpoint( self.controller.engine, V2( line.split( ' ' ) ).i() )
+
+    # Recreates the level data from a PNG image
     def rewrite_level( self ):
 
         # Load the PNG into memory
@@ -99,10 +113,15 @@ class LevelController():
             for yy in range( level_surf.get_height() ):
 
                 pos = V2( xx, yy )
+                this_color = level_surf.get_at( pos.l() )
 
                 # Create the player if the pixel is white
-                if level_surf.get_at( pos.l() ) == ( 255, 255, 255, 255 ):
+                if ( this_color == ( 255, 255, 255, 255 ) ):
                     origin = pos
+
+                # Create special objects
+                elif ( this_color == O_COLOR_CHECKPOINT ):
+                    keys[ pos ] = 'checkpoint'
 
                 # Otherwise, create the appropriate object based on color
                 else:
@@ -120,12 +139,13 @@ class LevelController():
             chunk_pos, rel_pos = utils.block_pos_to_chunk( new_pos )
 
             if chunk_pos not in chunks:
-                chunks[ chunk_pos ] = {}
+                chunks[ chunk_pos.c() ] = {}
 
-            chunks[ chunk_pos ][ rel_pos ] = keys[ pos ]
+            chunks[ chunk_pos.c() ][ rel_pos ] = keys[ pos ]
 
         # Actually write to the file
         file = open( self.controller.engine.get_path( '/data/level.txt' ), 'w' )
+        file_checkpoint = open( self.controller.engine.get_path( '/data/checkpoints.txt' ), 'w' )
         for chunk in chunks:
 
             # Write the chunk string
@@ -134,9 +154,18 @@ class LevelController():
             # Write all the block strings
             for block_pos in chunks[ chunk ]:
 
-                output_string = utils.o_string( chunks[ chunk ][ block_pos ] )
-                output_pos = utils.vec_to_str( block_pos ).replace( ':', ' ' )
-                file.write( f'{ output_string } { output_pos }\n' )
+                object_id = chunks[ chunk ][ block_pos ]
+
+                # Create checkpoint
+                if ( object_id == 'checkpoint' ):
+
+                    output_pos = utils.vec_to_str( utils.chunk_pos_to_block( chunk, block_pos ) ).replace( ':', ' ' )
+                    file_checkpoint.write( f'{ output_pos }\n' )
+
+                else:
+
+                    output_pos = utils.vec_to_str( block_pos ).replace( ':', ' ' )
+                    file.write( f'{ utils.o_string( object_id ) } { output_pos }\n' )
 
     # Loads necessary chunks into memory based off of view position
     def update( self ):
@@ -153,7 +182,7 @@ class LevelController():
             for yy in range( bound_1.y, bound_2.y + 1 ):
 
                 chunk_pos = V2( xx, yy )
-                chunk_list.append( chunk_pos )
+                chunk_list.append( chunk_pos.c() )
 
                 # Don't bother if the chunk has no data within it
                 if ( chunk_pos not in self.__chunks ):
@@ -173,10 +202,10 @@ class LevelController():
     # and creating a surface buffer for fast drawing
     def load_chunk( self, chunk_pos ):
 
-        self.__loaded_chunks.append( chunk_pos )
+        self.__loaded_chunks.append( chunk_pos.c() )
 
         # Spawn any enemies within the chunk
-        for pos in self.__chunks[ chunk_pos ]:
+        for pos in self.__chunks[ chunk_pos.c() ]:
 
             # Creates the enemy using an exec() of a string representation of a class
             # There's probably a better way of doing this, and I'm all ears
@@ -228,8 +257,8 @@ class LevelController():
 
         # Make sure this position is stored within the chunk
         chunk_pos, rel_pos = utils.block_pos_to_chunk( pos )
-        if ( rel_pos not in self.__chunks[ chunk_pos ] ):
-            self.__chunks[ chunk_pos ].append( rel_pos )
+        if ( rel_pos not in self.__chunks[ chunk_pos.c() ] ):
+            self.__chunks[ chunk_pos.c() ].append( rel_pos )
 
     # Checks if a chunk exists at a chunk position
     def is_chunk( self, chunk_pos ):
@@ -270,10 +299,10 @@ class LevelController():
         return self.__object_meta[ pos ]
 
     # Performs an operation on the block the player is hovering over
-    def object_debug( self, cursor_pos, view ):
+    def object_debug( self ):
 
-        object_pos = V2( cursor_pos ).a( view ).fn( lambda a: int( floor( a / GRID ) ) )
-        pass
+        cursor_pos = self.controller.engine.get_world_cursor()
+        print( 'Cursor in chunk', cursor_pos.fn( lambda a: int( a // ( GRID * C_GRID ) ) ) )
 
     # Getters/setters
 

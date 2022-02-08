@@ -12,7 +12,8 @@ class Game_Object:
         self._layer = layer
         self._object_id = object_id
         self._engine = engine
-        self.__tags = []
+        self._tags = []
+        self._properties = []
         self.__exists = True
 
         # Add the GameObject to the Engine
@@ -24,6 +25,36 @@ class Game_Object:
         if self.__exists:
             self.engine.delete_instance( self )
         self.__exists = False
+
+    # Tags store information about an object
+    # Objects within a specific tag can be easily searched for
+    def add_tag( self, tag ):
+
+        self.engine.tag_instance( self, tag )
+        self._tags.append( tag )
+
+    def remove_tag( self, tag ):
+
+        self.engine.untag_instance( self, tag )
+        self._tags.remove( tag )
+
+    def has_tag( self, tag ):
+
+        return ( tag in self.tags )
+
+    # Properties are similar to tags, but are more performant
+    # As a tradeoff, they don't allow search functionality
+    def add_property( self, prop ):
+
+        self._properties.append( prop )
+
+    def remove_property( self, prop ):
+
+        self._properties.remove( prop )
+
+    def has_property( self, prop ):
+
+        return ( prop in self._properties )
 
     # Called once a frame
     def update( self ):
@@ -49,3 +80,11 @@ class Game_Object:
     @property
     def engine( self ):
         return self._engine
+
+    @property
+    def tags( self ):
+        return self._tags.copy()
+
+    @property
+    def properties( self ):
+        return self._properties.copy()

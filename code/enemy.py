@@ -8,4 +8,7 @@ class Enemy ( Entity ):
         super().__init__( engine, name, pos, vel, hitbox )
 
         # Tags allow quick indexing of all enemies
-        engine.tag_instance( self, 'enemy' )
+        self.add_tag( 'enemy' )
+
+        # Allow customization of enemy behavior
+        self.enemy_kills_player = True

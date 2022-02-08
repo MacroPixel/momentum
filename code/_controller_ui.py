@@ -19,7 +19,8 @@ class UIController():
 
             # Death text
             if ( not self.__engine.get_instance( 'player' ).is_alive ):
-                self.__engine.draw_text_bitmap( 'Try Again?', 'main', 4, self.__engine.screen_size.c().d( 2 ), True, ( 255, 100, 100 ), anchor = V2( 0.5, 0.5 ) )
+                self.__engine.draw_text_bitmap( self.controller.death_string, 'main', 4, self.__engine.screen_size.c().d( 2 ).s( 4 ), True, ( 120, 0, 0 ), anchor = V2( 0.5, 0.5 ) )
+                self.__engine.draw_text_bitmap( self.controller.death_string, 'main', 4, self.__engine.screen_size.c().d( 2 ), True, ( 255, 100, 100 ), anchor = V2( 0.5, 0.5 ) )
 
             # Debug text
             if self.controller.debug:

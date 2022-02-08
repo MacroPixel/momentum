@@ -17,6 +17,7 @@ class Player ( Entity ):
 
         # Other variables
         self._is_alive = True
+        self._has_released_jump = 5
 
         # Debug variables
         self._is_invulnerable = False
@@ -55,8 +56,14 @@ class Player ( Entity ):
         elif self.is_on_block():
             self.vel.x = max( abs( self.vel.x ) - ( PLAYER_HSPEED * self.engine.delta_time * velocity_factor ), 0 ) * ( -1 if self.vel.x < 0 else 1 )
 
+        # Since space is used to switch rooms/respawn, the player will sometimes
+        # automatically jump upon loading in
+        # This variable waits for it to be released for 5 frames to prevent that from happening
+        if ( self.has_released_jump > 0 and not self.engine.get_key( BINDS[ 'jump' ] ) ):
+            self._has_released_jump -= 1
+
         # Vertical momentum
-        can_jump = ( self.is_on_block() and self.engine.get_key( BINDS[ 'jump' ] ) )
+        can_jump = ( self.is_on_block() and self.engine.get_key( BINDS[ 'jump' ] ) and self.has_released_jump == 0 )
         if ( can_jump ):
 
             # Jump
@@ -76,8 +83,7 @@ class Player ( Entity ):
             self.invert()
 
         # Damage
-        if ( self.engine.get_key( pygame.K_n, 1 ) ):
-            self.die()
+        self.check_damage()
 
         # Set image details
         # Walk is incremented while velocity >= 0.2, otherwise head bob is incremented
@@ -122,12 +128,29 @@ class Player ( Entity ):
 
     # OTHER BEHAVIOR
 
+    # Checks whether the player is touching a hazard
+    def check_damage( self ):
+
+        # Doesn't apply if invulnerable
+        if ( self.is_invulnerable ):
+            return
+
+        # Debug hotkey
+        if ( self.engine.get_key( pygame.K_n, 1 ) ):
+            self.die()
+
+        # If touching enemy, die
+        for enemy in self.engine.get_tagged_instances( 'enemy' ):
+            if utils.collision_check( self.pos, enemy.pos, self.hitbox, enemy.hitbox ) and enemy.enemy_kills_player:
+                self.die()
+
     # Creates an object that displays UI and eventually restarts the level
     def die( self ):
 
-        # Only die if vulnerable
-        if ( not self.is_invulnerable ):
             self._is_alive = False
+            self._has_released_jump = 5
+            self.engine.get_instance( 'controller' ).new_death_string()
+            self.engine.play_sound( 'death' )
             super().die()
 
     # Draw self at current position
@@ -195,3 +218,7 @@ class Player ( Entity ):
     @property
     def is_invulnerable( self ):
         return self._is_invulnerable
+
+    @property
+    def has_released_jump( self ):
+        return self._has_released_jump

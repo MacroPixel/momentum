@@ -81,7 +81,7 @@ class V2:
 
   # Return a string
   def __str__( self ):
-    return f'V2: ( { self.x }, { self.y } )'
+    return f'({ self.x }, { self.y })'
 
   # Allows using as key in dictionary
   # Simply hashes a tuple representation of the vector
