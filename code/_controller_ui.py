@@ -1,4 +1,5 @@
 from basic_imports import *
+from drawer import *
 
 # Handles UI drawing & responses
 class UIController():
@@ -9,6 +10,9 @@ class UIController():
         self._controller = controller
         self.__engine = self.controller.engine
 
+        # Delegate draw function to drawer, which can draw at the proper layer
+        Drawer( self.__engine, LAYER_UI, self.draw )
+
     def draw( self ):
 
         # Normal level UI
@@ -16,6 +20,13 @@ class UIController():
 
             # Pause text
             self.__engine.draw_text_bitmap( '[ESC] Pause', 'main', 2, V2( 15, 15 ), True )
+
+            # Ability badges
+            x_offset = 0
+            for i, ability in enumerate( ABILITY_STRINGS ):
+                if self.__engine.get_instance( 'player' ).has_ability( ability ):
+                    self.__engine.draw_sprite( 'badges', V2( 0, i ), V2( 10 + x_offset * 20, self.__engine.screen_size.y - 10 ), True, scale = V2( 2, 2 ), anchor = V2( 0, 1 ) )
+                    x_offset += 1
 
             # Death text
             if ( not self.__engine.get_instance( 'player' ).is_alive ):
@@ -25,11 +36,12 @@ class UIController():
             # Debug text
             if self.controller.debug:
 
-                self.__engine.draw_text_bitmap( 'Debug', 'main', 1, self.__engine.screen_size.c().s( 15, 15 ), True, ( 0, 100, 255 ), anchor = V2( 1, 1 ) )
+                corner_pos = self.__engine.screen_size.c().m( 1, 0 ).a( -10, 10 )
+                self.__engine.draw_text_bitmap( 'DEBUG', 'main', 1, corner_pos.c().a( 0, 0 ), True, ( 0, 100, 255 ), anchor = V2( 1, 0 ) )
 
                 # Advanced info
                 if self.controller.advanced_info:
-                  self.__engine.draw_text_bitmap( f'FPS: { floor( self.__engine.fps_current ) }', 'main', 3, self.__engine.screen_size.c().m( 1, 0 ).a( -10, 10 ), True, anchor = V2( 1, 0 ) )
+                  self.__engine.draw_text_bitmap( f'FPS: { floor( self.__engine.fps_current ) }', 'main', 1, corner_pos.c().a( 0, 15 ), True, anchor = V2( 1, 0 ) )
 
         # Pause menu UI
         elif ( self.controller.pause_level == PAUSE_NORMAL ):

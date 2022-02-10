@@ -10,3 +10,6 @@ block_spring = spring_block_sheet.png 4:1
 block_bounce = bounce_block_sheet.png 4:1
 block_saw = temp_spike.png 1:1
 checkpoint = checkpoint.png 1:1
+badges = badges.png 7:1
+bg_a1_l1 = bg_area-1_layer-1.png
+bg_a1_l2 = bg_area-1_layer-2.png

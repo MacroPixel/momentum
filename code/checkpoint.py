@@ -1,14 +1,36 @@
 from basic_imports import *
+from entity import *
+from math import sin
 
-class Checkpoint ( Game_Object ):
+class Checkpoint ( Entity ):
 
     def __init__( self, engine, pos ):
 
-        super().__init__( engine, 'checkpoint', layer = LAYER_BLOCK )
+        super().__init__( engine, 'checkpoint', pos.c().a( 0, -1 ), V2( 0, 0 ), ( 0.7, 0.7, 0.35, 0.35 ), layer = LAYER_BLOCK )
 
-        self.pos = pos
+        self._real_pos = pos
         self._is_active = False
+        self.__hover_time = 0
+
+    def update( self ):
+
+        # Call parent event
+        super().update()
+
+        # Add to hover time (controls hover animation)
+        self.__hover_time += self.engine.delta_time * 1.5
 
     def draw( self ):
 
-        self.engine.draw_sprite( 'checkpoint', V2( 0, 0 ), self.pos.c().m( GRID ), False )
+        hover_offset = sin( self.__hover_time ) / 4
+        self.engine.draw_sprite( 'checkpoint', V2( 0, 0 ), self.pos.c().a( 0, hover_offset ).m( GRID ), False )
+
+    # Getters/setters
+
+    @property
+    def real_pos( self ):
+        return self._real_pos
+
+    @property
+    def is_active( self ):
+        return self._is_active

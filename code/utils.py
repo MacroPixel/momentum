@@ -14,13 +14,19 @@ class utils:
 
     # Checks for a collision between two rectangles defined by their position and dimensions (using AABB, of course)
     @staticmethod
-    def collision_check( pos1, pos2, dim1, dim2 ):
+    def collision_check( pos1, pos2, dim1, dim2, offset1 = V2(), offset2 = V2() ):
+
+        pos1.a( offset1 )
+        pos2.a( offset2 )
 
         return ( pos1.x < pos2.x + dim2.x and pos2.x < pos1.x + dim1.x ) and ( pos1.y < pos2.y + dim2.y and pos2.y < pos1.y + dim1.y )
 
     # Gets the push vector from a collision, assuming the first object is dynamic
     @staticmethod
-    def collision_get( pos1, pos2, dim1, dim2 ):
+    def collision_get( pos1, pos2, dim1, dim2, offset1 = V2(), offset2 = V2() ):
+
+        pos1.a( offset1 )
+        pos2.a( offset2 )
 
         overlap = V2( ( dim1.x + dim2.x ) * 0.5 - abs( pos1.x - pos2.x ), ( dim1.y + dim2.y ) * 0.5 - abs( pos1.y - pos2.y ) )
 
@@ -81,7 +87,7 @@ class utils:
         return B_STRINGS.index( string )
     @staticmethod
     def e_id( string ): # Enemy
-        return ENEMY_STRINGS.index( string )
+        return ENTITY_STRINGS.index( string )
 
     # Get a string given an ID
     @staticmethod
@@ -102,10 +108,19 @@ class utils:
         else:
             return None
 
-    # Checks and converts a object ID to a enemy ID
-    def obj_id_to_enemy( enemy_id ):
+    # Checks and converts a object ID to a entity ID
+    def obj_id_to_entity( entity_id ):
 
-        if ( len( B_STRINGS ) <= enemy_id < len( O_STRINGS ) ):
-            return enemy_id - len( B_STRINGS )
+        if ( len( B_STRINGS ) <= entity_id < len( O_STRINGS ) ):
+            return entity_id - len( B_STRINGS )
         else:
             return None
+
+    # Extracts information from a hitbox list
+    def get_hitbox_width( hitbox ):
+
+        return V2( hitbox[:2] )
+
+    def get_hitbox_offset( hitbox ):
+
+        return V2( hitbox[2:4] )

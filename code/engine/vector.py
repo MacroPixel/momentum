@@ -11,7 +11,7 @@ class V2:
       self.u( a, b )
 
   # These two functions help to reduce repetitive code within the operation functions
-  def __op( self, a, b, op ):
+  def _op( self, a, b, op ):
 
     if op == '+': return a + b
     elif op == '-': return a - b
@@ -19,17 +19,17 @@ class V2:
     elif op == '/': return a / b
     elif op == 'fn': return b( a )
 
-  def __op2( self, a, b, op ):
+  def _op2( self, a, b, op ):
 
     if isinstance( a, V2 ):
-      self.x = self.__op( self.x, a.x, op )
-      self.y = self.__op( self.y, a.y, op )
+      self.x = self._op( self.x, a.x, op )
+      self.y = self._op( self.y, a.y, op )
     elif type( a ) == list or type( a ) == tuple:
-      self.x = self.__op( self.x, a[0], op )
-      self.y = self.__op( self.y, a[1], op )
+      self.x = self._op( self.x, a[0], op )
+      self.y = self._op( self.y, a[1], op )
     else:
-      self.x = self.__op( self.x, a, op )
-      self.y = self.__op( self.y, a if b == 'd' else b, op )
+      self.x = self._op( self.x, a, op )
+      self.y = self._op( self.y, a if b == 'd' else b, op )
 
   # Update
   def u( self, a = 0, b = 0 ):
@@ -40,27 +40,27 @@ class V2:
 
   # Add
   def a( self, a, b = 'd' ):
-    self.__op2( a, b, '+' )
+    self._op2( a, b, '+' )
     return self
 
   # Subtract
   def s( self, a, b = 'd' ):
-    self.__op2( a, b, '-' )
+    self._op2( a, b, '-' )
     return self
 
   # Multiply
   def m( self, a, b = 'd' ):
-    self.__op2( a, b, '*' )
+    self._op2( a, b, '*' )
     return self
 
   # Divide
   def d( self, a, b = 'd' ):
-    self.__op2( a, b, '/' )
+    self._op2( a, b, '/' )
     return self
 
   # Custom function
   def fn( self, a, b = 'd' ):
-    self.__op2( a, b, 'fn' )
+    self._op2( a, b, 'fn' )
     return self
     
   # Return a list

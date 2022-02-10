@@ -2,8 +2,9 @@ from basic_imports import *
 
 from _controller_level import *
 from _controller_ui import *
+from _controller_particle import *
 
-from enemy_jomper import *
+from jomper import *
 
 import random
 
@@ -22,6 +23,7 @@ class Controller( Game_Object ):
         # Initialize specialized sub-controllers
         self.__c_level = LevelController( self )
         self.__c_ui = UIController( self )
+        self.__c_particle = ParticleController( self )
 
         # Death messages are loaded from res/data/death_strings.txt
         self.__death_strings = open( self.engine.get_path( '/data/death_strings.txt' ) ).read().split( '\n' )
@@ -53,59 +55,76 @@ class Controller( Game_Object ):
 
         # Restart the game if player is dead and game is unpaused
         if ( self.pause_level == PAUSE_NONE and self.engine.get_key( K_SPACE, 1 ) and not self.engine.get_instance( 'player' ).is_alive ):
-            self.goto_checkpoint()
+            self.load_checkpoint()
 
         # Debug features
         if self.debug:
             
             # Return to checkpoint
             if ( self.engine.get_key( pygame.K_RCTRL, 1 ) ):
-                self.goto_checkpoint()
+                self.load_checkpoint()
+
+            # Toggle advanced info
+            if ( self.engine.get_key( pygame.K_F2, 1 ) ):
+                self._advanced_info = not self.advanced_info
 
             # Rewrite level
-            if ( self.engine.get_key( pygame.K_F7, 1 ) ):
+            if ( self.engine.get_key( pygame.K_F3, 1 ) ):
                 self.__c_level.rewrite_level()
 
             # Reset level
-            if ( self.engine.get_key( pygame.K_F8, 1 ) ):
+            if ( self.engine.get_key( pygame.K_F4, 1 ) ):
                 self.reset_level()
 
             # Object operation
             if ( self.engine.get_key( pygame.K_BACKQUOTE, 1 ) ):
                 self.__c_level.object_debug()
 
-            # Toggle advanced info
-            if ( self.engine.get_key( pygame.K_F5, 1 ) ):
-                self._advanced_info = not self.advanced_info
+            # Teleport to cursor
+            if ( self.engine.get_mouse_button( 2, 1 ) ):
+                self.engine.get_instance( 'player' ).pos = self.engine.get_world_cursor().d( GRID )
+                self.engine.get_instance( 'player' ).vel = V2()
 
             # Misc operation 1
-            if ( self.engine.get_key( pygame.K_F6, 1 ) ):
+            if ( self.engine.get_key( pygame.K_F5, 1 ) ):
                 Jomper( self.engine, self.engine.get_instance( 'player' ).pos.c().a( 0.5 ) )
 
             # Misc operation 2
-            if ( self.engine.get_key( pygame.K_F9, 1 ) ):
-                for enemy in self.engine.get_tagged_instances( 'enemy' ):
-                    enemy.pos = self.engine.get_instance( 'player' ).pos.c()
+            if ( self.engine.get_key( pygame.K_F6, 1 ) ):
+                for i in range( 10 ):
+                    self.__c_particle.create_simple( self.engine.get_instance( 'player' ).pos, ( 100, 200 ), ( 10, 20 ), ( 2, 4 ), [ ( 255, 255, 0 ) ], ( 2, 2 ) )
+
+            # Misc operation 3
+            if ( self.engine.get_key( pygame.K_F7, 1 ) ):
+                for ability in ABILITY_STRINGS:
+                    if not self.engine.get_instance( 'player' ).has_ability( ability ):
+                        self.engine.get_instance( 'player' ).grant_ability( ability )
+                        break 
+
+            # Misc operation 4
+            if ( self.engine.get_key( pygame.K_F8, 1 ) ):
+                pass
 
         # Perform sub-class updates
         self.__c_level.update()
+        self.__c_particle.update()
 
     # Reset the player
-    def goto_checkpoint( self ):
+    def load_checkpoint( self ):
 
-        self.engine.get_instance( 'player' ).restart()
+        self.engine.get_instance( 'player' ).load_checkpoint()
 
     def reset_level( self ):
 
-        # Reset tiles
+        # Reload tiles
         self.__c_level.load_level()
 
-        # Erase all enemies
-        for enemy in [ e for e in self.engine.get_tagged_instances( 'enemy' ) ]:
-            enemy.delete()
+        # Erase all entities (excluding player)
+        for entity in [ e for e in self.engine.get_tagged_instances( 'entity' ) if e.object_id != 'player' ]:
+            entity.delete()
 
         # Reset player
-        self.goto_checkpoint()
+        self.load_checkpoint()
 
     # Check whether anything exists at a position
     def is_object( self, pos ):
@@ -117,10 +136,10 @@ class Controller( Game_Object ):
 
         return self.__c_level.is_block( pos )
 
-    # Check whether an enemy exists at a position
-    def is_enemy( self, pos ):
+    # Check whether an entity exists at a position
+    def is_entity( self, pos ):
 
-        return self.__c_level.is_enemy( pos )
+        return self.__c_level.is_entity( pos )
 
     # Get the block type of a position
     # !!! WILL throw error if there isn't a block there
@@ -138,11 +157,13 @@ class Controller( Game_Object ):
 
         pass
 
-    # Draw blocks/UI
+    # Controller isn't responsible for level/ui controller draw events
+    # This is because the controller is assigned to a single layer, meaning
+    # drawing everything from it alone wouldn't be very versatile
+    # The level/ui controller instead create objects to run their
+    # draw events for them
     def draw( self ):
-
-        self.__c_level.draw()
-        self.__c_ui.draw()
+        pass
 
     # Choose a new death message
     def new_death_string( self ):

@@ -61,7 +61,7 @@ def draw_surface( self, surf, pos, is_ui, **kwargs ):
 
     # Check each transformation argument to see if sprite needs to be modified
     if ( 'scale' in kwargs ):
-        surf = pygame.transform.scale( surf, V2( 'surf'.get_size() ).m( kwargs[ 'scale' ] ).l() )
+        surf = pygame.transform.scale( surf, V2( surf.get_size() ).m( kwargs[ 'scale' ] ).l() )
     if ( 'flip' in kwargs ):
         surf = pygame.transform.flip( surf, kwargs[ 'flip' ].x == -1, kwargs[ 'flip' ].y == -1 )
     if ( 'rotation' in kwargs ):

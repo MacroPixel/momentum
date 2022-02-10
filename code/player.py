@@ -6,21 +6,33 @@ class Player ( Entity ):
 
     def __init__( self, engine ):
 
-        super().__init__( engine, 'player', V2(), V2(), V2( PLAYER_HITBOX ) )
+        super().__init__( engine, 'player', V2(), V2(), ( 44 / 48, 44 / 48, 2 / 48, 4 / 48 ) )
         self.entity_destroy_on_death = False
+
+        self._reset_basic_vars()
+
+        # Stores whether the player has each ability
+        self._has_ability = { ability: False for ability in ABILITY_STRINGS }
+
+        # Other variables
+        self._checkpoint_pos = V2( 0, 0 )
+
+        # Debug variables
+        self._is_invulnerable = False
+
+    # Allows easy initializing/resetting of a group of variables
+    def _reset_basic_vars( self ):
 
         # Store image & physics details
         self._image_dir = 1
         self._image_walk = 0
         self._image_bob = 0
         self._image_attack = 0
-
-        # Other variables
-        self._is_alive = True
         self._has_released_jump = 5
 
-        # Debug variables
-        self._is_invulnerable = False
+        # Other vars
+        self._is_alive = True
+        self.vel = V2( 0, 0 )
 
     def update( self ):
 
@@ -28,17 +40,29 @@ class Player ( Entity ):
         if ( self.engine.get_instance( 'controller' ).pause_level >= PAUSE_NORMAL ):
             return
 
-        # Only move if player is alive
+        # Only perform gameplay actions if player is alive
         if ( self.is_alive ):
-            self.update_normal()
+
+            # Only alters velocity
+            # Position is calculated during entity_update()
+            self.update_movement()
+
+            # Check collisions with other entities
+            self.update_collisions()
+
+            # Choose which animation frame to use during draw event
+            self.update_image()
+
+            # Controlls velocity, collisions, and interactions with other enemies
+            super().entity_update()
 
         # Update view regardless
         self.engine.view_pos.x = utils.lerp( self.engine.view_pos.x, self.pos.x * GRID, 0.85, self.engine.delta_time * 10 )
         self.engine.view_pos.y = utils.lerp( self.engine.view_pos.y, self.pos.y * GRID, 0.85, self.engine.delta_time * 10 )
         self.engine.view_pos.fn( lambda a: round( a, 2 ) )
 
-    # Actions to perform every frame if game is unpaused
-    def update_normal( self ):
+    # Alter the player's velocity
+    def update_movement( self ):
         
         # Horizontal momentum
         # PLAYER_HSPEED defines the base speed
@@ -47,13 +71,13 @@ class Player ( Entity ):
         # Friction (only when on block) works by pretending they're holding the key
         # in the opposite direction they're moving
         velocity_factor = 1
-        if ( not self.is_on_block() ):
+        if ( not self.is_on_solid() ):
             velocity_factor *= PLAYER_HSPEED_AIR_FACTOR
         if ( self.engine.get_key( BINDS[ 'move_right' ] ) ):
             self.vel.x += PLAYER_HSPEED * self.engine.delta_time * velocity_factor
         elif ( self.engine.get_key( BINDS[ 'move_left' ] ) ):
             self.vel.x -= PLAYER_HSPEED * self.engine.delta_time * velocity_factor
-        elif self.is_on_block():
+        elif self.is_on_solid():
             self.vel.x = max( abs( self.vel.x ) - ( PLAYER_HSPEED * self.engine.delta_time * velocity_factor ), 0 ) * ( -1 if self.vel.x < 0 else 1 )
 
         # Since space is used to switch rooms/respawn, the player will sometimes
@@ -63,34 +87,49 @@ class Player ( Entity ):
             self._has_released_jump -= 1
 
         # Vertical momentum
-        can_jump = ( self.is_on_block() and self.engine.get_key( BINDS[ 'jump' ] ) and self.has_released_jump == 0 )
+        can_jump = ( self.is_on_solid() and self.engine.get_key( BINDS[ 'jump' ] ) and self.has_released_jump == 0 )
         if ( can_jump ):
 
             # Jump
             self.vel.y = -PLAYER_JUMP_POWER
 
             # Jumping also gives a boost to horizontal speed
-            if self.is_on_block() and self.engine.get_key( BINDS[ 'move_right' ] ):
+            if self.is_on_solid() and self.engine.get_key( BINDS[ 'move_right' ] ):
                 self.vel.x += PLAYER_HSPEED_BOOST
-            elif self.is_on_block() and self.engine.get_key( BINDS[ 'move_left' ] ):
+            elif self.is_on_solid() and self.engine.get_key( BINDS[ 'move_left' ] ):
                 self.vel.x -= PLAYER_HSPEED_BOOST
 
-        # Abilities
-        if ( self.engine.get_key( BINDS[ 'attack' ], 1 ) ):
-            self.attack()
-
-        if ( self.engine.get_key( BINDS[ 'invert' ], 1 ) ):
+        # Invert ability
+        if ( self.has_ability( 'invert' ) and self.engine.get_key( BINDS[ 'up_action' ], 1 ) ):
             self.invert()
 
-        # Damage
-        self.check_damage()
+    # Check which entities the player is colliding with
+    # Includes hazards and checkpoints
+    def update_collisions( self ):
+
+        # Doesn't apply if invulnerable
+        if ( self.is_invulnerable ):
+            return
+
+        # If touching enemy, die
+        for enemy in self.engine.get_tagged_instances( 'enemy' ):
+            if utils.collision_check( self.pos, enemy.pos, self.hitbox, enemy.hitbox ) and enemy.enemy_kills_player:
+                self.die()
+
+        # If touching non-current checkpoint, update the current checkpoint
+        for checkpoint in self.engine.get_instances( 'checkpoint' ):
+            if utils.collision_check( self.pos, checkpoint.pos, self.hitbox, checkpoint.hitbox ):
+                self.set_checkpoint( checkpoint.real_pos )
+
+    # Make the player bob, walk, swing, etc.
+    def update_image( self ):
 
         # Set image details
         # Walk is incremented while velocity >= 0.2, otherwise head bob is incremented
         self._image_walk += abs( self.vel.x ) * self.engine.delta_time * 3
         if abs( self.vel.x ) < 0.5:
             self._image_walk = 0
-        if abs( self.vel.x ) < 0.5 and self.is_on_block():
+        if abs( self.vel.x ) < 0.5 and self.is_on_solid():
             self._image_bob += self.engine.delta_time * 0.8
         else:
             self._image_bob = 0
@@ -103,14 +142,19 @@ class Player ( Entity ):
         if ( self.image_attack > 0 ):
             self._image_attack = max( 0, self._image_attack - self.engine.delta_time / 0.05 )
 
-        # Actually move
-        # Perform collision detection on the 4 adjacent blocks
-        # This is done with multiple iterations to make it more precise
-        vel_factor = V2( 1, 1 )
-
-        Entity.entity_update( self )
-
     # ABILITIES
+
+    def grant_ability( self, string ):
+
+        self._has_ability[ string ] = True
+
+    def revoke_ability( self, string ):
+
+        self._has_ability[ string ] = False
+
+    def has_ability( self, string ):
+
+        return self._has_ability[ string ]
 
     def attack( self ):
 
@@ -128,44 +172,50 @@ class Player ( Entity ):
 
     # OTHER BEHAVIOR
 
-    # Checks whether the player is touching a hazard
-    def check_damage( self ):
-
-        # Doesn't apply if invulnerable
-        if ( self.is_invulnerable ):
-            return
-
-        # Debug hotkey
-        if ( self.engine.get_key( pygame.K_n, 1 ) ):
-            self.die()
-
-        # If touching enemy, die
-        for enemy in self.engine.get_tagged_instances( 'enemy' ):
-            if utils.collision_check( self.pos, enemy.pos, self.hitbox, enemy.hitbox ) and enemy.enemy_kills_player:
-                self.die()
-
     # Creates an object that displays UI and eventually restarts the level
     def die( self ):
 
-            self._is_alive = False
-            self._has_released_jump = 5
-            self.engine.get_instance( 'controller' ).new_death_string()
-            self.engine.play_sound( 'death' )
-            super().die()
+        for i in range( 25 ):
+            self.engine.get_instance( 'controller' )._Controller__c_particle.create_simple(
+                self.pos.c().a( 0.5 ), ( 2, 6 ), ( 0, 360 ), ( 1, 2 ), [ ( 200, 0, 0 ), ( 150, 0, 0 ), ( 180, 0, 0 ) ], ( 0.4, 0.9 ), ( 1.5, 2 ) )
+        self._is_alive = False
+        self.engine.get_instance( 'controller' ).new_death_string()
+        self.engine.play_sound( 'death' )
+        super().die()
+
+    # Updates the checkpoint (if necessary) & plays sound effect
+    def set_checkpoint( self, new_pos ):
+
+        # Don't set a checkpoint twice
+        # This would cause the sound effect to repeatedly play
+        # Also, comparing two floating point values with == is okay
+        # because one is directly copied from the other
+        if ( self.checkpoint_pos == new_pos ):
+            return
+
+        # Update the checkpoint position
+        self._checkpoint_pos = new_pos
+
+        # Play the sound
+        self.engine.play_sound( 'checkpoint' )
+
+    # Teleports the player to their checkpoint position
+    # and resets some of their variables
+    def load_checkpoint( self ):
+
+        self.pos = self.checkpoint_pos
+        self._reset_basic_vars()
 
     # Draw self at current position
     # Leverages flip operations & sub-images
     # Also drawn slightly higher than the player's position because its hitbox isn't centered
     def draw( self ):
 
-        # TODO: fit hitbox precision error leading to player being drawn in ground
-
         # Don't draw unless alive
         if ( not self.is_alive ):
             return
 
-        hitbox_offset = V2( 0, ( 1 - PLAYER_HITBOX[1] ) / 2 )
-        draw_pos = self.pos.c().s( hitbox_offset ).m( GRID )
+        draw_pos = self.pos.c().m( GRID )
 
         if ( self._image_attack > 0 ):
             draw_image = V2( 2, min( 2, 2 - floor( self.image_attack ) ) )
@@ -179,21 +229,24 @@ class Player ( Entity ):
         # Store the sprite for usage in ragdoll
         self.update_ragdoll( 'player', draw_pos.c().d( GRID ), self.image_dir == -1 )
 
-    # Checks if the player has a block immediately (to a limited degree) below them
-    def is_on_block( self ):
+    # Checks if a block matching a condition is below the player
+    def test_block_below( self, condition = lambda a: True ):
 
         controller = self.engine.get_instance( 'controller' )
-        for xx in range( floor( self.pos.x + ( 1 - PLAYER_HITBOX[0] ) / 2 + COLLISION_EPSILON ), ceil( self.pos.x + ( 1 + PLAYER_HITBOX[0] ) / 2 - COLLISION_EPSILON ) ):
-            if ( controller.is_solid( V2( xx, int( floor( self.pos.y + ( 1 + PLAYER_HITBOX[1] ) / 2 ) ) ) ) ):
-                return True
+        x_min_bound = self.pos.x + self.hitbox_offset.x
+        x_max_bound = self.pos.x + self.hitbox_offset.x + self.hitbox.x
+        for xx in range( floor( x_min_bound + COLLISION_EPSILON ), ceil( x_max_bound - COLLISION_EPSILON ) ):
+            pos = V2( xx, floor( self.pos.y + self.hitbox_offset.y + self.hitbox.y ) )
+            if ( controller.is_block( pos ) ):
+                block_id = utils.obj_id_to_block( controller.get_object_type( pos ) )
+                if ( condition( block_id ) ):
+                    return True
         return False
 
-    # Resets all properties after level restart
-    def restart( self ):
+    # Shorthand for checking solid block below player
+    def is_on_solid( self ):
 
-        self.pos = V2( 0, 0 )
-        self.vel = V2( 0, 0 )
-        self._is_alive = True
+        return self.test_block_below( lambda block_id: utils.b_string( block_id ) not in B_PASSABLE )
 
     @property
     def image_dir( self ):
@@ -222,3 +275,7 @@ class Player ( Entity ):
     @property
     def has_released_jump( self ):
         return self._has_released_jump
+
+    @property
+    def checkpoint_pos( self ):
+        return self._checkpoint_pos

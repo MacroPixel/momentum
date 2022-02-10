@@ -3,14 +3,20 @@ from ragdoll import *
 
 class Entity( Game_Object ):
 
-    def __init__( self, engine, object_id, pos, vel, hitbox ):
+    def __init__( self, engine, object_id, pos, vel, hitbox_rect, layer = LAYER_ENTITY ):
 
-        super().__init__( engine, object_id, layer = LAYER_ENTITY )
+        super().__init__( engine, object_id, layer = layer )
+        self.add_tag( 'entity' )
 
-        # Properties common to all entities
+        # Basic physics properties
         self.pos = pos
         self.vel = vel
-        self._hitbox = hitbox
+
+        # Hitbox properties
+        # Hitboxes are defined by (width, height, offset_x, offset_y)
+        # Offset is measured relative to the top-left
+        self._hitbox = V2( hitbox_rect[:2] )
+        self._hitbox_offset = V2( hitbox_rect[2:4] )
 
         # Ragdoll physics
         # Ragdoll isn't created if either of the first two is None
@@ -19,8 +25,8 @@ class Entity( Game_Object ):
         self.__ragdoll_anchor = V2( 0.5, 0.5 )
 
         # Allow customization of entity behavior
-        self.entity_dies_to_spikes = True # Whether the enemy can survive spikes
-        self.entity_destroy_on_death = True # Whether the enemy's GameObject is destroyed upon death
+        self.entity_dies_to_spikes = True # Whether the entity can survive spikes
+        self.entity_destroy_on_death = True # Whether the entity's GameObject is destroyed upon death
         self.entity_gravity_multiplier = 1 # Can be used to alter or disable gravity
 
         # Other
@@ -50,17 +56,17 @@ class Entity( Game_Object ):
 
             # First, actually move the entity
             self.pos.x += self.vel.x * self.engine.delta_time / iterations
-            temp_block = self.__push_out( is_x_axis = True )
+            temp_block = self._push_out( is_x_axis = True )
             if ( temp_block != None ):
                 x_push_block = temp_block
 
             self.pos.y += self.vel.y * self.engine.delta_time / iterations
-            temp_block = self.__push_out( is_x_axis = False )
+            temp_block = self._push_out( is_x_axis = False )
             if ( temp_block != None ):
                 y_push_block = temp_block
 
             # Only add collision blocks after push-out is finished
-            for block_pos in self.__get_adjacent_blocks():
+            for block_pos in self._get_adjacent_blocks():
                 if block_pos not in collision_blocks:
                     collision_blocks.append( block_pos )
 
@@ -100,9 +106,9 @@ class Entity( Game_Object ):
 
     # Push an entity out of any adjacent blocks
     # Returns whether a push-out occured
-    def __push_out( self, is_x_axis ):
+    def _push_out( self, is_x_axis ):
 
-        adjacent_blocks = self.__get_adjacent_blocks()
+        adjacent_blocks = self._get_adjacent_blocks()
 
         # For every grid space the position is inside of
         for block_pos in adjacent_blocks:
@@ -123,18 +129,21 @@ class Entity( Game_Object ):
             # Push out based on their position within the block
             # The is_x_axis argument determines the axis it's pushed along
             direction = -1 if eval( f'self.pos.{xy} < block_pos.{xy}' ) else 1
-            exec( f'self.pos.{xy} = block_pos.{xy} + direction * ( 1 + self.hitbox.{xy} ) / 2' )
+            exec( f'self.pos.{xy} = block_pos.{xy} + direction * ( self.hitbox.{xy} + self.hitbox_offset.{xy} )' )
             return block_type
 
         return None
 
     # Returns a list of the vectors of any block position the entity
-    def __get_adjacent_blocks( self ):
+    def _get_adjacent_blocks( self ):
 
         output = []
 
-        bound_1 = self.pos.c().a( self.hitbox.c().m( -1 ).a( 1 ).d( 2 ) ).a( COLLISION_EPSILON )
-        bound_2 = self.pos.c().a( self.hitbox.c().a( 1 ).d( 2 ) ).s( COLLISION_EPSILON )
+        bound_1 = self.pos.c().a( self.hitbox_offset ).a( COLLISION_EPSILON )
+        bound_2 = self.pos.c().a( self.hitbox_offset ).a( self.hitbox ).s( COLLISION_EPSILON )
+
+        # if ( self.object_id == 'player' ):
+        #     print( bound_1, bound_2 )
 
         for xx in range( int( floor( bound_1.x ) ), int( ceil( bound_2.x ) ) ):
             for yy in range( int( floor( bound_1.y ) ), int( ceil( bound_2.y ) ) ):    
@@ -172,7 +181,7 @@ class Entity( Game_Object ):
     def collision_func( self, block_id ):
         pass
 
-    # Executes when the enemy dies
+    # Executes when the entity dies
     # Can be overwritten by child class
     def die( self ):
 
@@ -205,3 +214,7 @@ class Entity( Game_Object ):
     @property
     def hitbox( self ):
         return self._hitbox
+
+    @property
+    def hitbox_offset( self ):
+        return self._hitbox_offset

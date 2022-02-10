@@ -3,14 +3,16 @@ from pygame.locals import *
 
 # Layers for draw order
 # Smaller layer = further back
-LAYER_BLOCK = 0
-LAYER_ENTITY = 1
-LAYER_RAGDOLL = 2
-LAYER_UI = 3
+LAYER_BACKGROUND = 0
+LAYER_BLOCK = 1
+LAYER_ENTITY = 2
+LAYER_PARTICLE = 3
+LAYER_RAGDOLL = 4
+LAYER_UI = 5
 
 # Internal names of each block
 # Every other block array uses the order of this list
-# They cannot share the name of an enemy
+# They cannot share the name of an entity
 B_STRINGS = [
     'default',
     'goop',
@@ -89,34 +91,36 @@ B_HAZARD = [
     'spikes'
 ]
 
-# Internal names of each enemy
+# Internal names of each entity
 # Every other block array uses the order of this list
-# They cannot share the name of an enemy
-ENEMY_STRINGS = [
-    'jomper'
+# They cannot share the name of an entity
+ENTITY_STRINGS = [
+    'jomper',
+    'checkpoint'
 ]
 
-# The color of each enemy when being loaded in from a PNG
-ENEMY_COLORS = [
-    ( 255, 63, 255 )
+# The color of each entity when being loaded in from a PNG
+ENTITY_COLORS = [
+    ( 255, 63, 255 ),
+    ( 63, 255, 191 )
 ]
 
-# A string representation of each enemy class
-ENEMY_CLASSES = [
-    'Jomper'
+# A string representation of each entity class
+ENTITY_CLASSES = [
+    'Jomper',
+    'Checkpoint'
 ]
 
-# Object arrays use the block and enemy arrays
+# Object arrays use the block and entity arrays
 # The blocks are listed first, and then the enemies
 
 # Internal names of each object
-O_STRINGS = B_STRINGS + ENEMY_STRINGS
+O_STRINGS = B_STRINGS + ENTITY_STRINGS
 
 # The color of each object when being loaded in from a PNG
 # Allows the colors of other special objects that don't
 # fall into either category (e.g. checkpoints)
-O_COLORS = B_COLORS + ENEMY_COLORS
-O_COLOR_CHECKPOINT = ( 63, 255, 191 )
+O_COLORS = B_COLORS + ENTITY_COLORS
 
 # Different UI levels
 UI_LEVEL = 0
@@ -146,16 +150,30 @@ PLAYER_HSPEED_ATTACK_FACTOR = 0.4
 PLAYER_FRICTION = 20000
 PLAYER_JUMP_POWER = 19
 
-PLAYER_HITBOX = ( 44 / 48, 44 / 48 )
 COLLISION_EPSILON = 0.000001
+
+# String representation of each ability
+# Abilities are usually referenced using their strings,
+# unlike objects, which are referenced using their numeric IDs
+ABILITY_STRINGS = [
+    'invert',
+    'wall_jump',
+    'downward_dash',
+    'teleport',
+    'slot',
+    'rope',
+    'glide'
+]
 
 # Keybinds (will probably be moved to settings object in the future)
 BINDS = {
     'move_left': K_a,
     'move_right': K_d,
     'jump': K_SPACE,
-    'attack': K_k,
-    'invert': K_i
+    'up_action': K_UP,
+    'down_action': K_DOWN,
+    'left_action': K_LEFT,
+    'right_action': K_RIGHT
 }
 
 # Used by controller's pause_level variable

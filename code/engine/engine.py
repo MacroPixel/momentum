@@ -10,7 +10,6 @@ from .vector import *
 class Engine:
 
     # Initially set up Pygame & specify global options
-    # def __init__( self, size, caption, icon_source = None, fps_limit = -1, root_dir = '' ):
     def __init__( self, size, caption, room_dict, start_room, *args, **kwargs ):
 
         # Can't be changed for the time being
@@ -50,19 +49,24 @@ class Engine:
         self.__named_instances = {}
         self.__tagged_instances = {}
 
+        # Initialize containers for keyboard/mouse inputs
+        self.__keys_down = []
+        self.__keys_up = []
+        self.__keys = pygame.key.get_pressed()
+        self.__mouse_buttons_down = []
+        self.__mouse_buttons_up = []
+        self.__mouse_buttons = pygame.mouse.get_pressed()
+
         # Other variables
         self._delta_time = 0
         self._view_pos = V2()
         self._view_zoom = self.dict_search( kwargs, 'zoom_level', V2( 1, 1 ) )
-        self.__keys_down = []
-        self.__keys_up = []
-        self.__keys = pygame.key.get_pressed()
         self.__fonts = {}
         self.__bitmap_fonts = {}
         self.__zoom_buffer = {}
 
         # Goto a room
-        # This is when the user's code is used
+        # This is when the user's room code is used
         self.__room_dict = room_dict
         self.load_room( start_room )
 
@@ -74,9 +78,12 @@ class Engine:
 
             # Reset necessary variables
             self._delta_time = min( 0.1, self.__clock.tick() / 1000 )
-            self.__keys = pygame.key.get_pressed()
             self.__keys_down = []
             self.__keys_up = []
+            self.__keys = pygame.key.get_pressed()
+            self.__mouse_buttons_down = []
+            self.__mouse_buttons_up = []
+            self.__mouse_buttons = pygame.mouse.get_pressed()
 
             # EVENTS
             for event in pygame.event.get():
@@ -85,11 +92,15 @@ class Engine:
                 if event.type == pygame.QUIT:
                     self.__is_running = False
 
-                # Log keypresses
+                # Log key/mouse inputs
                 elif event.type == pygame.KEYDOWN:
                     self.__keys_down.append( event.key )
                 elif event.type == pygame.KEYUP:
                     self.__keys_up.append( event.key )
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    self.__mouse_buttons_down.append( event.button )
+                elif event.type == pygame.MOUSEBUTTONUP:
+                    self.__mouse_buttons_up.append( event.button )
 
             # update() is called once per frame for all GameObjects
             for obj in self.__instances:
@@ -118,6 +129,16 @@ class Engine:
             return key_id in self.__keys_down
         elif check == 2:
             return key_id in self.__keys_up
+
+    # Gets the state of a key (check of 0 = "is down", 1 = "was pressed", 2 = "was released")
+    def get_mouse_button( self, button_id, check = 0 ):
+
+        if check == 0:
+            return self.__mouse_buttons[ button_id ]
+        elif check == 1:
+            return button_id in self.__mouse_buttons_down
+        elif check == 2:
+            return button_id in self.__mouse_buttons_up
 
     # Appends the input to the root directory
     def get_path( self, directory ):
@@ -157,12 +178,13 @@ class Engine:
 
     # Drawing methods (preferred over pygame ones because they account for the game view)
     from ._engine_draw import _load_sprites
-    from ._engine_draw import to_screen_coord
-    from ._engine_draw import to_world_coord
     from ._engine_draw import draw_surface
     from ._engine_draw import draw_sprite
     from ._engine_draw import draw_text
     from ._engine_draw import draw_text_bitmap
+    from ._engine_draw import to_screen_coord
+    from ._engine_draw import to_world_coord
+    from ._engine_draw import zoom_buffer_remove
     from ._engine_draw import get_sprite
     from ._engine_draw import create_font
     from ._engine_draw import create_bitmap_font

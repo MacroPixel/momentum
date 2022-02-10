@@ -48,6 +48,12 @@ class BlockController():
     def delete_buffer( self, chunk_pos ):
 
         self.__chunk_buffers.pop( chunk_pos )
+        self.__engine.zoom_buffer_remove( chunk_pos )
+
+    def reset_buffers( self ):
+
+        for chunk_pos in self.__chunk_buffers.copy():
+            self.delete_buffer( chunk_pos )
 
     # Returns either None or a surface representing a block sprite
     def render_block( self, block_pos ):
