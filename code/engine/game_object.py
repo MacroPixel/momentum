@@ -30,13 +30,14 @@ class Game_Object:
     # Objects within a specific tag can be easily searched for
     def add_tag( self, tag ):
 
-        self.engine.tag_instance( self, tag )
-        self._tags.append( tag )
+        if ( tag not in self._tags ):
+            self.engine.tag_instance( self, tag )
 
     def remove_tag( self, tag ):
 
         self.engine.untag_instance( self, tag )
-        self._tags.remove( tag )
+        if tag in self._tags:
+            self._tags.remove( tag )
 
     def has_tag( self, tag ):
 

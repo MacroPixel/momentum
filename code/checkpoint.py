@@ -14,6 +14,10 @@ class Checkpoint ( Entity ):
 
     def update( self ):
 
+        # Don't run if paused
+        if ( self.engine.get_instance( 'controller' ).pause_level != PAUSE_NONE ):
+            return
+
         # Call parent event
         super().update()
 

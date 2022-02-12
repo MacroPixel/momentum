@@ -6,7 +6,7 @@ class Player ( Entity ):
 
     def __init__( self, engine ):
 
-        super().__init__( engine, 'player', V2(), V2(), ( 44 / 48, 44 / 48, 2 / 48, 4 / 48 ) )
+        super().__init__( engine, 'player', V2(), V2(), ( 44 / 48, 44 / 48, 2 / 48, 4 / 48 ), LAYER_PLAYER )
         self.entity_destroy_on_death = False
 
         self._reset_basic_vars()
@@ -16,9 +16,15 @@ class Player ( Entity ):
 
         # Other variables
         self._checkpoint_pos = V2( 0, 0 )
+        self._hook_obj = None
 
         # Debug variables
-        self._is_invulnerable = False
+        self._is_invincible = False
+
+        # Automatically give all abilities
+        for ability in ABILITY_STRINGS:
+            if not self.has_ability( ability ):
+                self.grant_ability( ability )
 
     # Allows easy initializing/resetting of a group of variables
     def _reset_basic_vars( self ):
@@ -47,6 +53,9 @@ class Player ( Entity ):
             # Position is calculated during entity_update()
             self.update_movement()
 
+            # Alters velocity further as well as other variables
+            self.update_abilities()
+
             # Check collisions with other entities
             self.update_collisions()
 
@@ -57,8 +66,8 @@ class Player ( Entity ):
             super().entity_update()
 
         # Update view regardless
-        self.engine.view_pos.x = utils.lerp( self.engine.view_pos.x, self.pos.x * GRID, 0.85, self.engine.delta_time * 10 )
-        self.engine.view_pos.y = utils.lerp( self.engine.view_pos.y, self.pos.y * GRID, 0.85, self.engine.delta_time * 10 )
+        self.engine.view_pos.x = utils.lerp( self.engine.view_pos.x, ( self.pos.x + 0.5 ) * GRID, 0.85, self.engine.delta_time * 10 )
+        self.engine.view_pos.y = utils.lerp( self.engine.view_pos.y, ( self.pos.y + 0.5 ) * GRID, 0.85, self.engine.delta_time * 10 )
         self.engine.view_pos.fn( lambda a: round( a, 2 ) )
 
     # Alter the player's velocity
@@ -99,16 +108,15 @@ class Player ( Entity ):
             elif self.is_on_solid() and self.engine.get_key( BINDS[ 'move_left' ] ):
                 self.vel.x -= PLAYER_HSPEED_BOOST
 
-        # Invert ability
-        if ( self.has_ability( 'invert' ) and self.engine.get_key( BINDS[ 'up_action' ], 1 ) ):
-            self.invert()
+    # Update the player's variables via unlocked abilities
+    from _player_abilities import update_abilities
 
     # Check which entities the player is colliding with
     # Includes hazards and checkpoints
     def update_collisions( self ):
 
-        # Doesn't apply if invulnerable
-        if ( self.is_invulnerable ):
+        # Doesn't apply if invincible
+        if ( self.is_invincible ):
             return
 
         # If touching enemy, die
@@ -125,7 +133,7 @@ class Player ( Entity ):
     def update_image( self ):
 
         # Set image details
-        # Walk is incremented while velocity >= 0.2, otherwise head bob is incremented
+        # Walk is incremented while velocity >= 0.5, otherwise head bob is incremented
         self._image_walk += abs( self.vel.x ) * self.engine.delta_time * 3
         if abs( self.vel.x ) < 0.5:
             self._image_walk = 0
@@ -142,36 +150,18 @@ class Player ( Entity ):
         if ( self.image_attack > 0 ):
             self._image_attack = max( 0, self._image_attack - self.engine.delta_time / 0.05 )
 
-    # ABILITIES
-
-    def grant_ability( self, string ):
-
-        self._has_ability[ string ] = True
-
-    def revoke_ability( self, string ):
-
-        self._has_ability[ string ] = False
-
-    def has_ability( self, string ):
-
-        return self._has_ability[ string ]
-
-    def attack( self ):
-
-        # Comes at a cost of velocity
-        self.vel.x *= PLAYER_HSPEED_ATTACK_FACTOR
-        self.engine.play_sound( 'punch' )
-
-        # Play attack animation
-        self._image_attack = 3
-
-    # Rotates velocity vector 90 degrees counterclockwise
-    def invert( self ):
-
-        self.vel.x, self.vel.y = self.vel.y, -self.vel.x
-
-    # OTHER BEHAVIOR
-
+    # Abilities
+    from _player_abilities import grant_ability
+    from _player_abilities import revoke_ability
+    from _player_abilities import has_ability
+    from _player_abilities import use_ability
+    from _player_abilities import invert
+    from _player_abilities import stomp
+    from _player_abilities import rope_check
+    from _player_abilities import rope_hook
+    from _player_abilities import rope_unhook
+    from _player_abilities import glide
+    
     # Creates an object that displays UI and eventually restarts the level
     def die( self ):
 
@@ -217,6 +207,13 @@ class Player ( Entity ):
 
         draw_pos = self.pos.c().m( GRID )
 
+        # Only execute if player is using rope hook
+        if ( self.hook_obj is not None ):
+
+            # Draw rope
+            self.engine.draw_line( self.pos.c().m( GRID ).a( GRID / 2 ), self.hook_obj.pos.c().m( GRID ).a( GRID / 2 ), False, ( 125, 99, 75 ), is_aa = True )
+
+        # Detemine which animation to use
         if ( self._image_attack > 0 ):
             draw_image = V2( 2, min( 2, 2 - floor( self.image_attack ) ) )
         elif abs( self.vel.x ) < 0.5:
@@ -224,6 +221,7 @@ class Player ( Entity ):
         else:
             draw_image = V2( 1, floor( self.image_walk ) % 8 )
 
+        # Actually draw the player
         self.engine.draw_sprite( 'player', draw_image, draw_pos.c(), False, flip = V2( self.image_dir, 1 ) )
 
         # Store the sprite for usage in ragdoll
@@ -269,8 +267,12 @@ class Player ( Entity ):
         return self._is_alive
 
     @property
-    def is_invulnerable( self ):
-        return self._is_invulnerable
+    def is_invincible( self ):
+        return self._is_invincible
+
+    @is_invincible.setter
+    def is_invincible( self, value ):
+        self._is_invincible = bool( value )
 
     @property
     def has_released_jump( self ):
@@ -279,3 +281,7 @@ class Player ( Entity ):
     @property
     def checkpoint_pos( self ):
         return self._checkpoint_pos
+
+    @property
+    def hook_obj( self ):
+        return self._hook_obj

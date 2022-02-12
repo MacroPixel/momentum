@@ -6,9 +6,10 @@ from pygame.locals import *
 LAYER_BACKGROUND = 0
 LAYER_BLOCK = 1
 LAYER_ENTITY = 2
-LAYER_PARTICLE = 3
-LAYER_RAGDOLL = 4
-LAYER_UI = 5
+LAYER_PLAYER = 3
+LAYER_PARTICLE = 4
+LAYER_RAGDOLL = 5
+LAYER_UI = 6
 
 # Internal names of each block
 # Every other block array uses the order of this list
@@ -96,19 +97,22 @@ B_HAZARD = [
 # They cannot share the name of an entity
 ENTITY_STRINGS = [
     'jomper',
-    'checkpoint'
+    'checkpoint',
+    'hook'
 ]
 
 # The color of each entity when being loaded in from a PNG
 ENTITY_COLORS = [
     ( 255, 63, 255 ),
-    ( 63, 255, 191 )
+    ( 63, 255, 191 ),
+    ( 191, 191, 191 )
 ]
 
 # A string representation of each entity class
 ENTITY_CLASSES = [
     'Jomper',
-    'Checkpoint'
+    'Checkpoint',
+    'Rope_Hook'
 ]
 
 # Object arrays use the block and entity arrays
@@ -121,6 +125,19 @@ O_STRINGS = B_STRINGS + ENTITY_STRINGS
 # Allows the colors of other special objects that don't
 # fall into either category (e.g. checkpoints)
 O_COLORS = B_COLORS + ENTITY_COLORS
+
+# Internal names of each region
+# Regions define the background/music for an area
+RG_STRINGS = [
+    'tutorial'
+]
+
+# Defines a background for each region (listed in the same order)
+# Like ENTITY_CLASSES, it stores the literal name of the class
+# to be eval()'d when instances of it are created
+BG_CLASSES = [
+    'Background_Area_1'
+]
 
 # Different UI levels
 UI_LEVEL = 0
@@ -158,7 +175,7 @@ COLLISION_EPSILON = 0.000001
 ABILITY_STRINGS = [
     'invert',
     'wall_jump',
-    'downward_dash',
+    'stomp',
     'teleport',
     'slot',
     'rope',

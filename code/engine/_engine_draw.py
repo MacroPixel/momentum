@@ -34,19 +34,38 @@ def _load_sprites( self ):
         self._Engine__sprites[ internal_name ] = [ [ surface.subsurface( ( xx * square_size.x, yy * square_size.y, *square_size.l() ) ) for xx in range( square_count.x ) ]
             for yy in range( square_count.y ) ]
 
+def draw_line( self, pos_a, pos_b, is_ui, color, **kwargs ):
+
+    # "is_ui" specifies whether to use game coordinates or UI coordinates
+    # Game coords are measured in blocks and UI coords are measured in pixels
+    if is_ui:
+        pos_a = pos_a.c()
+        pos_b = pos_b.c()
+    else:
+        pos_a = self.to_screen_coord( pos_a )
+        pos_b = self.to_screen_coord( pos_b )
+
+    # Draw antialiased line if told to
+    if 'is_aa' in kwargs and kwargs[ 'is_aa' ]:
+        pygame.draw.aaline( self._Engine__screen, color, pos_a.l(), pos_b.l() )
+    # Otherwise, draw jagged line
+    else:
+        pygame.draw.line( self._Engine__screen, color, pos_a.l(), pos_b.l() )
+
 # Shortcut for blitting transformed surface onto screen
-# Every other draw function leads to this one
+# Every other draw function (except draw_line) leads to this one
 def draw_surface( self, surf, pos, is_ui, **kwargs ):
 
     # "is_ui" specifies whether to use game coordinates or UI coordinates
     # Game coords are measured in blocks and UI coords are measured in pixels
     if is_ui:
-        pass
+        pos = pos.c()
     else:
         pos = self.to_screen_coord( pos )
 
     # Scale based on zoom level (doesn't affect UI)
-    if not is_ui:
+    # Can also be disabled via 'fixed_size = True'
+    if not ( is_ui or ( 'fixed_size' in kwargs and kwargs[ 'fixed_size' ] ) ):
 
         # Use an already-existing surface if possible
         if 'buffer_key' in kwargs and kwargs[ 'buffer_key' ] in self._Engine__zoom_buffer:
@@ -104,7 +123,7 @@ def draw_text_bitmap( self, text, bitmap_font, scale, pos, is_ui, color = ( 255,
 def to_screen_coord( self, world_pos ):
 
     # zoomed_position = ( world_position - center_position ) * zoom_level
-    zoomed_pos = world_pos.s( self.view_pos ).m( self.view_zoom ).i()
+    zoomed_pos = world_pos.c().s( self.view_pos ).m( self.view_zoom ).i()
 
     # screen_position = zoomed_position + half_size
     screen_pos = zoomed_pos.a( self.screen_size.c().d( 2 ) )
@@ -115,7 +134,7 @@ def to_screen_coord( self, world_pos ):
 def to_world_coord( self, screen_pos ):
 
     # zoomed_position = screen_position - half_size
-    zoomed_pos = screen_pos.s( self.screen_size.c().d( 2 ) )
+    zoomed_pos = screen_pos.c().s( self.screen_size.c().d( 2 ) )
 
     # world_position = ( zoomed_position / zoom_level ) + center_position
     world_pos = zoomed_pos.d( self.view_zoom ).a( self.view_pos )

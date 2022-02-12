@@ -23,12 +23,16 @@ def add_instance( self, game_object ):
 # Removes a GameObject from memory
 def delete_instance( self, game_object ):
 
-    self._Engine__instances.remove( game_object )
-    self._Engine__draw_instances.remove( game_object )
-    self._Engine__named_instances[ game_object.object_id ].remove( game_object )
+    if game_object in self._Engine__instances:
+        self._Engine__instances.remove( game_object )
+    if game_object in self._Engine__draw_instances:
+        self._Engine__draw_instances.remove( game_object )
+    if game_object in self._Engine__named_instances[ game_object.object_id ]:
+        self._Engine__named_instances[ game_object.object_id ].remove( game_object )
 
     for tag in game_object.tags:
-        self._Engine__tagged_instances[ tag ].remove( game_object )
+        if game_object in self._Engine__tagged_instances[ tag ]:
+            self._Engine__tagged_instances[ tag ].remove( game_object )
 
 # Adds a tag, which marks an object's properties, to an game object
 # Safe to call on objects that already have the tag

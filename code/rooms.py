@@ -11,7 +11,7 @@ def room_main( engine ):
 
     Controller( engine )
     Player( engine )
-    Background_Container()
+    Background_Container( engine )
 
 # MENU ROOM
 # Where the game starts

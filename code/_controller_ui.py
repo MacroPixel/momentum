@@ -41,7 +41,13 @@ class UIController():
 
                 # Advanced info
                 if self.controller.advanced_info:
-                  self.__engine.draw_text_bitmap( f'FPS: { floor( self.__engine.fps_current ) }', 'main', 1, corner_pos.c().a( 0, 15 ), True, anchor = V2( 1, 0 ) )
+
+                    draw_pos = corner_pos.c()
+
+                    fps_str = f"FPS: { floor( self.__engine.fps_current ) }"
+                    self.__engine.draw_text_bitmap( fps_str, 'main', 1, draw_pos.a( 0, 15 ), True, anchor = V2( 1, 0 ) )
+                    velocity_str = f"Velocity: { self.__engine.get_instance( 'player' ).vel.c().fn( lambda a: floor( a ) ) }"
+                    self.__engine.draw_text_bitmap( velocity_str, 'main', 1, draw_pos.a( 0, 15 ), True, anchor = V2( 1, 0 ) )
 
         # Pause menu UI
         elif ( self.controller.pause_level == PAUSE_NORMAL ):

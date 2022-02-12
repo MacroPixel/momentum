@@ -5,29 +5,19 @@ from basic_imports import *
 # specialized updating, drawing, and switching out of backgrounds
 class Background ():
 
-    def __init__( self, engine ):
+    # Interface class for background
+    # __init__ should be called after everything is set up
+    def __init__( self, container ):
 
-        # Store the time since last update
-        self.__time_elapsed = 0
+        self.container = container
+        self.engine = self.container.engine
+        self.update_surf( 0 )
 
-        # Other variables
-        self.pos = V2()
+    # Called whenever the surface is intended to update
+    # Called relatively infrequently to save on performance
+    def update_surf( self, delta_time ):
+        pass
 
-    # Update surfaces should be updated relatively infrequently
-    # This function returns True every time that TIME_INTERVAL
-    # seconds have passed since the last True return
-    def is_update_interval( self ):
-
-        # Perform update if more than TIME_INTERVAL seconds has elapsed
-        self.__time_elapsed += self.engine.delta_time
-        if ( self.__time_elapsed >= self.TIME_INTERVAL ):
-
-            _, self.__time_elapsed = divmod( self.__time_elapsed, self.TIME_INTERVAL )
-            return True
-
-        return False
-
-    # Anchors the position to the view
-    def update_pos( self, surf_dimensions ):
-
-        self.pos = self.engine.view_pos.c().s( surf_dimensions.c().d( 2 ) )
+    # Returns the current background surface
+    def get_surf( self ):
+        pass

@@ -91,19 +91,16 @@ class Controller( Game_Object ):
 
             # Misc operation 2
             if ( self.engine.get_key( pygame.K_F6, 1 ) ):
-                for i in range( 10 ):
-                    self.__c_particle.create_simple( self.engine.get_instance( 'player' ).pos, ( 100, 200 ), ( 10, 20 ), ( 2, 4 ), [ ( 255, 255, 0 ) ], ( 2, 2 ) )
+                temp_player = self.engine.get_instance( 'player' )
+                temp_player.is_invincible = not temp_player.is_invincible
 
             # Misc operation 3
             if ( self.engine.get_key( pygame.K_F7, 1 ) ):
-                for ability in ABILITY_STRINGS:
-                    if not self.engine.get_instance( 'player' ).has_ability( ability ):
-                        self.engine.get_instance( 'player' ).grant_ability( ability )
-                        break 
+                pass
 
             # Misc operation 4
             if ( self.engine.get_key( pygame.K_F8, 1 ) ):
-                pass
+                self.engine.get_instance( 'background_container' ).set_active( 'tutorial' )
 
         # Perform sub-class updates
         self.__c_level.update()

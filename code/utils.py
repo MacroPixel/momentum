@@ -1,6 +1,6 @@
 from engine.engine import *
 from constants import *
-from math import floor, ceil
+from math import floor, ceil, atan, pi
 
 # For miscellaneous functions
 class utils:
@@ -12,26 +12,32 @@ class utils:
 
         return ( b + ( a - b ) * ( ( 1 - x ) ** d ) )
 
+    # Find the distance between two vectors
+    @staticmethod
+    def dist( pos_a, pos_b ):
+
+        return abs( ( pos_b.x - pos_a.x ) ** 2 + ( pos_b.y - pos_a.y ) ** 2 ) ** 0.5
+
     # Checks for a collision between two rectangles defined by their position and dimensions (using AABB, of course)
     @staticmethod
-    def collision_check( pos1, pos2, dim1, dim2, offset1 = V2(), offset2 = V2() ):
+    def collision_check( pos_a, pos_b, dim_a, dim_b, offset_a = V2(), offset_b = V2() ):
 
-        pos1.a( offset1 )
-        pos2.a( offset2 )
+        pos_a.a( offset_a )
+        pos_b.a( offset_b )
 
-        return ( pos1.x < pos2.x + dim2.x and pos2.x < pos1.x + dim1.x ) and ( pos1.y < pos2.y + dim2.y and pos2.y < pos1.y + dim1.y )
+        return ( pos_a.x < pos_b.x + dim_b.x and pos_b.x < pos_a.x + dim_a.x ) and ( pos_a.y < pos_b.y + dim_b.y and pos_b.y < pos_a.y + dim_a.y )
 
     # Gets the push vector from a collision, assuming the first object is dynamic
     @staticmethod
-    def collision_get( pos1, pos2, dim1, dim2, offset1 = V2(), offset2 = V2() ):
+    def collision_get( pos_a, pos_b, dim_a, dim_b, offset_a = V2(), offset_b = V2() ):
 
-        pos1.a( offset1 )
-        pos2.a( offset2 )
+        pos_a.a( offset_a )
+        pos_b.a( offset_b )
 
-        overlap = V2( ( dim1.x + dim2.x ) * 0.5 - abs( pos1.x - pos2.x ), ( dim1.y + dim2.y ) * 0.5 - abs( pos1.y - pos2.y ) )
+        overlap = V2( ( dim_a.x + dim_b.x ) * 0.5 - abs( pos_a.x - pos_b.x ), ( dim_a.y + dim_b.y ) * 0.5 - abs( pos_a.y - pos_b.y ) )
 
-        overlap.x *= ( -1 if pos1.x < pos2.x else 1 )
-        overlap.y *= ( -1 if pos1.y < pos2.y else 1 )
+        overlap.x *= ( -1 if pos_a.x < pos_b.x else 1 )
+        overlap.y *= ( -1 if pos_a.y < pos_b.y else 1 )
 
         return overlap
 

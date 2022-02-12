@@ -1,22 +1,27 @@
 from basic_imports import *
 from background import *
+from random import uniform
 
 # Background for the tutorial area
 class Background_Area_1 ( Background ):
 
-    def __init__( self, engine ):
+    def __init__( self, container ):
 
-        super().init( self, engine )
+        super().__init__( container )
 
-        # Load surface into memory
-        self.surf = self.engine.get_sprite( 'bg_a1_l2' ).copy()
+    def update_surf( self, delta_time ):
 
-    def update( self ):
+        # Load surface into memory, scaling it up 2x
+        surf = self.engine.get_sprite( 'bg1_img0', V2( 0, 0 ) ).copy()
 
-        if not self.is_update_interval():
-            return
+        # Then, draw the other stuff onto it
+        fg_blocks = self.engine.get_sprite( 'bg1_img1', V2( 0, 0 ) ).copy()
+        surf.blit( fg_blocks, ( 0 + uniform( 0, 0.6 ), surf.get_height() - fg_blocks.get_height() + uniform( 0, 0.6 ) ) )
 
-    def draw( self ):
+        # Finally, scale it up 2x
+        surf = pygame.transform.scale( surf, V2( surf.get_size() ).m( 2 ).l() )
+        self.__surf = surf
 
-        self.update_pos( V2( self.surf.get_size() ) )
-        self.engine.draw_surface( self.surf, self.pos, False )
+    def get_surf( self ):
+
+        return self.__surf

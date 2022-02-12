@@ -2,6 +2,7 @@ import os
 os.environ[ 'PYGAME_HIDE_SUPPORT_PROMPT' ] = ''
 import pygame
 from pygame.locals import RLEACCEL
+from math import floor, ceil
 
 from .game_object import *
 from .vector import *
@@ -155,7 +156,7 @@ class Engine:
     def load_room( self, room_function ):
 
         # Delete all objects (makes a copy of list so it can be altered during loop)
-        for obj in [ o for o in self.__instances ]:
+        for obj in self.__instances.copy():
             self.delete_instance( obj )
 
         # Executes inputted function
@@ -178,6 +179,7 @@ class Engine:
 
     # Drawing methods (preferred over pygame ones because they account for the game view)
     from ._engine_draw import _load_sprites
+    from ._engine_draw import draw_line
     from ._engine_draw import draw_surface
     from ._engine_draw import draw_sprite
     from ._engine_draw import draw_text
@@ -242,7 +244,7 @@ class Engine:
     def view_zoom( self, value ):
 
         # Clear the buffer containing the zoomed in surfaces
-        if ( V2( value ).l() != self.view_zoom.l() ):
+        if ( V2( value ) != self.view_zoom ):
             self.__zoom_buffer = {}
 
         # Change the zoom
