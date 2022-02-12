@@ -29,6 +29,10 @@ class Controller( Game_Object ):
         self.__death_strings = open( self.engine.get_path( '/data/death_strings.txt' ) ).read().split( '\n' )
         self._death_string_current = 'ERROR'
 
+        # View stuff
+        self._view_pos = V2()
+        self.shake_reset()
+
         # Debug mode can be toggled with right alt
         self.__allow_debug = True
         self._debug = True
@@ -96,7 +100,7 @@ class Controller( Game_Object ):
 
             # Misc operation 3
             if ( self.engine.get_key( pygame.K_F7, 1 ) ):
-                pass
+                self.engine.play_music( 'mus_tutorial', volume = 0.4 )
 
             # Misc operation 4
             if ( self.engine.get_key( pygame.K_F8, 1 ) ):
@@ -105,6 +109,9 @@ class Controller( Game_Object ):
         # Perform sub-class updates
         self.__c_level.update()
         self.__c_particle.update()
+
+        # Do screen shake
+        self.update_shake()
 
     # Reset the player
     def load_checkpoint( self ):
@@ -167,6 +174,11 @@ class Controller( Game_Object ):
 
         self._death_string_current = self.__death_strings[ random.randint( 0, len( self.__death_strings ) - 1 ) ]
 
+    # Screen-shake related functions
+    from _controller_shake import shake_reset
+    from _controller_shake import shake_screen
+    from _controller_shake import update_shake
+
     # Getters/setters
     @property
     def debug( self ):
@@ -194,3 +206,25 @@ class Controller( Game_Object ):
     @property
     def death_string( self ):
         return self._death_string_current
+
+    @property
+    def net_view_pos( self ):
+        return self._view_pos.c().a( self._view_shake )
+
+    @property
+    def view_pos( self ):
+        return self._view_pos.c()
+
+    @view_pos.setter
+    def view_pos( self, value ):
+        self._view_pos = value
+        self.engine.view_pos = self.net_view_pos
+
+    @property
+    def view_shake( self ):
+        return self._view_shake.c()
+
+    @view_shake.setter
+    def view_shake( self, value ):
+        self._view_shake = value
+        self.engine.view_pos = self.net_view_pos

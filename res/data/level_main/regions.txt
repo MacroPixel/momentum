@@ -1,0 +1,8 @@
+rg_-1_-1.txt
+rg_-1_0.txt
+rg_0_-1.txt
+rg_0_0.txt
+rg_1_0.txt
+rg_1_-1.txt
+rg_2_-1.txt
+rg_2_0.txt

@@ -24,10 +24,11 @@ class Entity( Game_Object ):
         self.__ragdoll_pos = None
         self.__ragdoll_anchor = V2( 0.5, 0.5 )
 
-        # Allow customization of entity behavior
+        # Flags to allow customization
         self.entity_dies_to_spikes = True # Whether the entity can survive spikes
         self.entity_destroy_on_death = True # Whether the entity's GameObject is destroyed upon death
         self.entity_gravity_multiplier = 1 # Can be used to alter or disable gravity
+        self.entity_item = None # Setting this to a string + adding 'pickupable' tag makes this pickupable
 
         # Other
         self.controller = self.engine.get_instance( 'controller' )
@@ -192,6 +193,18 @@ class Entity( Game_Object ):
         # Create a ragdoll unless told not to
         if ( self.__ragdoll_sprite is not None and self.__ragdoll_pos is not None ):
             Ragdoll( self.engine, self.__ragdoll_sprite, self.__ragdoll_pos, self.vel, self.__ragdoll_anchor )
+
+    # Executes when an item from the inventory slot is turned into this entity
+    def on_drop( self ):
+        pass
+
+    # Executes when an entity is stored as an item
+    # Deletes the entity and returns its item string
+    def pickup( self ):
+
+        item_str = self.entity_item
+        self.delete()
+        return item_str
 
     # Getters/setters
     @property

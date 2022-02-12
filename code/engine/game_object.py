@@ -32,6 +32,7 @@ class Game_Object:
 
         if ( tag not in self._tags ):
             self.engine.tag_instance( self, tag )
+            self._tags.append( tag )
 
     def remove_tag( self, tag ):
 

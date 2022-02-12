@@ -41,15 +41,15 @@ B_TEXTURES = [
 
 # The color of each block when being loaded in from a PNG
 B_COLORS = [
-    ( 127, 127, 127, 255 ),
-    ( 255, 127, 255, 255 ),
-    ( 0, 0, 0, 255 ),
-    ( 127, 63, 0, 255 ),
-    ( 127, 0, 0, 255 ),
-    ( 191, 255, 255, 255 ),
-    ( 255, 0, 255, 255 ),
-    ( 127, 255, 127, 255 ),
-    ( 255, 127, 127, 255 )
+    '7f7f7f',
+    'ff7fff',
+    '000000',
+    '7f3f00',
+    '7f0000',
+    'bfffff',
+    'ff00ff',
+    '7fff7f',
+    'ff7f7f'
 ]
 
 # Determines how the sprite of a block type conencts
@@ -98,21 +98,24 @@ B_HAZARD = [
 ENTITY_STRINGS = [
     'jomper',
     'checkpoint',
-    'hook'
+    'hook',
+    'box'
 ]
 
 # The color of each entity when being loaded in from a PNG
 ENTITY_COLORS = [
-    ( 255, 63, 255 ),
-    ( 63, 255, 191 ),
-    ( 191, 191, 191 )
+    'ff3fff',
+    '3fffbf',
+    'bfbfbf',
+    'a46a4a'
 ]
 
 # A string representation of each entity class
 ENTITY_CLASSES = [
     'Jomper',
     'Checkpoint',
-    'Rope_Hook'
+    'Rope_Hook',
+    'Box'
 ]
 
 # Object arrays use the block and entity arrays
@@ -128,8 +131,13 @@ O_COLORS = B_COLORS + ENTITY_COLORS
 
 # Internal names of each region
 # Regions define the background/music for an area
-RG_STRINGS = [
+AREA_STRINGS = [
     'tutorial'
+]
+
+# The color representation of each region within regions.png
+AREA_COLORS = [
+    'ffffff'
 ]
 
 # Defines a background for each region (listed in the same order)
@@ -144,9 +152,10 @@ UI_LEVEL = 0
 UI_PAUSE = 1
 UI_DEAD = 2
 
-# The size of a block grid/chunk grid space
+# The size of a block grid/chunk/region grid space
 GRID = 16
 C_GRID = 16
+R_GRID = 8
 
 # How far the player has to go to the side of the screen
 # for the view to scroll
@@ -154,7 +163,7 @@ VIEW_BOUNDS = ( 128, 64 )
 
 # The maximum range (in block coords) away from the center
 # within which the game should attempt to render blocks
-RENDER_BOUNDS = ( 2, 2 )
+RENDER_BOUNDS = ( 32, 32 )
 
 # General physics constants
 GRAVITY = 32
@@ -180,6 +189,24 @@ ABILITY_STRINGS = [
     'slot',
     'rope',
     'glide'
+]
+
+# Internal name for each item
+# The name that's actually shown to the player
+# is in a different dictionary
+ITEM_STRINGS = [
+    'box'
+]
+
+# Item names that are actually displayed to the player
+ITEM_NAMES = [
+    'Box'
+]
+
+# The entities that are created when items are dropped
+# Use the internal names of the entity
+ITEM_ENTITIES = [
+    'box'
 ]
 
 # Keybinds (will probably be moved to settings object in the future)

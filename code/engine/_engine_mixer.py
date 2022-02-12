@@ -27,13 +27,19 @@ def _load_sounds( self ):
         else:
             raise ValueError( 'Invalid argument, should be SOUND or MUSIC' )
 
-        # Load all the sound's variants
-        sounds = []
-        for filename in filenames:
-            sounds.append( pygame.mixer.Sound( self.get_path( '/sounds/' + filename ) ) )
+        # Load variants and store it if it's flagged as SOUND
+        if not is_music:
 
-        # Append it to the sound data
-        self._Engine__sounds[ internal_name ] = sounds
+            # Load all the sound's variants
+            sounds = []
+            for filename in filenames:
+                sounds.append( pygame.mixer.Sound( self.get_path( '/sounds/' + filename ) ) )
+            self._Engine__sounds[ internal_name ] = sounds
+
+        # Otherwise, save the filename to music
+        else:
+
+            self._Engine__music[ internal_name ] = filenames[0]            
 
 def play_sound( self, name, variant = -1 ):
 
@@ -51,3 +57,10 @@ def play_sound( self, name, variant = -1 ):
 
     # Play the sound
     sound_list[ variant ].play()
+
+def play_music( self, name, volume = 1 ):
+
+    # Play it
+    pygame.mixer.music.load( self.get_path( '/sounds/' + self._Engine__music[ name ] ) )
+    pygame.mixer.music.play( -1 )
+    pygame.mixer.music.set_volume( volume )

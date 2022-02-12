@@ -17,6 +17,7 @@ class Player ( Entity ):
         # Other variables
         self._checkpoint_pos = V2( 0, 0 )
         self._hook_obj = None
+        self._slot_item = -1
 
         # Debug variables
         self._is_invincible = False
@@ -66,9 +67,12 @@ class Player ( Entity ):
             super().entity_update()
 
         # Update view regardless
-        self.engine.view_pos.x = utils.lerp( self.engine.view_pos.x, ( self.pos.x + 0.5 ) * GRID, 0.85, self.engine.delta_time * 10 )
-        self.engine.view_pos.y = utils.lerp( self.engine.view_pos.y, ( self.pos.y + 0.5 ) * GRID, 0.85, self.engine.delta_time * 10 )
-        self.engine.view_pos.fn( lambda a: round( a, 2 ) )
+        controller = self.engine.get_instance( 'controller' )
+        new_view = controller.view_pos
+        new_view.x = utils.lerp( new_view.x, ( self.pos.x + 0.5 ) * GRID, 0.85, self.engine.delta_time * 10 )
+        new_view.y = utils.lerp( new_view.y, ( self.pos.y + 0.5 ) * GRID, 0.85, self.engine.delta_time * 10 )
+        new_view.fn( lambda a: round( a, 2 ) )
+        controller.view_pos = new_view
 
     # Alter the player's velocity
     def update_movement( self ):
@@ -157,6 +161,9 @@ class Player ( Entity ):
     from _player_abilities import use_ability
     from _player_abilities import invert
     from _player_abilities import stomp
+    from _player_abilities import slot_use
+    from _player_abilities import _slot_set
+    from _player_abilities import _drop_item
     from _player_abilities import rope_check
     from _player_abilities import rope_hook
     from _player_abilities import rope_unhook
@@ -170,6 +177,7 @@ class Player ( Entity ):
                 self.pos.c().a( 0.5 ), ( 2, 6 ), ( 0, 360 ), ( 1, 2 ), [ ( 200, 0, 0 ), ( 150, 0, 0 ), ( 180, 0, 0 ) ], ( 0.4, 0.9 ), ( 1.5, 2 ) )
         self._is_alive = False
         self.engine.get_instance( 'controller' ).new_death_string()
+        self.engine.get_instance( 'controller' ).shake_screen( 2, 0.3 )
         self.engine.play_sound( 'death' )
         super().die()
 
@@ -205,24 +213,24 @@ class Player ( Entity ):
         if ( not self.is_alive ):
             return
 
-        draw_pos = self.pos.c().m( GRID )
-
-        # Only execute if player is using rope hook
+        # Draw the rope hook if player is using it
         if ( self.hook_obj is not None ):
-
-            # Draw rope
             self.engine.draw_line( self.pos.c().m( GRID ).a( GRID / 2 ), self.hook_obj.pos.c().m( GRID ).a( GRID / 2 ), False, ( 125, 99, 75 ), is_aa = True )
 
-        # Detemine which animation to use
+        # Draw the actual player
+        draw_pos = self.pos.c().m( GRID )
         if ( self._image_attack > 0 ):
             draw_image = V2( 2, min( 2, 2 - floor( self.image_attack ) ) )
         elif abs( self.vel.x ) < 0.5:
             draw_image = V2( 0, floor( self.image_bob ) % 2 )
         else:
             draw_image = V2( 1, floor( self.image_walk ) % 8 )
-
-        # Actually draw the player
         self.engine.draw_sprite( 'player', draw_image, draw_pos.c(), False, flip = V2( self.image_dir, 1 ) )
+
+        # Draw the player's item above their head if they have one
+        if ( self.slot_item != -1 ):
+
+            self.engine.draw_sprite( 'items', V2( 0, self.slot_item ), draw_pos.c().s( 0, 16 ), False )
 
         # Store the sprite for usage in ragdoll
         self.update_ragdoll( 'player', draw_pos.c().d( GRID ), self.image_dir == -1 )
@@ -285,3 +293,13 @@ class Player ( Entity ):
     @property
     def hook_obj( self ):
         return self._hook_obj
+
+    @property
+    def slot_item( self ):
+        return self._slot_item
+
+    @property
+    def slot_item_str( self ):
+        if self.slot_item == -1:
+            return None
+        return ITEM_STRINGS[ self.slot_item ]

@@ -14,8 +14,8 @@ class Background_Container ( Game_Object ):
         # Backgrounds are referenced with their region ID
         # Only one background can be loaded at once
         # (i.e. only one background at a time can update its surface)
-        # RG_STRINGS and BG_CLASSES are used to map a region ID to a class instance
-        self.__backgrounds = { rg_str: eval( f'{ bg_obj }( self )', locals().update( { 'self': self } ) ) for rg_str, bg_obj in zip( RG_STRINGS, BG_CLASSES ) }
+        # AREA_STRINGS and BG_CLASSES are used to map a region ID to a class instance
+        self.__backgrounds = { rg_str: eval( f'{ bg_obj }( self )', locals().update( { 'self': self } ) ) for rg_str, bg_obj in zip( AREA_STRINGS, BG_CLASSES ) }
         self.__active_bg = None
 
         # Store the time since last update

@@ -1,3 +1,5 @@
 punch = SOUND punch_1.wav punch_2.wav punch_3.wav punch_4.wav punch_5.wav punch_6.wav
 death = SOUND death_1.wav
 checkpoint = SOUND checkpoint.wav
+victory = SOUND victory.wav
+mus_tutorial = MUSIC music/tutorial.mp3

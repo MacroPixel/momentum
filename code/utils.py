@@ -41,6 +41,14 @@ class utils:
 
         return overlap
 
+    # Returns a RGB or RGBA tuple from a hex string
+    @staticmethod
+    def hex_to_rgb( str, alpha = True ):
+
+        if alpha:
+            return ( int( str[:2], 16 ), int( str[2:4], 16 ), int( str[4:6], 16 ), 255 )
+        return ( int( str[:2], 16 ), int( str[2:4], 16 ), int( str[4:6], 16 ) )
+
     # Gets the key of a value in a dictionary
     @staticmethod
     def key_value( dictionary, value ):

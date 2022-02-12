@@ -42,6 +42,7 @@ class Engine:
         # 32 sounds can be played at once
         pygame.mixer.set_num_channels( 32 )
         self.__sounds = {}
+        self.__music = {}
         self._load_sounds()
 
         # Holds a reference to every GameObject
@@ -194,6 +195,7 @@ class Engine:
     # Sound methods
     from ._engine_mixer import _load_sounds
     from ._engine_mixer import play_sound
+    from ._engine_mixer import play_music
 
     # Returns a value from a dictionary if found,
     # otherwise returns the default value passed into the function

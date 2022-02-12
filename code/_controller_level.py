@@ -10,6 +10,8 @@ import random
 # by a BlockController contained within the LevelController
 class LevelController:
 
+    RELOAD_INTERVAL = 0.15
+
     def __init__( self, controller ):
 
         # Parent objects
@@ -24,7 +26,7 @@ class LevelController:
         self.reset_data()
 
         # Load the level data from 'level.txt'
-        self.load_level()
+        self.load_level( 'level_main' )
 
         # Delegate draw function to drawer, which can draw at the proper layer
         Drawer( self.__engine, LAYER_BLOCK, self.draw )
@@ -36,45 +38,30 @@ class LevelController:
         self.__object_meta = {} # Maps a position vector to a dictionary with object metadata
         self.__chunks = {} # Maps a chunk vector to a list of position vectors
         self.__loaded_chunks = [] # Holds a position vector for each currently loaded chunk
+        self.__loaded_regions = [] # Holds a vector representing all chunks in memory
+        self.__reload_timer = self.RELOAD_INTERVAL # Only reloads chunks every RELOAD_INTERVAL seconds
 
     # Loads the level data into memory
-    def load_level( self ):
+    def load_level( self, name = 'level_main' ):
 
-        level_data = open( self.__engine.get_path( '/data/level.txt' ) ).read().split( '\n' )
-
-        # Reset any pre-existing level data
+        self._level_name = name
         self.reset_data()
-        self.__c_block.reset_buffers()
-        self.__c_block.reset_data()
-
-        # Iterate through every line in the file
-        for line in level_data:
-
-            # If blank line, do nothing
-            if len( line ) == 0:
-                pass
-
-            # Otherwise, create a block/entity at the listed positions
-            else:
-
-                # Split the line by spaces
-                # The first token is the object ID, and the subsequent tokens
-                # represent coordinate pairs at which the objects should be created
-                line = line.split( ' ' )
-                object_id = utils.o_id( line[0] )
-                object_positions = [ V2( line[ i : i + 2 ] ).i() for i in range( 1, len( line ), 2 ) ]
-
-                # Now, loop through coordinates and set the objects
-                for obj_pos in object_positions:
-                    self._set_object( obj_pos, object_id )
-
+        
     # Recreates the level data from a PNG image
     def rewrite_level( self ):
 
         # Load the PNG into memory
-        level_surf = pygame.image.load( self.__engine.get_path( '/data/level.png' ) )
+        level_surf = pygame.image.load( self.__engine.get_path( f'/data/{ self._level_name }/level.png' ) )
 
-        objects = {} # Lists an object ID and all the positions associated with it
+        # Regions are a group of chunks stored in their own file
+        # They prevent having to use all the level data at once
+        # Unlike chunks, regions must be calculated during this process
+        # instead of being calculated when the file is loaded
+        # 'regions' maps a region vector to a dictionary that maps
+        # an object to all its positions
+        objects = {}
+        regions = {}
+
         player_spawn = V2( 0, 0 ) # Player spawnpoint can be changed
 
         # Find the positions of each object relative to top-left
@@ -86,63 +73,108 @@ class LevelController:
                 pos = V2( xx, yy )
                 this_color = level_surf.get_at( pos.l() )
 
+                # Skip if transparent
+                if ( this_color[3] == 0 ):
+                    continue
+
                 # Change the player spawn if the pixel is white
                 if ( this_color == ( 255, 255, 255, 255 ) ):
                     player_spawn = pos
                     continue
 
                 # Otherwise, store the position in the appropriate object
+                # Positions are stored in 'objects' until the player's spawnpoint is taken
+                # into account; then, they're moved over to 'regions'
                 for object_id in range( len( O_STRINGS ) ):
-                    if ( level_surf.get_at( pos.l() ) == O_COLORS[ object_id ] ):
-
+                    if ( level_surf.get_at( pos.l() ) == utils.hex_to_rgb( O_COLORS[ object_id ] ) ):
                         if ( object_id not in objects ):
                             objects[ object_id ] = []
                         objects[ object_id ].append( pos )
 
-        # Actually write to the file
-        file = open( self.__engine.get_path( '/data/level.txt' ), 'w' )
+        # Shift the object positions relative to the player spawnpoint
+        # Now, the objects can be safely grouped into regions
         for object_id in objects:
 
-            # Create a list of all the positions at which this object should be created
-            # Positions are relative to the player spawn, hence the .s( player_spawn )
-            object_positions = [ utils.vec_to_str( pos.s( player_spawn ) ).replace( ':', ' ' ) for pos in objects[ object_id ] ]
-            file.write( f"{ utils.o_string( object_id ) } { ' '.join( object_positions ) }\n" )
+            # Shift every position
+            object_positions = [ pos.c().s( player_spawn ) for pos in objects[ object_id ] ]
+
+            # For each position, find its region vector
+            # Then, add it to the region:object:pos dictoinary, creating new keys if necessary
+            # Coordinates are NOT stored relative to the current region
+            for pos in object_positions:
+
+                region = pos.c().fn( lambda a: floor( a / C_GRID / R_GRID ) )
+                if ( region not in regions ):
+                    regions[ region ] = {}
+                if ( object_id not in regions[ region ] ):
+                    regions[ region ][ object_id ] = []
+                regions[ region ][ object_id ].append( pos.c() )
+
+        # For every region, create a file, storing the filename in a central 'regions.txt' file
+        file_root = open( self.__engine.get_path( f'/data/{ self._level_name }/regions.txt' ), 'w' )
+        for region in regions:
+
+            filename = f'rg_{ region.x }_{ region.y }.txt'
+            file_root.write( filename + '\n' )
+            file = open( self.__engine.get_path( f'/data/{ self._level_name }/{ filename }' ), 'w' )
+            for object_id in regions[ region ]:
+                object_positions = [ f'{ pos.x } { pos.y }' for pos in regions[ region ][ object_id ] ]
+                file.write( f"{ utils.o_string( object_id ) } { ' '.join( object_positions ) }\n" )
 
     # Loads necessary chunks into memory based off of view position
     def update( self ):
 
-        # Draw chunks within the proper bound
-        # Bound is specified in blocks offset from view center (via RENDER_BOUNDS)
-        bound_1 = self.__engine.view_pos.c().fn( lambda a: round( a / GRID / C_GRID ) ).s( RENDER_BOUNDS )
-        bound_2 = self.__engine.view_pos.c().fn( lambda a: round( a / GRID / C_GRID ) ).a( RENDER_BOUNDS )
+        # Only do this every RELOAD_INTERVAL seconds
+        self.__reload_timer += self.__engine.delta_time
+        if ( self.__reload_timer > self.RELOAD_INTERVAL ):
 
-        # Iterate through every chunk within the bounds
-        # All positions are stored in a list so chunk unloading can be performed
-        chunk_list = []
-        for xx in range( bound_1.x, bound_2.x + 1 ):
-            for yy in range( bound_1.y, bound_2.y + 1 ):
+            self.__reload_timer = divmod( self.__reload_timer, 0.4 )[1]
 
-                chunk_pos = V2( xx, yy )
-                chunk_list.append( chunk_pos.c() )
+            # Draw chunks within the proper bound
+            # Bound is specified in blocks offset from view center (via RENDER_BOUNDS)
+            bound_1 = self.__engine.view_pos.c().fn( lambda a: round( a / GRID ) ).s( RENDER_BOUNDS )
+            bound_2 = self.__engine.view_pos.c().fn( lambda a: round( a / GRID ) ).a( RENDER_BOUNDS )
+            chunk_bound_1 = bound_1.c().fn( lambda a: floor( a / C_GRID ) )
+            chunk_bound_2 = bound_2.c().fn( lambda a: floor( a / C_GRID ) )
+            region_bound_1 = chunk_bound_1.c().s( 1 ).fn( lambda a: floor( a / R_GRID ) )
+            region_bound_2 = chunk_bound_2.c().a( 1 ).fn( lambda a: floor( a / R_GRID ) )
 
-                # Don't bother if the chunk has no data within it
-                if ( chunk_pos not in self.__chunks ):
-                    continue
+            # Load any chunks/regions within the bound
+            region_list = []
+            chunk_list = []
 
-                # Otherwise, load the chunk if it's unloaded
-                if ( chunk_pos not in self.__loaded_chunks ):
+            for xx in range( region_bound_1.x, region_bound_2.x + 1 ):
+                for yy in range( region_bound_1.y, region_bound_2.y + 1 ):
+                    region_pos = V2( xx, yy )
+                    region_list.append( region_pos.c() )
+                    self._load_region( region_pos )
+
+            for xx in range( chunk_bound_1.x, chunk_bound_2.x + 1 ):
+                for yy in range( chunk_bound_1.y, chunk_bound_2.y + 1 ):
+                    chunk_pos = V2( xx, yy )
+                    chunk_list.append( chunk_pos.c() )
                     self.load_chunk( chunk_pos )
 
-        # Unload any chunks that aren't within the bounds
-        for chunk_pos in self.__loaded_chunks:
-
-            if ( chunk_pos not in chunk_list ):
-                self.unload_chunk( chunk_pos )
+            # Unload any chunks/regions not within the bounds
+            for chunk_pos in self.__loaded_chunks:
+                if ( chunk_pos not in chunk_list ):
+                    self.unload_chunk( chunk_pos )
+            for region_pos in self.__loaded_regions:
+                if ( region_pos not in region_list ):
+                    print( region_pos )
+                    self._unload_region( region_pos )
 
     # Loading a chunk involves spawning enemies
     # and creating a surface buffer for fast drawing
     def load_chunk( self, chunk_pos ):
 
+        # Don't bother if chunk is loaded
+        if chunk_pos in self.__loaded_chunks:
+            return
+
+        # Return early if this chunk is empty
+        if chunk_pos not in self.__chunks:
+            return
         self.__loaded_chunks.append( chunk_pos.c() )
 
         # Spawn any entities within the chunk
@@ -163,6 +195,10 @@ class LevelController:
     # Undoes chunk loading
     def unload_chunk( self, chunk_pos ):
 
+        # Don't bother if chunk is unloaded
+        if chunk_pos not in self.__loaded_chunks:
+            return
+
         self.__loaded_chunks.remove( chunk_pos )
 
         # Delete the surface buffer
@@ -174,6 +210,74 @@ class LevelController:
             obj_chunk_pos = obj.pos.c().fn( lambda a: floor( a / C_GRID ) )
             if obj_chunk_pos == chunk_pos:
                 obj.delete()
+
+    # Loading a region loads chunks into memory, but by itself doesn't load them in
+    def _load_region( self, region_pos ):
+
+        # Do nothing if region is already loaded
+        if ( region_pos in self.__loaded_regions ):
+            return
+
+        # Do nothing if file can't be loaded
+        try:
+            filename = f'rg_{ region_pos.x }_{ region_pos.y }.txt'
+            region_file = open( self.__engine.get_path( f'/data/{ self._level_name }/{ filename }' ) ).read().split( '\n' )
+        except FileNotFoundError:
+            return
+
+        self.__loaded_regions.append( region_pos.c() )
+
+        # Load the objects into memory
+        for line in [ line for line in region_file if line != '' ]:
+
+            # If blank line, do nothing
+            if len( line ) == 0:
+                continue
+
+            # Otherwise, create a block/entity at the listed positions
+            # Split the line by spaces
+            # The first token is the object ID, and the subsequent tokens
+            # represent coordinate pairs at which the objects should be created
+            line = line.split( ' ' )
+            object_id = utils.o_id( line[0] )
+            object_positions = [ V2( line[ i : i + 2 ] ).i() for i in range( 1, len( line ), 2 ) ]
+
+            # Now, loop through coordinates and set the objects
+            for obj_pos in object_positions:
+                self._set_object( obj_pos, object_id )
+
+    # Unloading a region frees up the memory it was using
+    # This should only be used when no chunks within the region are loaded
+    def _unload_region( self, region_pos ):
+
+        # Do nothing if already unloaded
+        if ( region_pos not in self.__loaded_regions ):
+            return
+
+        # Remove every chunk from memory
+        chunk_positions = []
+        for xx in range( region_pos.x * R_GRID, ( region_pos.x + 1 ) * R_GRID ):
+            for yy in range( region_pos.y * R_GRID, ( region_pos.y + 1 ) * R_GRID ):
+                chunk_positions.append( V2( xx, yy ) )
+
+        for chunk_pos in chunk_positions:
+
+            # Don't unload empty chunks
+            if chunk_pos not in self.__chunks:
+                continue
+
+            # Remove all positions within the chunk
+            for pos in self.__chunks[ chunk_pos ]:
+
+                pos = utils.chunk_pos_to_block( chunk_pos, pos )
+
+                # Remove position data from all dictionaries
+                self.__objects.pop( pos )
+                self.__object_meta.pop( pos )
+
+            self.__chunks.pop( chunk_pos )
+
+        self.__loaded_regions.remove( region_pos )
             
     # Only responsible for drawing blocks
     # Since enemies are their own objects, they're capable of drawing themselves
