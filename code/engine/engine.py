@@ -7,6 +7,14 @@ from math import floor, ceil
 from .game_object import *
 from .vector import *
 
+# Switching a room immediately unloads everything instead of
+# waiting until the end of the update event
+class RoomSwitch ( Exception ):
+
+    def __init__( self, func ):
+
+        self.func = func
+
 # Abstracts most of the Pygame stuff away
 class Engine:
 
@@ -44,6 +52,8 @@ class Engine:
         self.__sounds = {}
         self.__music = {}
         self._load_sounds()
+        self._next_song = {}
+        self.MUSIC_END = pygame.USEREVENT + 1
 
         # Holds a reference to every GameObject
         self.__instances = []
@@ -104,23 +114,32 @@ class Engine:
                 elif event.type == pygame.MOUSEBUTTONUP:
                     self.__mouse_buttons_up.append( event.button )
 
-            # update() is called once per frame for all GameObjects
-            for obj in self.__instances:
-                obj.update()
+                # Music queue
+                elif event.type == self.MUSIC_END:
+                    self.play_music( self._next_song[ 'name' ], **self._next_song[ 'kwargs' ] )
 
-            # tick() is called 10 times a second for all GameObjects
+            # Cancel updating/drawing if room is switched
+            try:
 
-            # After resetting the draw window, draw() can be called for all GameObjects
-            self.__screen.fill( ( 21, 21, 21 ) )
-            for obj in self.__draw_instances:
-                obj.draw()
-            
-            # Swap buffers
-            pygame.display.update()
+                # update() is called once per frame for all GameObjects
+                for obj in self.__instances:
+                    obj.update()
 
-            # Limit FPS if necessary
-            if ( self.fps_limit > 0 ):
-                self.__fps_clock.tick( self.fps_limit )
+                # After resetting the draw window, draw() can be called for all GameObjects
+                self.__screen.fill( ( 21, 21, 21 ) )
+                for obj in self.__draw_instances:
+                    obj.draw()
+                
+                # Swap buffers
+                pygame.display.update()
+
+                # Limit FPS if necessary
+                if ( self.fps_limit > 0 ):
+                    self.__fps_clock.tick( self.fps_limit )
+
+            except RoomSwitch as room:
+
+                self.load_room( room.func )
 
     # Gets the state of a key (check of 0 = "is down", 1 = "was pressed", 2 = "was released")
     def get_key( self, key_id, check = 0 ):
@@ -163,6 +182,12 @@ class Engine:
         # Executes inputted function
         self.__room_dict[ room_function ]( self )
 
+    # Loading a room clears all objects and runs a custom function
+    # The function is stored in self.__room_dict under a string
+    def switch_room( self, room_function ):
+
+        raise RoomSwitch( room_function )
+
     # Closes the game
     def close_app( self ):
 
@@ -196,6 +221,7 @@ class Engine:
     from ._engine_mixer import _load_sounds
     from ._engine_mixer import play_sound
     from ._engine_mixer import play_music
+    from ._engine_mixer import queue_music
 
     # Returns a value from a dictionary if found,
     # otherwise returns the default value passed into the function

@@ -4,7 +4,6 @@ from entity_list import *
 from drawer import *
 
 import random
-import numpy as np
 import json
 
 # Contained within/controlled by Controller
@@ -35,7 +34,8 @@ class LevelController:
     # Initially creates local data; can also be used to reset data
     def reset_data( self, level_size ):
 
-        self.__objects = np.full( level_size, -1, dtype = np.byte ) # Stores all block ids of the level
+        self.__objects = {} # Maps a position vector to an object ID
+        self.__chunks = {} # Maps a chunk vector to a list of position vectors
         self.__loaded_chunks = [] # Holds a position vector for each currently loaded chunk
         self.__level_meta = {} # Holds additional important info (e.g. player spawn)
 
@@ -208,8 +208,27 @@ class LevelController:
     # Set block/entity at target position
     def _set_object( self, pos, object_id ):
 
-        # Store the object ID
-        self.__objects[ pos.x, pos.y ] = object_id
+        # Initialize the object data
+        self.__objects[ pos ] = object_id
+
+        block_id = utils.obj_id_to_block( object_id )
+        entity_id = utils.obj_id_to_entity( object_id )
+
+        # Do any necessary block setup
+        if ( block_id is not None ):
+            pass
+
+        # Do any necessary entity setup
+        elif ( entity_id is not None ):
+            pass
+
+        # Make sure the parent chunk exists, then store
+        # the position and object ID within the parent chunk
+        chunk_pos, rel_pos = utils.block_pos_to_chunk( pos )
+        if chunk_pos not in self.__chunks:
+            self.__chunks[ chunk_pos.c() ] = []
+        if ( rel_pos not in self.__chunks[ chunk_pos ] ):
+            self.__chunks[ chunk_pos ].append( rel_pos )
 
     # Get the metadata of the whole level
     def get_level_meta( self, key ):
@@ -219,13 +238,13 @@ class LevelController:
     # Check whether anything exists at a position
     def is_object( self, pos ):
 
-        return self.__objects[ pos.x, pos.y ] != -1
+        return self.__objects[ pos ] != -1
 
     # Check whether a block exists at a position
     def is_block( self, pos ):
 
         try:
-            return utils.obj_id_to_block( self.__objects[ pos.x, pos.y ] ) != None
+            return utils.obj_id_to_block( self.__objects[ pos ] ) != None
         except KeyError:
             return False
 
@@ -233,14 +252,14 @@ class LevelController:
     def is_entity( self, pos ):
 
         try:
-            return utils.obj_id_to_entity( self.__objects[ pos.x, pos.y ] ) != None
+            return utils.obj_id_to_entity( self.__objects[ pos ] ) != None
         except KeyError:
             return False
 
     # Get the object id of a position
     def get_object_type( self, pos ):
 
-        return self.__objects[ pos.x, pos.y ]
+        return self.__objects[ pos ]
 
     # Performs an operation on the block the player is hovering over
     def object_debug( self ):

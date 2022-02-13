@@ -73,7 +73,8 @@ B_DRAW_MODES = [
 
 # List of blocks that don't connect to blocks of different types
 B_NO_CONNECT = [
-    'spikes'
+    'spikes',
+    'goop'
 ]
 
 # List of blocks that entities can go through
@@ -130,21 +131,30 @@ O_STRINGS = B_STRINGS + ENTITY_STRINGS
 O_COLORS = B_COLORS + ENTITY_COLORS
 
 # Internal names of each region
-# Regions define the background/music for an area
-AREA_STRINGS = [
-    'tutorial'
+# Regions define the background/music for an region
+REGION_STRINGS = [
+    'tutorial',
+    'purple'
 ]
 
-# The color representation of each region within regions.png
-AREA_COLORS = [
-    'ffffff'
+# The blocks that trigger each region
+REGION_BLOCKS = [
+    [ 'default' ],
+    [ 'goop' ]
+]
+
+# Lists the music to be played in each region
+REGION_SONGS = [
+    'mus_tutorial',
+    'mus_purple'
 ]
 
 # Defines a background for each region (listed in the same order)
 # Like ENTITY_CLASSES, it stores the literal name of the class
 # to be eval()'d when instances of it are created
-BG_CLASSES = [
-    'Background_Area_1'
+REGION_BGS = [
+    'Background_Region_1',
+    'Background_Region_2'
 ]
 
 # Different UI levels
@@ -152,10 +162,9 @@ UI_LEVEL = 0
 UI_PAUSE = 1
 UI_DEAD = 2
 
-# The size of a block grid/chunk/region grid space
+# The size of a block grid/chunk grid space
 GRID = 16
 C_GRID = 16
-R_GRID = 8
 
 # How far the player has to go to the side of the screen
 # for the view to scroll
@@ -163,7 +172,7 @@ VIEW_BOUNDS = ( 128, 64 )
 
 # The maximum range (in block coords) away from the center
 # within which the game should attempt to render blocks
-RENDER_BOUNDS = ( 3, 2 )
+RENDER_BOUNDS = ( 1, 1 )
 
 # General physics constants
 GRAVITY = 32

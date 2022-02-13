@@ -259,6 +259,31 @@ class Player ( Entity ):
 
         return self.test_block_below( lambda block_id: utils.b_string( block_id ) not in B_PASSABLE )
 
+    # Checks a sample of blocks around the player to see the most numerous one
+    # This then returns an region ID for the controller to use
+    def get_region( self ):
+
+        controller = self.engine.get_instance( 'controller' )
+        block_ids = []
+
+        # Store the position of any non-empty blocks in a 5x5 square
+        pos = self.pos.c().i()
+        for xx in range( pos.x - 2, pos.x + 2 ):
+            for yy in range( pos.y - 2, pos.y + 2 ):
+                if controller.is_block( V2( xx, yy ) ):
+                    block_ids.append( utils.obj_id_to_block( controller.get_object_type( V2( xx, yy ) ) ) )
+
+        # -1 indicates no specific region (i.e. empty/inconclusive list)
+        if len( block_ids ) == 0:
+            return -1
+
+        # Find the mode and attempt to map it to an region ID
+        mode = utils.b_string( max( set( block_ids ), key = block_ids.count ) )
+        for i, _ in enumerate( REGION_STRINGS ):
+            if mode in REGION_BLOCKS[ i ]:
+                return i
+        return -1
+
     @property
     def image_dir( self ):
         return self._image_dir

@@ -3,6 +3,7 @@ from basic_imports import *
 from _controller_level import *
 from _controller_ui import *
 from _controller_particle import *
+from _controller_region import *
 
 from jomper import *
 from player import *
@@ -25,6 +26,7 @@ class Controller( Game_Object ):
         self.__c_level = LevelController( self )
         self.__c_ui = UIController( self )
         self.__c_particle = ParticleController( self )
+        self.__c_region = RegionController( self )
 
         # The player can now be initialized
         Player( self.engine, V2( self.get_level_meta( 'player_spawn' ) ) )
@@ -59,7 +61,7 @@ class Controller( Game_Object ):
 
         # Quit the game is paused
         if ( self.engine.get_key( K_q, 1 ) and self.pause_level == PAUSE_NORMAL ):
-            self.engine.load_room( 'frontend' )
+            self.engine.switch_room( 'frontend' )
 
         # Restart the game if player is dead and game is unpaused
         if ( self.pause_level == PAUSE_NONE and self.engine.get_key( K_SPACE, 1 ) and not self.engine.get_instance( 'player' ).is_alive ):
@@ -104,15 +106,16 @@ class Controller( Game_Object ):
 
             # Misc operation 3
             if ( self.engine.get_key( pygame.K_F7, 1 ) ):
-                self.engine.play_music( 'mus_tutorial', volume = 0.4 )
+                pass
 
             # Misc operation 4
             if ( self.engine.get_key( pygame.K_F8, 1 ) ):
-                self.engine.get_instance( 'background_container' ).set_active( 'tutorial' )
+                pass
 
         # Perform sub-class updates
         self.__c_level.update()
         self.__c_particle.update()
+        self.__c_region.update()
 
         # Do screen shake
         self.update_shake()

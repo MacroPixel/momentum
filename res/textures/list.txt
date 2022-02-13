@@ -13,6 +13,7 @@ checkpoint = checkpoint.png 1:1
 badges = badges.png 7:1
 bg1_img0 = bg1_img0.png 1:1
 bg1_img1 = bg1_img1.png 1:1
+bg2_img0 = bg2_img0.png 1:1
 rope_hook = rope_hook.png 1:1
 items = items.png 1:1
 box = box.png 1:1

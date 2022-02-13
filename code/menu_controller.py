@@ -14,7 +14,7 @@ class Menu_Controller ( Game_Object ):
         
         # Goto main room if button is pressed
         if ( self.engine.get_key( pygame.K_SPACE, 1 ) ):
-            self.engine.load_room( 'main' )
+            self.engine.switch_room( 'main' )
 
         # Quit if escape is pressed
         if ( self.engine.get_key( pygame.K_ESCAPE, 1 ) ):

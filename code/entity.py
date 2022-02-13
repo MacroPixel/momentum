@@ -86,7 +86,7 @@ class Entity( Game_Object ):
                 if ( block_string not in B_BOUNCE ):
                     exec( f'self.vel.{xy} = 0' )
                 elif ( block_string in B_BOUNCE ):
-                    exec( f'self.vel.{xy} *= -BOUNCE_FACTOR' )
+                    exec( f'self.vel.{xy} *= -B_BOUNCE[ block_string ]' )
 
         # Perform the aforementioned collision functions
         has_died = False # Only allow 1 death

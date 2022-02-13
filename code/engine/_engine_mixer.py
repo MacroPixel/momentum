@@ -1,5 +1,6 @@
 import pygame
 import random
+from math import floor
 
 # Initially loads the sounds into memory
 # Should only be called once
@@ -58,9 +59,25 @@ def play_sound( self, name, variant = -1 ):
     # Play the sound
     sound_list[ variant ].play()
 
-def play_music( self, name, volume = 1 ):
+def play_music( self, name, volume = 1, loops = -1, fade_in = 0 ):
 
     # Play it
     pygame.mixer.music.load( self.get_path( '/sounds/' + self._Engine__music[ name ] ) )
-    pygame.mixer.music.play( -1 )
+    pygame.mixer.music.play( loops, fade_ms = floor( fade_in * 1000 ) )
     pygame.mixer.music.set_volume( volume )
+    self._next_song = {}
+    pygame.mixer.music.set_endevent()
+
+def queue_music( self, fade_out, name, **kwargs ):
+
+    # If no song is playing, then play it right now
+    if ( not pygame.mixer.music.get_busy() ):
+        self.play_music( name, **kwargs )
+        return
+
+    # Otherwise, queue it
+    # This will cause an event to fire when the current song is done
+    # fading out, and then the engine will handle that event
+    pygame.mixer.music.set_endevent( self.MUSIC_END )
+    pygame.mixer.music.fadeout( floor( fade_out * 1000 ) )
+    self._next_song = { 'name': name, 'kwargs': kwargs }

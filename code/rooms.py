@@ -2,7 +2,6 @@ from basic_imports import *
 from controller import *
 from player import *
 from menu_controller import *
-from background_container import *
 
 # MAIN ROOM
 # Needs a controller and player object
@@ -10,7 +9,6 @@ from background_container import *
 def room_main( engine ):
 
     Controller( engine )
-    Background_Container( engine )
 
 # MENU ROOM
 # Where the game starts

@@ -1,4 +1,5 @@
 from basic_imports import *
+import random
 
 # Contained within/controlled by LevelController
 # Block storing/drawing

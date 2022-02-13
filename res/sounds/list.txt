@@ -3,3 +3,4 @@ death = SOUND death_1.wav
 checkpoint = SOUND checkpoint.wav
 victory = SOUND victory.wav
 mus_tutorial = MUSIC music/tutorial.mp3
+mus_purple = MUSIC music/purple.mp3
