@@ -163,7 +163,7 @@ VIEW_BOUNDS = ( 128, 64 )
 
 # The maximum range (in block coords) away from the center
 # within which the game should attempt to render blocks
-RENDER_BOUNDS = ( 32, 32 )
+RENDER_BOUNDS = ( 3, 2 )
 
 # General physics constants
 GRAVITY = 32

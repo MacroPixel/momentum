@@ -37,11 +37,13 @@ class BlockController():
 
         # Draw every block onto it
         for xx in range( C_GRID ):
+
             for yy in range( C_GRID ):
                 
                 block_pos = utils.chunk_pos_to_block( chunk_pos, V2( xx, yy ) )
 
                 if ( self.level_controller.is_block( block_pos ) ):
+                    time_initial = perf_counter()
                     surf.blit( self.render_block( block_pos ), ( xx * GRID, yy * GRID ) )
 
     # Deletes a surface when it's no longer needed
@@ -62,10 +64,15 @@ class BlockController():
         if not self.level_controller.is_block( block_pos ):
             return None
 
-        # Start with the sprite's base image
+        # Generate variant based off object type
         block_id = utils.obj_id_to_block( self.level_controller.get_object_type( block_pos ) )
+        if ( B_DRAW_MODES[ block_id ] in [ BDM_3VAR_OVERLAY, BDM_3VAR_REPLACE ] ):
+            variant = random.randint( 0, 2 )
+        else:
+            variant = 0
+
+        # Start with the sprite's base image
         sprite_id = B_TEXTURES[ block_id ]
-        variant = self.level_controller.get_object_meta( block_pos )[ 'var' ]
         surf = self.__engine.get_sprite( sprite_id, V2( variant, 0 ) ).copy()
 
         # Find the binary representation of the block's neighbors

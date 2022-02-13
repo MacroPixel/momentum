@@ -117,7 +117,7 @@ class utils:
     # Checks and converts a object ID to a block ID
     def obj_id_to_block( obj_id ):
 
-        if obj_id < len( B_STRINGS ):
+        if ( 0 <= obj_id < len( B_STRINGS ) ):
             return obj_id
         else:
             return None

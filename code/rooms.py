@@ -10,7 +10,6 @@ from background_container import *
 def room_main( engine ):
 
     Controller( engine )
-    Player( engine )
     Background_Container( engine )
 
 # MENU ROOM

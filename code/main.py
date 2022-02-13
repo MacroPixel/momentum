@@ -17,7 +17,7 @@ def main():
         icon_source = '/textures/icon.png',
         fps_limit = 0,
         zoom_level = V2( 3, 3 )
-    )
+    ) 
     g_engine.run()
 
 if __name__ == '__main__':

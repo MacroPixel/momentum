@@ -5,6 +5,7 @@ from _controller_ui import *
 from _controller_particle import *
 
 from jomper import *
+from player import *
 
 import random
 
@@ -24,6 +25,9 @@ class Controller( Game_Object ):
         self.__c_level = LevelController( self )
         self.__c_ui = UIController( self )
         self.__c_particle = ParticleController( self )
+
+        # The player can now be initialized
+        Player( self.engine, self.get_level_meta( 'player_spawn' ) )
 
         # Death messages are loaded from res/data/death_strings.txt
         self.__death_strings = open( self.engine.get_path( '/data/death_strings.txt' ) ).read().split( '\n' )
@@ -121,7 +125,7 @@ class Controller( Game_Object ):
     def reset_level( self ):
 
         # Reload tiles
-        self.__c_level.load_level()
+        self.__c_level.load_level( 'level_main' )
 
         # Erase all entities (excluding player)
         for entity in [ e for e in self.engine.get_tagged_instances( 'entity' ) if e.object_id != 'player' ]:
@@ -129,6 +133,11 @@ class Controller( Game_Object ):
 
         # Reset player
         self.load_checkpoint()
+
+    # Get the metadata of the whole level
+    def get_level_meta( self, key ):
+
+        return self.__c_level.get_level_meta( key )
 
     # Check whether anything exists at a position
     def is_object( self, pos ):
@@ -146,7 +155,6 @@ class Controller( Game_Object ):
         return self.__c_level.is_entity( pos )
 
     # Get the block type of a position
-    # !!! WILL throw error if there isn't a block there
     def get_object_type( self, pos ):
 
         return self.__c_level.get_object_type( pos )

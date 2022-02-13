@@ -73,14 +73,12 @@ class UIController():
             self.__engine.draw_text_bitmap( fps_str, 'main', 1, draw_pos.a( 0, 15 ), True, anchor = V2( 1, 0 ) )
             position_str = f"Position: { player.pos.c().fn( lambda a: floor( a ) ) }"
             self.__engine.draw_text_bitmap( position_str, 'main', 1, draw_pos.a( 0, 15 ), True, anchor = V2( 1, 0 ) )
-            chunk_str = f"Chunk: { player.pos.c().fn( lambda a: floor( a / C_GRID ) ) }"
-            self.__engine.draw_text_bitmap( chunk_str, 'main', 1, draw_pos.a( 0, 15 ), True, anchor = V2( 1, 0 ) )
             velocity_str = f"Velocity: { player.vel.c().fn( lambda a: floor( a ) ) }"
             self.__engine.draw_text_bitmap( velocity_str, 'main', 1, draw_pos.a( 0, 15 ), True, anchor = V2( 1, 0 ) )
+            chunk_str = f"Chunk: { player.pos.c().fn( lambda a: floor( a / C_GRID ) ) }"
+            self.__engine.draw_text_bitmap( chunk_str, 'main', 1, draw_pos.a( 0, 15 ), True, anchor = V2( 1, 0 ) )
             c_loaded_str = f"Chunks Loaded: { len( self.controller._Controller__c_level._LevelController__loaded_chunks ) }"
             self.__engine.draw_text_bitmap( c_loaded_str, 'main', 1, draw_pos.a( 0, 15 ), True, anchor = V2( 1, 0 ) )
-            r_loaded_str = f"Regions Loaded: { len( self.controller._Controller__c_level._LevelController__loaded_regions ) }"
-            self.__engine.draw_text_bitmap( r_loaded_str, 'main', 1, draw_pos.a( 0, 15 ), True, anchor = V2( 1, 0 ) )
             memory_str = f"Memory Used: { round( psutil.Process( os.getpid() ).memory_info().rss / 1024 ** 2, 1 ) } MB"
             self.__engine.draw_text_bitmap( memory_str, 'main', 1, draw_pos.a( 0, 15 ), True, anchor = V2( 1, 0 ) )
 

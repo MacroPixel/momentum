@@ -4,20 +4,20 @@ from entity import *
 # It's you :D
 class Player ( Entity ):
 
-    def __init__( self, engine ):
+    def __init__( self, engine, spawn_pos ):
 
-        super().__init__( engine, 'player', V2(), V2(), ( 44 / 48, 44 / 48, 2 / 48, 4 / 48 ), LAYER_PLAYER )
+        super().__init__( engine, 'player', spawn_pos, V2(), ( 44 / 48, 44 / 48, 2 / 48, 4 / 48 ), LAYER_PLAYER )
         self.entity_destroy_on_death = False
-
         self._reset_basic_vars()
 
         # Stores whether the player has each ability
         self._has_ability = { ability: False for ability in ABILITY_STRINGS }
 
         # Other variables
-        self._checkpoint_pos = V2( 0, 0 )
+        self._checkpoint_pos = spawn_pos
         self._hook_obj = None
         self._slot_item = -1
+        self._has_intially_set_view = False
 
         # Debug variables
         self._is_invincible = False
@@ -46,6 +46,11 @@ class Player ( Entity ):
         # Cancel if game is paused
         if ( self.engine.get_instance( 'controller' ).pause_level >= PAUSE_NORMAL ):
             return
+
+        # Set the view once after the controller is created
+        if not self._has_intially_set_view:
+            self.engine.get_instance( 'controller' ).view_pos = self.pos.c().m( GRID ).a( 0.5, 0.5 )
+            self._has_intially_set_view = True
 
         # Only perform gameplay actions if player is alive
         if ( self.is_alive ):
