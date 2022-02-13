@@ -137,7 +137,7 @@ class LevelController:
             chunk_bound_1 = bound_1.c().fn( lambda a: floor( a / C_GRID ) )
             chunk_bound_2 = bound_2.c().fn( lambda a: floor( a / C_GRID ) )
             region_bound_1 = chunk_bound_1.c().s( 1 ).fn( lambda a: floor( a / R_GRID ) )
-            region_bound_2 = chunk_bound_2.c().a( 1 ).fn( lambda a: floor( a / R_GRID ) )
+            region_bound_2 = chunk_bound_2.c().a( 1 ).fn( lambda a: ceil( a / R_GRID ) )
 
             # Load any chunks/regions within the bound
             region_list = []
@@ -161,7 +161,6 @@ class LevelController:
                     self.unload_chunk( chunk_pos )
             for region_pos in self.__loaded_regions:
                 if ( region_pos not in region_list ):
-                    print( region_pos )
                     self._unload_region( region_pos )
 
     # Loading a chunk involves spawning enemies

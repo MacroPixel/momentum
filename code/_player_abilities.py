@@ -137,7 +137,7 @@ def rope_unhook( self ):
 
         # First, apply a large "elastic force" to the velocity
         # I know this isn't realistic, but it's fun, so idc
-        self.vel = self.hook_obj.get_acceleration().d( 5 ).fn( lambda a: abs( a ) ** 1.3 * ( -1 if a < 0 else 1 ) )
+        self.vel.a( self.hook_obj.get_acceleration().d( 5 ).fn( lambda a: abs( a ) ** 1.3 * ( -1 if a < 0 else 1 ) ) )
 
         # Then, relinquish the reference to the hook
         self._hook_obj = None
