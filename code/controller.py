@@ -27,7 +27,7 @@ class Controller( Game_Object ):
         self.__c_particle = ParticleController( self )
 
         # The player can now be initialized
-        Player( self.engine, self.get_level_meta( 'player_spawn' ) )
+        Player( self.engine, V2( self.get_level_meta( 'player_spawn' ) ) )
 
         # Death messages are loaded from res/data/death_strings.txt
         self.__death_strings = open( self.engine.get_path( '/data/death_strings.txt' ) ).read().split( '\n' )

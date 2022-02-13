@@ -37,13 +37,11 @@ class BlockController():
 
         # Draw every block onto it
         for xx in range( C_GRID ):
-
             for yy in range( C_GRID ):
                 
                 block_pos = utils.chunk_pos_to_block( chunk_pos, V2( xx, yy ) )
 
                 if ( self.level_controller.is_block( block_pos ) ):
-                    time_initial = perf_counter()
                     surf.blit( self.render_block( block_pos ), ( xx * GRID, yy * GRID ) )
 
     # Deletes a surface when it's no longer needed

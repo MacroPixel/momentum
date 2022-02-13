@@ -162,8 +162,8 @@ class LevelController:
 
         # Spawn any entities within the chunk
         obj_positions = []
-        for xx in range( chunk_pos.x * C_GRID, ( chunk_pos.x + 1 ) * C_GRID ):
-            for yy in range( chunk_pos.y * C_GRID, ( chunk_pos.y + 1 ) * C_GRID ):
+        for xx in range( C_GRID ):
+            for yy in range( C_GRID ):
                 obj_positions.append( V2( xx, yy ) )
 
         for pos in obj_positions:
@@ -219,16 +219,10 @@ class LevelController:
     # Check whether anything exists at a position
     def is_object( self, pos ):
 
-        if ( pos.x < 0 or pos.y < 0 or pos.x >= self.__level_meta[ 'size' ][0] or pos.y >= self.__level_meta[ 'size' ][1] ):
-            return False
-
         return self.__objects[ pos.x, pos.y ] != -1
 
     # Check whether a block exists at a position
     def is_block( self, pos ):
-
-        if ( pos.x < 0 or pos.y < 0 or pos.x >= self.__level_meta[ 'size' ][0] or pos.y >= self.__level_meta[ 'size' ][1] ):
-            return False
 
         try:
             return utils.obj_id_to_block( self.__objects[ pos.x, pos.y ] ) != None
@@ -238,9 +232,6 @@ class LevelController:
     # Check whether an entity exists at a position
     def is_entity( self, pos ):
 
-        if ( pos.x < 0 or pos.y < 0 or pos.x >= self.__level_meta[ 'size' ][0] or pos.y >= self.__level_meta[ 'size' ][1] ):
-            return False
-
         try:
             return utils.obj_id_to_entity( self.__objects[ pos.x, pos.y ] ) != None
         except KeyError:
@@ -248,9 +239,6 @@ class LevelController:
 
     # Get the object id of a position
     def get_object_type( self, pos ):
-
-        if ( pos.x < 0 or pos.y < 0 or pos.x >= self.__level_meta[ 'size' ][0] or pos.y >= self.__level_meta[ 'size' ][1] ):
-            return -1
 
         return self.__objects[ pos.x, pos.y ]
 
