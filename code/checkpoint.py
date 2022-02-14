@@ -6,7 +6,7 @@ class Checkpoint ( Entity ):
 
     def __init__( self, engine, pos ):
 
-        super().__init__( engine, 'checkpoint', pos.c().a( 0, -1 ), V2( 0, 0 ), ( 0.7, 0.7, 0.35, 0.35 ), layer = LAYER_BLOCK )
+        super().__init__( engine, 'checkpoint', pos.c().a( 0, -0.5 ), V2( 0, 0 ), ( 0.7, 0.7, 0.35, 0.35 ), layer = LAYER_BLOCK )
 
         self._real_pos = pos
         self._is_active = False

@@ -111,7 +111,7 @@ class RegionController:
         # Derive the position from the view
         # It's always vertically-centered on the view, but it
         # loops horizontally once every X_LOOP pixels
-        pos = self.engine.view_pos.c()
+        pos = self.controller.view_pos.c()
         offset_x = divmod( pos.x, self.X_LOOP )[1] / self.X_LOOP
         pos.x = ( pos.x - offset_x * bg.get_width() )
 
@@ -144,7 +144,7 @@ class RegionController:
     # Changes the currently active region
     def set_region( self, region_id ):
 
-        self.engine.queue_music( self.TRANSITION, REGION_SONGS[ region_id ], volume = 0.4, fade_in = self.TRANSITION )
+        self.engine.queue_music( self.TRANSITION, REGION_SONGS[ region_id ], volume = MUS_VOLUME, fade_in = self.TRANSITION )
         self._region_id = region_id
         self.__fade_out_elapsed = 0
 

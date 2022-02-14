@@ -138,7 +138,9 @@ class LevelController:
         chunk_bound_2 = chunk_pos.c().a( RENDER_BOUNDS )
 
         # Load any chunks within the bound
+        # Only loads 1 chunk per frame
         chunk_list = []
+        chunks_loaded = 0
 
         for xx in range( chunk_bound_1.x, chunk_bound_2.x + 1 ):
             for yy in range( chunk_bound_1.y, chunk_bound_2.y + 1 ):
@@ -173,7 +175,7 @@ class LevelController:
             entity_pos = utils.chunk_pos_to_block( chunk_pos, pos )
             if ( self.is_entity( entity_pos ) ):
                 
-                entity_id = utils.obj_id_to_entity( self.get_object_type( entity_pos ) )
+                entity_id = self.get_entity_type( entity_pos )
                 engine_ref = self.__engine # Can't access class variables from exec statement
                 exec( f"{ ENTITY_CLASSES[ entity_id ] }( engine_ref, entity_pos )" )
 
@@ -260,6 +262,16 @@ class LevelController:
     def get_object_type( self, pos ):
 
         return self.__objects[ pos ]
+
+    # Get the block type of a position
+    def get_block_type( self, pos ):
+
+        return utils.obj_id_to_block( self.__objects[ pos ] )
+
+    # Get the entity type of a position
+    def get_entity_type( self, pos ):
+
+        return utils.obj_id_to_entity( self.__objects[ pos ] )
 
     # Performs an operation on the block the player is hovering over
     def object_debug( self ):

@@ -4,7 +4,7 @@ from entity_list import *
 def update_abilities( self ):
 
     # UP key press = invert ability
-    if ( self.engine.get_key( BINDS[ 'up_action' ], 1 ) ):
+    if ( self.engine.get_key( BINDS[ 'up_action' ], 1 ) and self.can_invert ):
         self.use_ability( 'invert', self.invert )
 
     # DOWN key press could be 3 different abilities
@@ -29,6 +29,10 @@ def update_abilities( self ):
     # LEFT + RIGHT hold = glide
     if ( self.engine.get_key( BINDS[ 'right_action' ] ) and self.engine.get_key( BINDS[ 'left_action' ] ) ):
         self.use_ability( 'glide', self.glide )
+
+    # The player's invert ability refreshes if they're on a block
+    if ( self.has_ability( 'invert' ) and self.is_on_solid() ):
+        self._can_invert = True
 
     # Additional physics if using hook ability
     if ( self.hook_obj is not None ):
@@ -59,6 +63,7 @@ def use_ability( self, ability_string, ability_function, require_ability = True 
 def invert( self ):
 
     self.vel.x, self.vel.y = self.vel.y, -self.vel.x
+    self._can_invert = False
 
 # Quickly charges down, allowing enemies to be destroyed
 def stomp( self ):

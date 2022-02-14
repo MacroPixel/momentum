@@ -36,7 +36,7 @@ B_TEXTURES = [
     'block_cloud',
     'block_bounce',
     'block_spring',
-    'block_saw'
+    'block_spikes'
 ]
 
 # The color of each block when being loaded in from a PNG
@@ -54,27 +54,39 @@ B_COLORS = [
 
 # Determines how the sprite of a block type conencts
 # to those of other blocks with the same type
-BDM_SINGLE = 0
-BDM_SINGLE_OVERLAY = 1
-BDM_3VAR_OVERLAY = 2
-BDM_3VAR_REPLACE = 3
+BDM_NORMAL = 0
+BDM_OVERLAY = 1
+BDM_REPLACE = 2
 
 B_DRAW_MODES = [
-    BDM_SINGLE_OVERLAY,
-    BDM_3VAR_REPLACE,
-    BDM_3VAR_OVERLAY,
-    BDM_3VAR_OVERLAY,
-    BDM_3VAR_OVERLAY,
-    BDM_3VAR_REPLACE,
-    BDM_SINGLE_OVERLAY,
-    BDM_SINGLE_OVERLAY,
-    BDM_SINGLE
+    BDM_OVERLAY,
+    BDM_REPLACE,
+    BDM_OVERLAY,
+    BDM_OVERLAY,
+    BDM_OVERLAY,
+    BDM_REPLACE,
+    BDM_REPLACE,
+    BDM_OVERLAY,
+    BDM_REPLACE
+]
+
+B_DRAW_VARIANTS = [
+    1,
+    5,
+    3,
+    3,
+    3,
+    3,
+    1,
+    1,
+    1
 ]
 
 # List of blocks that don't connect to blocks of different types
 B_NO_CONNECT = [
     'spikes',
-    'goop'
+    'goop',
+    'bounce'
 ]
 
 # List of blocks that entities can go through
@@ -100,7 +112,8 @@ ENTITY_STRINGS = [
     'jomper',
     'checkpoint',
     'hook',
-    'box'
+    'box',
+    'powerup'
 ]
 
 # The color of each entity when being loaded in from a PNG
@@ -108,7 +121,8 @@ ENTITY_COLORS = [
     'ff3fff',
     '3fffbf',
     'bfbfbf',
-    'a46a4a'
+    'a46a4a',
+    'ff9f7f'
 ]
 
 # A string representation of each entity class
@@ -116,7 +130,8 @@ ENTITY_CLASSES = [
     'Jomper',
     'Checkpoint',
     'Rope_Hook',
-    'Box'
+    'Box',
+    'Powerup'
 ]
 
 # Object arrays use the block and entity arrays
@@ -178,7 +193,7 @@ RENDER_BOUNDS = ( 1, 1 )
 GRAVITY = 32
 
 # Player movement constants
-PLAYER_HSPEED = 18
+PLAYER_HSPEED = 22
 PLAYER_HSPEED_AIR_FACTOR = 0.2
 PLAYER_HSPEED_BOOST = 3
 PLAYER_HSPEED_ATTACK_FACTOR = 0.4
@@ -198,6 +213,18 @@ ABILITY_STRINGS = [
     'slot',
     'rope',
     'glide'
+]
+
+# The block that a powerup should use to resolve which
+# ability it referrs to
+ABILITY_BLOCKS = [
+    'goop',
+    'goop',
+    'goop',
+    'goop',
+    'goop',
+    'goop',
+    'goop'
 ]
 
 # Internal name for each item
@@ -228,6 +255,7 @@ BINDS = {
     'left_action': K_LEFT,
     'right_action': K_RIGHT
 }
+MUS_VOLUME = 0.5
 
 # Used by controller's pause_level variable
 PAUSE_NONE = 0

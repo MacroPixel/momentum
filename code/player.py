@@ -15,6 +15,7 @@ class Player ( Entity ):
 
         # Other variables
         self._checkpoint_pos = spawn_pos
+        self._can_invert = False
         self._hook_obj = None
         self._slot_item = -1
         self._has_intially_set_view = False
@@ -22,10 +23,11 @@ class Player ( Entity ):
         # Debug variables
         self._is_invincible = False
 
-        # Automatically give all abilities
-        for ability in ABILITY_STRINGS:
-            if not self.has_ability( ability ):
-                self.grant_ability( ability )
+        # (Don't) automatically give all abilities
+        if False:
+            for ability in ABILITY_STRINGS:
+                if not self.has_ability( ability ):
+                    self.grant_ability( ability )
 
     # Allows easy initializing/resetting of a group of variables
     def _reset_basic_vars( self ):
@@ -138,6 +140,12 @@ class Player ( Entity ):
             if utils.collision_check( self.pos, checkpoint.pos, self.hitbox, checkpoint.hitbox ):
                 self.set_checkpoint( checkpoint.real_pos )
 
+        # If touching powerup, give the player the ability and delete the powerup
+        for powerup in self.engine.get_instances( 'powerup' ):
+            if utils.collision_check( self.pos, powerup.pos, self.hitbox, powerup.hitbox ):
+                self.grant_ability( ABILITY_STRINGS[ powerup.ability_id ] )
+                powerup.delete()
+
     # Make the player bob, walk, swing, etc.
     def update_image( self ):
 
@@ -249,7 +257,7 @@ class Player ( Entity ):
         for xx in range( floor( x_min_bound + COLLISION_EPSILON ), ceil( x_max_bound - COLLISION_EPSILON ) ):
             pos = V2( xx, floor( self.pos.y + self.hitbox_offset.y + self.hitbox.y ) )
             if ( controller.is_block( pos ) ):
-                block_id = utils.obj_id_to_block( controller.get_object_type( pos ) )
+                block_id = controller.get_block_type( pos )
                 if ( condition( block_id ) ):
                     return True
         return False
@@ -271,7 +279,7 @@ class Player ( Entity ):
         for xx in range( pos.x - 2, pos.x + 2 ):
             for yy in range( pos.y - 2, pos.y + 2 ):
                 if controller.is_block( V2( xx, yy ) ):
-                    block_ids.append( utils.obj_id_to_block( controller.get_object_type( V2( xx, yy ) ) ) )
+                    block_ids.append( controller.get_block_type( V2( xx, yy ) ) )
 
         # -1 indicates no specific region (i.e. empty/inconclusive list)
         if len( block_ids ) == 0:
@@ -333,3 +341,7 @@ class Player ( Entity ):
         if self.slot_item == -1:
             return None
         return ITEM_STRINGS[ self.slot_item ]
+
+    @property
+    def can_invert( self ):
+        return self._can_invert

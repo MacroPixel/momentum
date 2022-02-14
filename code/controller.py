@@ -106,7 +106,11 @@ class Controller( Game_Object ):
 
             # Misc operation 3
             if ( self.engine.get_key( pygame.K_F7, 1 ) ):
-                pass
+                temp_player = self.engine.get_instance( 'player' )
+                for ability in ABILITY_STRINGS:
+                    if not temp_player.has_ability( ability ):
+                        temp_player.grant_ability( ability )
+                        break
 
             # Misc operation 4
             if ( self.engine.get_key( pygame.K_F8, 1 ) ):
@@ -134,9 +138,6 @@ class Controller( Game_Object ):
         for entity in [ e for e in self.engine.get_tagged_instances( 'entity' ) if e.object_id != 'player' ]:
             entity.delete()
 
-        # Reset player
-        self.load_checkpoint()
-
     # Get the metadata of the whole level
     def get_level_meta( self, key ):
 
@@ -144,28 +145,32 @@ class Controller( Game_Object ):
 
     # Check whether anything exists at a position
     def is_object( self, pos ):
-
         return self.__c_level.is_object( pos )
 
     # Check whether a block exists at a position
     def is_block( self, pos ):
-
         return self.__c_level.is_block( pos )
 
     # Check whether an entity exists at a position
     def is_entity( self, pos ):
-
         return self.__c_level.is_entity( pos )
 
-    # Get the block type of a position
+    # Get the object type of a position
     def get_object_type( self, pos ):
-
         return self.__c_level.get_object_type( pos )
+
+    # Get the block type of a position
+    def get_block_type( self, pos ):
+        return self.__c_level.get_block_type( pos )
+
+    # Get the entity type of a position
+    def get_entity_type( self, pos ):
+        return self.__c_level.get_entity_type( pos )
 
     # Check whether a non-passable block exists at a position
     def is_solid( self, pos ):
 
-        return self.__c_level.is_block( pos ) and utils.b_string( utils.obj_id_to_block( self.__c_level.get_object_type( pos ) ) ) not in B_PASSABLE
+        return self.__c_level.is_block( pos ) and utils.b_string( self.__c_level.get_block_type( pos ) ) not in B_PASSABLE
 
     # Performs an operation on the block the player is hovering over
     def block_debug( self, cursor_pos, view ):

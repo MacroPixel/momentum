@@ -95,7 +95,7 @@ class Entity( Game_Object ):
             # Air does nothing
             if ( not self.controller.is_block( block_pos ) ):
                 continue
-            block_id = utils.obj_id_to_block( self.controller.get_object_type( block_pos ) )
+            block_id = self.controller.get_block_type( block_pos )
 
             # Spikes kill you
             if ( not has_died and self.entity_dies_to_spikes and utils.b_string( block_id ) == 'spikes' ):
@@ -119,7 +119,7 @@ class Entity( Game_Object ):
                 continue
 
             # Store the block type
-            block_type = utils.obj_id_to_block( self.controller.get_object_type( block_pos ) )
+            block_type = self.controller.get_block_type( block_pos )
 
             # Skip if a passable block occupies this grid space
             if ( utils.b_string( block_type ) in B_PASSABLE ):
