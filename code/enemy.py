@@ -9,6 +9,4 @@ class Enemy ( Entity ):
 
         # Tags allow quick indexing of all enemies
         self.add_tag( 'enemy' )
-
-        # Allow customization of enemy behavior
-        self.enemy_kills_player = True
+        self.add_tag( 'hazardous' )

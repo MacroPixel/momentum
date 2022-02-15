@@ -22,8 +22,11 @@ B_STRINGS = [
     'lava',
     'cloud',
     'bounce',
+    'bounce_extra',
     'spring',
-    'spikes'
+    'spikes',
+    'metal',
+    'metal_alt'
 ]
 
 # Block textures (listed in order of ID)
@@ -35,8 +38,11 @@ B_TEXTURES = [
     'block_lava',
     'block_cloud',
     'block_bounce',
+    'block_bounce_extra',
     'block_spring',
-    'block_spikes'
+    'block_spikes',
+    'block_metal',
+    'block_metal_alt'
 ]
 
 # The color of each block when being loaded in from a PNG
@@ -48,8 +54,11 @@ B_COLORS = [
     '7f0000',
     'bfffff',
     'ff00ff',
+    '6300ff',
     '7fff7f',
-    'ff7f7f'
+    'ff7f7f',
+    '764d47',
+    '4d3b39'
 ]
 
 # Determines how the sprite of a block type conencts
@@ -66,8 +75,11 @@ B_DRAW_MODES = [
     BDM_OVERLAY,
     BDM_REPLACE,
     BDM_REPLACE,
+    BDM_REPLACE,
     BDM_OVERLAY,
-    BDM_REPLACE
+    BDM_REPLACE,
+    BDM_REPLACE,
+    BDM_OVERLAY
 ]
 
 B_DRAW_VARIANTS = [
@@ -77,6 +89,9 @@ B_DRAW_VARIANTS = [
     3,
     3,
     3,
+    1,
+    1,
+    1,
     1,
     1,
     1
@@ -97,7 +112,8 @@ B_PASSABLE = [
 # Keys are blocks that allow bouncing
 # Values are the bounce factor
 B_BOUNCE = {
-    'bounce': 0.7
+    'bounce': 0.7,
+    'bounce_extra': 1.2
 }
 
 # List of blocks that kill entities
@@ -110,28 +126,43 @@ B_HAZARD = [
 # They cannot share the name of an entity
 ENTITY_STRINGS = [
     'jomper',
+    'zeedle',
+    'asdf',
     'checkpoint',
     'hook',
     'box',
-    'powerup'
+    'powerup',
+    'twig',
+    'launcher',
+    'saw'
 ]
 
 # The color of each entity when being loaded in from a PNG
 ENTITY_COLORS = [
     'ff3fff',
+    'ffbc8b',
+    'aaaaab',
     '3fffbf',
     'bfbfbf',
     'a46a4a',
-    'ff9f7f'
+    'ff9f7f',
+    'a06642',
+    '93f0b0',
+    '6e6e6e'
 ]
 
 # A string representation of each entity class
 ENTITY_CLASSES = [
     'Jomper',
+    'Zeedle',
+    'asdf',
     'Checkpoint',
     'Rope_Hook',
     'Box',
-    'Powerup'
+    'Powerup',
+    'Twig',
+    'Launcher',
+    'Saw'
 ]
 
 # Object arrays use the block and entity arrays
@@ -149,19 +180,22 @@ O_COLORS = B_COLORS + ENTITY_COLORS
 # Regions define the background/music for an region
 REGION_STRINGS = [
     'tutorial',
-    'purple'
+    'purple',
+    'steampunk'
 ]
 
 # The blocks that trigger each region
 REGION_BLOCKS = [
     [ 'default' ],
-    [ 'goop' ]
+    [ 'goop' ],
+    [ 'metal', 'metal_alt' ]
 ]
 
 # Lists the music to be played in each region
 REGION_SONGS = [
     'mus_tutorial',
-    'mus_purple'
+    'mus_purple',
+    'mus_steampunk'
 ]
 
 # Defines a background for each region (listed in the same order)
@@ -169,7 +203,8 @@ REGION_SONGS = [
 # to be eval()'d when instances of it are created
 REGION_BGS = [
     'Background_Region_1',
-    'Background_Region_2'
+    'Background_Region_2',
+    'Background_Region_3'
 ]
 
 # Different UI levels
@@ -189,8 +224,9 @@ VIEW_BOUNDS = ( 128, 64 )
 # within which the game should attempt to render blocks
 RENDER_BOUNDS = ( 1, 1 )
 
-# General physics constants
+# Entity physics constants
 GRAVITY = 32
+ENTITY_MAX_VEL = 150
 
 # Player movement constants
 PLAYER_HSPEED = 22
@@ -199,6 +235,8 @@ PLAYER_HSPEED_BOOST = 3
 PLAYER_HSPEED_ATTACK_FACTOR = 0.4
 PLAYER_FRICTION = 20000
 PLAYER_JUMP_POWER = 19
+PLAYER_MIN_WALL_VEL = 8
+PLAYER_MAX_WALL_VEL = 25
 
 COLLISION_EPSILON = 0.000001
 
@@ -219,7 +257,7 @@ ABILITY_STRINGS = [
 # ability it referrs to
 ABILITY_BLOCKS = [
     'goop',
-    'goop',
+    'metal_alt',
     'goop',
     'goop',
     'goop',
@@ -255,7 +293,7 @@ BINDS = {
     'left_action': K_LEFT,
     'right_action': K_RIGHT
 }
-MUS_VOLUME = 0.5
+MUS_VOLUME = 0
 
 # Used by controller's pause_level variable
 PAUSE_NONE = 0

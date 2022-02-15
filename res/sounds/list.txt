@@ -4,3 +4,4 @@ checkpoint = SOUND checkpoint.wav
 victory = SOUND victory.wav
 mus_tutorial = MUSIC music/tutorial.mp3
 mus_purple = MUSIC music/purple.mp3
+mus_steampunk = MUSIC music/steampunk.mp3

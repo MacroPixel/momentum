@@ -16,9 +16,11 @@ class Player ( Entity ):
         # Other variables
         self._checkpoint_pos = spawn_pos
         self._can_invert = False
+        self._can_teleport = False
         self._hook_obj = None
         self._slot_item = -1
         self._has_intially_set_view = False
+        self._wall_vel = V2() # Stores the velocity before the collision event
 
         # Debug variables
         self._is_invincible = False
@@ -119,9 +121,6 @@ class Player ( Entity ):
             elif self.is_on_solid() and self.engine.get_key( BINDS[ 'move_left' ] ):
                 self.vel.x -= PLAYER_HSPEED_BOOST
 
-    # Update the player's variables via unlocked abilities
-    from _player_abilities import update_abilities
-
     # Check which entities the player is colliding with
     # Includes hazards and checkpoints
     def update_collisions( self ):
@@ -130,9 +129,9 @@ class Player ( Entity ):
         if ( self.is_invincible ):
             return
 
-        # If touching enemy, die
-        for enemy in self.engine.get_tagged_instances( 'enemy' ):
-            if utils.collision_check( self.pos, enemy.pos, self.hitbox, enemy.hitbox ) and enemy.enemy_kills_player:
+        # If touching hazardous entity, die
+        for entity in self.engine.get_tagged_instances( 'hazardous' ):
+            if utils.collision_check( self.pos, entity.pos, self.hitbox, entity.hitbox ):
                 self.die()
 
         # If touching non-current checkpoint, update the current checkpoint
@@ -171,16 +170,19 @@ class Player ( Entity ):
     from _player_abilities import grant_ability
     from _player_abilities import revoke_ability
     from _player_abilities import has_ability
-    from _player_abilities import use_ability
-    from _player_abilities import invert
-    from _player_abilities import stomp
-    from _player_abilities import slot_use
+    from _player_abilities import update_abilities
+    from _player_abilities import ability_invert
+    from _player_abilities import ability_wall_jump
+    from _player_abilities import ability_stomp
+    from _player_abilities import ability_teleport
+    from _player_abilities import ability_slot
+    from _player_abilities import ability_rope
+    from _player_abilities import ability_glide
+    from _player_abilities import _resolve_down_press
     from _player_abilities import _slot_set
     from _player_abilities import _drop_item
-    from _player_abilities import rope_check
-    from _player_abilities import rope_hook
-    from _player_abilities import rope_unhook
-    from _player_abilities import glide
+    from _player_abilities import _rope_check
+    from _player_abilities import _rope_unhook
     
     # Creates an object that displays UI and eventually restarts the level
     def die( self ):
@@ -255,7 +257,23 @@ class Player ( Entity ):
         x_min_bound = self.pos.x + self.hitbox_offset.x
         x_max_bound = self.pos.x + self.hitbox_offset.x + self.hitbox.x
         for xx in range( floor( x_min_bound + COLLISION_EPSILON ), ceil( x_max_bound - COLLISION_EPSILON ) ):
-            pos = V2( xx, floor( self.pos.y + self.hitbox_offset.y + self.hitbox.y ) )
+            pos = V2( xx, floor( self.pos.y + self.hitbox_offset.y + self.hitbox.y + COLLISION_EPSILON ) )
+            if ( controller.is_block( pos ) ):
+                block_id = controller.get_block_type( pos )
+                if ( condition( block_id ) ):
+                    return True
+        return False
+
+    # Checks if a block matching a condition is beside the player
+    def test_block_beside( self, to_left = True, condition = lambda a: True ):
+
+        controller = self.engine.get_instance( 'controller' )
+        y_min_bound = self.pos.y + self.hitbox_offset.y
+        y_max_bound = self.pos.y + self.hitbox_offset.y + self.hitbox.y
+        hitbox_x = 0 if to_left else self.hitbox.x
+        epsilon_x = COLLISION_EPSILON * ( -1 if to_left else 1 )
+        for yy in range( floor( y_min_bound + COLLISION_EPSILON ), ceil( y_max_bound - COLLISION_EPSILON ) ):
+            pos = V2( floor( self.pos.x + self.hitbox_offset.x + hitbox_x + epsilon_x ), yy )
             if ( controller.is_block( pos ) ):
                 block_id = controller.get_block_type( pos )
                 if ( condition( block_id ) ):
@@ -266,6 +284,11 @@ class Player ( Entity ):
     def is_on_solid( self ):
 
         return self.test_block_below( lambda block_id: utils.b_string( block_id ) not in B_PASSABLE )
+
+    # Shorthand for checking solid block beside player
+    def is_beside_solid( self, to_left ):
+
+        return self.test_block_beside( to_left, lambda block_id: utils.b_string( block_id ) not in B_PASSABLE )
 
     # Checks a sample of blocks around the player to see the most numerous one
     # This then returns an region ID for the controller to use
@@ -345,3 +368,11 @@ class Player ( Entity ):
     @property
     def can_invert( self ):
         return self._can_invert
+
+    @property
+    def can_teleport( self ):
+        return self._can_teleport
+
+    @property
+    def wall_vel( self ):
+        return self._wall_vel

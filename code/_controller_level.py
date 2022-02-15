@@ -276,8 +276,8 @@ class LevelController:
     # Performs an operation on the block the player is hovering over
     def object_debug( self ):
 
-        cursor_pos = self.__engine.get_world_cursor()
-        print( 'Cursor in chunk', cursor_pos.fn( lambda a: int( a // ( GRID * C_GRID ) ) ) )
+        cursor_pos = self.__engine.get_world_cursor().fn( lambda a: int( a // ( GRID ) ) )
+        print( self.is_block( cursor_pos ) )
 
     # Getters/setters
 

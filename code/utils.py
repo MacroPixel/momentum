@@ -5,6 +5,13 @@ from math import floor, ceil, atan, pi
 # For miscellaneous functions
 class utils:
 
+    @staticmethod
+    def sign( x ):
+
+        if x == 0:
+            return 0
+        return -1 if x < 0 else 1
+
     # Linear interpolation
     # d argument can act as delta time
     @staticmethod

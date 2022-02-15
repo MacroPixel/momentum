@@ -25,7 +25,7 @@ class Entity( Game_Object ):
         self.__ragdoll_anchor = V2( 0.5, 0.5 )
 
         # Flags to allow customization
-        self.entity_dies_to_spikes = True # Whether the entity can survive spikes
+        self.entity_dies_to_hazards = True # Whether the entity can survive hazards
         self.entity_destroy_on_death = True # Whether the entity's GameObject is destroyed upon death
         self.entity_gravity_multiplier = 1 # Can be used to alter or disable gravity
         self.entity_item = None # Setting this to a string + adding 'pickupable' tag makes this pickupable
@@ -37,49 +37,60 @@ class Entity( Game_Object ):
     # Can also perform events common to all entities, such as death
     def entity_update( self, iterations = 5 ):
 
-        # First, apply gravity
+        # First, apply gravity to velocity
         self.vel.y += GRAVITY * self.engine.delta_time * self.entity_gravity_multiplier
+
+        # Then, move the object
+        # Velocity caps out at ENTITY_MAX_VEL
+        self.vel.fn( lambda a: min( abs( a ), ENTITY_MAX_VEL ) * utils.sign( a ) )
+        self.shift_pos( self.vel.c().m( self.engine.delta_time ), iterations, self.x_push_func, self.y_push_func, self.collision_func )
+
+    # Shift the entity a certain distance, keeping their collision details in mind
+    def shift_pos( self, delta_pos, iterations = 5, x_push_func = None, y_push_func = None, collision_func = None ):
 
         # The push functions aren't run until after the iteration is done
         # This prevents them from being executed more than once
         # These variables keep track of whether a push has occured along an axis
         # and which block it was
-        x_push_block = y_push_block = None
+        x_push_pos = y_push_pos = None
 
         # Collision functions work the same way
         # Each block position that is touched is stored, and the collision
         # function is ran on each one
-        collision_blocks = []
+        collision_positions = []
 
         # This loop actually moves the entity
         # Push/collision functions are executed afterwards
         for i in range( iterations ):
 
             # First, actually move the entity
-            self.pos.x += self.vel.x * self.engine.delta_time / iterations
-            temp_block = self._push_out( is_x_axis = True )
-            if ( temp_block != None ):
-                x_push_block = temp_block
+            self.pos.x += delta_pos.x / iterations
+            temp_pos = self._push_out( is_x_axis = True )
+            if ( temp_pos is not None ):
+                x_push_pos = temp_pos
 
-            self.pos.y += self.vel.y * self.engine.delta_time / iterations
-            temp_block = self._push_out( is_x_axis = False )
-            if ( temp_block != None ):
-                y_push_block = temp_block
+            self.pos.y += delta_pos.y / iterations
+            temp_pos = self._push_out( is_x_axis = False )
+            if ( temp_pos is not None ):
+                y_push_pos = temp_pos
 
             # Only add collision blocks after push-out is finished
             for block_pos in self._get_adjacent_blocks():
-                if block_pos not in collision_blocks:
-                    collision_blocks.append( block_pos )
+                if block_pos not in collision_positions:
+                    collision_positions.append( block_pos )
 
         # Perform the aforementioned push functions
         for xy in 'xy': # Doing it this way reduces boilerplate code
 
-            if eval( f'{xy}_push_block' ) is not None:
+            if eval( f'{xy}_push_pos' ) is not None:
 
-                block_id = eval( f'{xy}_push_block' )
+                block_pos = eval( f'{xy}_push_pos' )
+                block_id = self.controller.get_block_type( block_pos )
 
                 # Execute the custom push function
-                exec( f'self.{xy}_push_func( block_id )' )
+                # Skips defaults if returns False
+                if ( eval( f'{xy}_push_func' ) is not None ):
+                    exec( f'self.{xy}_push_func( block_id )' )
                 
                 # Cancel the velocity if it's a normal block
                 block_string = utils.b_string( block_id )
@@ -90,24 +101,25 @@ class Entity( Game_Object ):
 
         # Perform the aforementioned collision functions
         has_died = False # Only allow 1 death
-        for block_pos in collision_blocks:
+        for block_pos in collision_positions:
+
+            # Run the collision function for the selected block type
+            if ( collision_func is not None ):
+                self.collision_func( block_pos )
 
             # Air does nothing
             if ( not self.controller.is_block( block_pos ) ):
                 continue
             block_id = self.controller.get_block_type( block_pos )
 
-            # Spikes kill you
-            if ( not has_died and self.entity_dies_to_spikes and utils.b_string( block_id ) == 'spikes' ):
+            # Hazards kill you
+            if ( not has_died and self.entity_dies_to_hazards and utils.b_string( block_id ) in B_HAZARD ):
                 self.die()
                 has_died = True
 
-            # Run the collision function for the selected block type
-            self.collision_func( self.controller.get_object_type( block_pos ) )
-
-    # Push an entity out of any adjacent blocks
-    # Returns whether a push-out occured
-    def _push_out( self, is_x_axis ):
+    # Returns the block ID the player is inside of, or none if in air/passable block
+    # Also returns the block position
+    def is_inside_block( self ):
 
         adjacent_blocks = self._get_adjacent_blocks()
 
@@ -119,21 +131,34 @@ class Entity( Game_Object ):
                 continue
 
             # Store the block type
-            block_type = self.controller.get_block_type( block_pos )
+            block_id = self.controller.get_block_type( block_pos )
 
             # Skip if a passable block occupies this grid space
-            if ( utils.b_string( block_type ) in B_PASSABLE ):
+            if ( utils.b_string( block_id ) in B_PASSABLE ):
                 continue
 
-            xy = 'x' if is_x_axis else 'y' # Reduce boilerplate code
+            # Otherwise, return block pos
+            return block_pos
 
-            # Push out based on their position within the block
-            # The is_x_axis argument determines the axis it's pushed along
-            direction = -1 if eval( f'self.pos.{xy} < block_pos.{xy}' ) else 1
-            exec( f'self.pos.{xy} = block_pos.{xy} + direction * ( self.hitbox.{xy} + self.hitbox_offset.{xy} )' )
-            return block_type
-
+        # Default to returning None
         return None
+
+    # Push an entity out of any adjacent blocks
+    # Returns whether a push-out occured
+    def _push_out( self, is_x_axis ):
+
+        block_pos = self.is_inside_block()
+        if ( block_pos is None ):
+            return None
+        block_id = self.controller.get_block_type( block_pos )
+
+        xy = 'x' if is_x_axis else 'y' # Reduce boilerplate code
+
+        # Push out based on their position within the block
+        # The is_x_axis argument determines the axis it's pushed along
+        direction = -1 if eval( f'self.pos.{xy} < block_pos.{xy}' ) else 1
+        exec( f'self.pos.{xy} = block_pos.{xy} + direction * ( self.hitbox.{xy} + self.hitbox_offset.{xy} )' )
+        return block_pos
 
     # Returns a list of the vectors of any block position the entity
     def _get_adjacent_blocks( self ):
@@ -142,9 +167,6 @@ class Entity( Game_Object ):
 
         bound_1 = self.pos.c().a( self.hitbox_offset ).a( COLLISION_EPSILON )
         bound_2 = self.pos.c().a( self.hitbox_offset ).a( self.hitbox ).s( COLLISION_EPSILON )
-
-        # if ( self.object_id == 'player' ):
-        #     print( bound_1, bound_2 )
 
         for xx in range( int( floor( bound_1.x ) ), int( ceil( bound_2.x ) ) ):
             for yy in range( int( floor( bound_1.y ) ), int( ceil( bound_2.y ) ) ):    
@@ -171,15 +193,15 @@ class Entity( Game_Object ):
 
     # Executes when the entity horizontally collides with a block
     # Accepts the block ID as an input
-    def x_push_func( self, block_id ):
+    def x_push_func( self, block_pos ):
         pass
 
     # Same as before, but for vertical collisions
-    def y_push_func( self, block_id ):
+    def y_push_func( self, block_pos ):
         pass
 
     # Executes for each block the player is inside of
-    def collision_func( self, block_id ):
+    def collision_func( self, block_pos ):
         pass
 
     # Executes when the entity dies

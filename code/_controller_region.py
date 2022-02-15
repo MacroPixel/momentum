@@ -1,6 +1,7 @@
 from basic_imports import *
 from bg_region_1 import *
 from bg_region_2 import *
+from bg_region_3 import *
 
 from drawer import *
 

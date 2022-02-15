@@ -5,7 +5,7 @@ class Jomper ( Enemy ):
 
     def __init__( self, engine, pos ):
 
-        super().__init__( engine, 'jomper', pos, V2(), ( 0.8, 0.5, 0.1, 0 ) )
+        super().__init__( engine, 'jomper', pos, V2(), ( 0.8, 0.5, 0.1, 0.5 ) )
 
     def update( self ):
 
