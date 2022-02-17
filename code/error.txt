@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "C:\Users\colli\Documents\Python\Platformer Game\code\main.py", line 25, in <module>
+    1 / 0
+ZeroDivisionError: division by zero

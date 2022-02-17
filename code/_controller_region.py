@@ -2,6 +2,8 @@ from basic_imports import *
 from bg_region_1 import *
 from bg_region_2 import *
 from bg_region_3 import *
+from bg_region_4 import *
+from bg_region_5 import *
 
 from drawer import *
 
@@ -80,6 +82,9 @@ class RegionController:
             # since the last update
             if self.__active_bg is not None:
                 self.__active_bg.update_surf( self.__bg_elapsed )
+
+            # Reset the buffer
+            self.engine.zoom_buffer_remove( self.__active_bg )
 
             # Reset the elapsed time for the next update
             _, self.__bg_elapsed = divmod( self.__bg_elapsed, self.BG_UPDATE_INTERVAL )

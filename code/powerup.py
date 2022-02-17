@@ -30,6 +30,9 @@ class Powerup ( Entity ):
 
         self.__hover_time = 0
 
+        # Entity variables
+        self.entity_gravity_multiplier = 0
+
     def update( self ):
 
         # Don't run if paused

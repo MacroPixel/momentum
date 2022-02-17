@@ -6,7 +6,7 @@ class Checkpoint ( Entity ):
 
     def __init__( self, engine, pos ):
 
-        super().__init__( engine, 'checkpoint', pos.c().a( 0, -0.5 ), V2( 0, 0 ), ( 0.7, 0.7, 0.35, 0.35 ), layer = LAYER_BLOCK )
+        super().__init__( engine, 'checkpoint', pos.c().a( 0 ), V2( 0, 0 ), ( 0.7, 0.7, 0.35, 0.35 ), layer = LAYER_BLOCK )
 
         self._real_pos = pos
         self._is_active = False
@@ -27,7 +27,7 @@ class Checkpoint ( Entity ):
     def draw( self ):
 
         hover_offset = sin( self.__hover_time ) / 4
-        self.engine.draw_sprite( 'checkpoint', V2( 0, 0 ), self.pos.c().a( 0, hover_offset ).m( GRID ), False )
+        self.engine.draw_sprite( 'checkpoint', V2( 0, 0 ), self.pos.c().a( 0, hover_offset - 0.5 ).m( GRID ), False )
 
     # Getters/setters
 

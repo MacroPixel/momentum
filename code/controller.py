@@ -90,11 +90,6 @@ class Controller( Game_Object ):
             if ( self.engine.get_key( pygame.K_BACKQUOTE, 1 ) ):
                 self.__c_level.object_debug()
 
-            # Teleport to cursor
-            if ( self.engine.get_mouse_button( 2, 1 ) ):
-                self.engine.get_instance( 'player' ).pos = self.engine.get_world_cursor().d( GRID )
-                self.engine.get_instance( 'player' ).vel = V2()
-
             # Misc operation 1
             if ( self.engine.get_key( pygame.K_F5, 1 ) ):
                 Jomper( self.engine, self.engine.get_instance( 'player' ).pos.c().a( 0.5 ) )
@@ -114,7 +109,8 @@ class Controller( Game_Object ):
 
             # Misc operation 4
             if ( self.engine.get_key( pygame.K_F8, 1 ) ):
-                pass
+                self.engine.reload_sprites()
+                self.engine.reload_sounds()
 
         # Perform sub-class updates
         self.__c_level.update()
@@ -140,8 +136,11 @@ class Controller( Game_Object ):
 
     # Get the metadata of the whole level
     def get_level_meta( self, key ):
-
         return self.__c_level.get_level_meta( key )
+
+    # Set level metadata/immediately write to file
+    def set_level_meta( self, key, value ):
+        return self.__c_level.set_level_meta( key, value )
 
     # Check whether anything exists at a position
     def is_object( self, pos ):

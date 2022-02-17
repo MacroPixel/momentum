@@ -2,11 +2,12 @@ from engine.engine import *
 
 import pygame
 import os
-from math import floor, ceil, sin, cos
-import random
+import traceback
 
 from constants import *
 from rooms import *
+
+BETA = False
 
 def main():
 
@@ -22,4 +23,10 @@ def main():
 
 if __name__ == '__main__':
 
-    main()
+    if BETA:
+        try:
+            main()
+        except:
+            open( 'error.txt', 'w' ).write( traceback.format_exc() )
+    else:
+        main()

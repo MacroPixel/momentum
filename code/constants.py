@@ -26,7 +26,9 @@ B_STRINGS = [
     'spring',
     'spikes',
     'metal',
-    'metal_alt'
+    'metal_alt',
+    'sand',
+    'water'
 ]
 
 # Block textures (listed in order of ID)
@@ -42,14 +44,16 @@ B_TEXTURES = [
     'block_spring',
     'block_spikes',
     'block_metal',
-    'block_metal_alt'
+    'block_metal_alt',
+    'block_sand',
+    'block_water'
 ]
 
 # The color of each block when being loaded in from a PNG
 B_COLORS = [
     '7f7f7f',
     'ff7fff',
-    '000000',
+    'dbf87a',
     '7f3f00',
     '7f0000',
     'bfffff',
@@ -58,7 +62,9 @@ B_COLORS = [
     '7fff7f',
     'ff7f7f',
     '764d47',
-    '4d3b39'
+    '4d3b39',
+    'f3d681',
+    '3ccff3'
 ]
 
 # Determines how the sprite of a block type conencts
@@ -70,43 +76,54 @@ BDM_REPLACE = 2
 B_DRAW_MODES = [
     BDM_OVERLAY,
     BDM_REPLACE,
+    BDM_NORMAL,
     BDM_OVERLAY,
     BDM_OVERLAY,
-    BDM_OVERLAY,
     BDM_REPLACE,
     BDM_REPLACE,
     BDM_REPLACE,
     BDM_OVERLAY,
     BDM_REPLACE,
     BDM_REPLACE,
-    BDM_OVERLAY
+    BDM_OVERLAY,
+    BDM_REPLACE,
+    BDM_REPLACE
 ]
 
 B_DRAW_VARIANTS = [
     1,
     5,
+    4,
     3,
     3,
     3,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
     3,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1
+    3
 ]
 
 # List of blocks that don't connect to blocks of different types
 B_NO_CONNECT = [
     'spikes',
     'goop',
-    'bounce'
+    'bounce',
+    'water'
 ]
 
 # List of blocks that entities can go through
 B_PASSABLE = [
-    'spikes'
+    'spikes',
+    'water'
+]
+
+# List of blocks that refresh jump when inside of
+B_FLUID = [
+    'water'
 ]
 
 # Keys are blocks that allow bouncing
@@ -127,7 +144,7 @@ B_HAZARD = [
 ENTITY_STRINGS = [
     'jomper',
     'zeedle',
-    'asdf',
+    'flooter',
     'checkpoint',
     'hook',
     'box',
@@ -141,7 +158,7 @@ ENTITY_STRINGS = [
 ENTITY_COLORS = [
     'ff3fff',
     'ffbc8b',
-    'aaaaab',
+    'fff94f',
     '3fffbf',
     'bfbfbf',
     'a46a4a',
@@ -155,7 +172,7 @@ ENTITY_COLORS = [
 ENTITY_CLASSES = [
     'Jomper',
     'Zeedle',
-    'asdf',
+    'Flooter',
     'Checkpoint',
     'Rope_Hook',
     'Box',
@@ -181,21 +198,27 @@ O_COLORS = B_COLORS + ENTITY_COLORS
 REGION_STRINGS = [
     'tutorial',
     'purple',
-    'steampunk'
+    'steampunk',
+    'ocean',
+    'forest'
 ]
 
 # The blocks that trigger each region
 REGION_BLOCKS = [
     [ 'default' ],
     [ 'goop' ],
-    [ 'metal', 'metal_alt' ]
+    [ 'metal', 'metal_alt' ],
+    [ 'sand' ],
+    [ 'leaf' ]
 ]
 
 # Lists the music to be played in each region
 REGION_SONGS = [
     'mus_tutorial',
     'mus_purple',
-    'mus_steampunk'
+    'mus_steampunk',
+    'mus_ocean',
+    'mus_forest'
 ]
 
 # Defines a background for each region (listed in the same order)
@@ -204,7 +227,9 @@ REGION_SONGS = [
 REGION_BGS = [
     'Background_Region_1',
     'Background_Region_2',
-    'Background_Region_3'
+    'Background_Region_3',
+    'Background_Region_4',
+    'Background_Region_5'
 ]
 
 # Different UI levels
@@ -235,6 +260,7 @@ PLAYER_HSPEED_BOOST = 3
 PLAYER_HSPEED_ATTACK_FACTOR = 0.4
 PLAYER_FRICTION = 20000
 PLAYER_JUMP_POWER = 19
+PLAYER_SWIM_POWER = 12
 PLAYER_MIN_WALL_VEL = 8
 PLAYER_MAX_WALL_VEL = 25
 
@@ -258,7 +284,7 @@ ABILITY_STRINGS = [
 ABILITY_BLOCKS = [
     'goop',
     'metal_alt',
-    'goop',
+    'sand',
     'goop',
     'goop',
     'goop',
@@ -293,7 +319,7 @@ BINDS = {
     'left_action': K_LEFT,
     'right_action': K_RIGHT
 }
-MUS_VOLUME = 0
+MUS_VOLUME = 0.5
 
 # Used by controller's pause_level variable
 PAUSE_NONE = 0

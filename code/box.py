@@ -8,9 +8,10 @@ class Box ( Entity ):
         # Boxes have a 2x2 block hitbox
         super().__init__( engine, 'box', pos, V2(), ( 2, 2, 0, 0 ) )
 
-        # They can also be picked up
+        # They can also be picked up/are solid
         self.entity_item = 'box'
         self.add_tag( 'pickupable' )
+        self.add_tag( 'solid_entity' )
 
     # Shift the box upward when placed down
     def on_drop( self ):

@@ -4,10 +4,10 @@ from math import floor
 
 # Initially loads the sounds into memory
 # Should only be called once
-def _load_sounds( self ):
+def reload_sounds( self ):
 
-    if ( len( self._Engine__sounds ) != 0 ):
-        raise ValueError( 'Sounds have already been initialized' )
+    self._Engine__sounds = {}
+    self._Engine__music = {}
 
     sound_file = open( self.get_path( '/sounds/list.txt' ) ).read().split( '\n' )
 

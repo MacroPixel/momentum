@@ -25,7 +25,7 @@ class Saw ( Entity ):
                 if saw_block in saw_blocks:
                     break
         else:
-            raise RuntimeError( 'No block found beneath saw' )
+            raise RuntimeError( f'No block found beneath saw at { self.pos }' )
 
         self._sprite = saw_blocks[ saw_block ]
 

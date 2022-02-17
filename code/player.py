@@ -21,6 +21,7 @@ class Player ( Entity ):
         self._slot_item = -1
         self._has_intially_set_view = False
         self._wall_vel = V2() # Stores the velocity before the collision event
+        self._debug_grab = False # When the player is being moved with the cursor
 
         # Debug variables
         self._is_invincible = False
@@ -73,7 +74,9 @@ class Player ( Entity ):
             self.update_image()
 
             # Controlls velocity, collisions, and interactions with other enemies
-            super().entity_update()
+            # Skip if debugging
+            if ( not self._debug_grab ):
+                super().entity_update()
 
         # Update view regardless
         controller = self.engine.get_instance( 'controller' )
@@ -109,8 +112,8 @@ class Player ( Entity ):
             self._has_released_jump -= 1
 
         # Vertical momentum
-        can_jump = ( self.is_on_solid() and self.engine.get_key( BINDS[ 'jump' ] ) and self.has_released_jump == 0 )
-        if ( can_jump ):
+        released_jump = ( self.has_released_jump == 0 )
+        if ( self.engine.get_key( BINDS[ 'jump' ] ) and self.is_on_solid() and released_jump ):
 
             # Jump
             self.vel.y = -PLAYER_JUMP_POWER
@@ -121,12 +124,27 @@ class Player ( Entity ):
             elif self.is_on_solid() and self.engine.get_key( BINDS[ 'move_left' ] ):
                 self.vel.x -= PLAYER_HSPEED_BOOST
 
+        # Also can get smaller boost from water
+        elif ( self.is_in_fluid() and self.engine.get_key( BINDS[ 'jump' ], 1 ) and released_jump ):
+            self.vel.y = min( self.vel.y, -PLAYER_SWIM_POWER )
+
+        # Water reduces the amount of gravity
+        self.entity_gravity_multiplier = 0.4 if self.is_in_fluid() else 1
+
+        # DEBUG ABILITY: Teleport to cursor
+        if ( self.engine.get_instance( 'controller' ).debug and self.engine.get_mouse_button( 1 ) ):
+            self.pos = self.engine.get_world_cursor().d( GRID )
+            self.vel = V2()
+            self._debug_grab = True
+        else:
+            self._debug_grab = False
+
     # Check which entities the player is colliding with
     # Includes hazards and checkpoints
     def update_collisions( self ):
 
-        # Doesn't apply if invincible
-        if ( self.is_invincible ):
+        # Skip if debugging
+        if ( self._debug_grab ):
             return
 
         # If touching hazardous entity, die
@@ -187,6 +205,10 @@ class Player ( Entity ):
     # Creates an object that displays UI and eventually restarts the level
     def die( self ):
 
+        # Don't die if invincible or debugging
+        if ( self.is_invincible or self._debug_grab ):
+            return
+
         for i in range( 25 ):
             self.engine.get_instance( 'controller' )._Controller__c_particle.create_simple(
                 self.pos.c().a( 0.5 ), ( 2, 6 ), ( 0, 360 ), ( 1, 2 ), [ ( 200, 0, 0 ), ( 150, 0, 0 ), ( 180, 0, 0 ) ], ( 0.4, 0.9 ), ( 1.5, 2 ) )
@@ -208,6 +230,9 @@ class Player ( Entity ):
 
         # Update the checkpoint position
         self._checkpoint_pos = new_pos
+
+        # Write position to file
+        self.engine.get_instance( 'controller' ).set_level_meta( 'player_spawn', self._checkpoint_pos.l() )
 
         # Play the sound
         self.engine.play_sound( 'checkpoint' )
@@ -289,6 +314,15 @@ class Player ( Entity ):
     def is_beside_solid( self, to_left ):
 
         return self.test_block_beside( to_left, lambda block_id: utils.b_string( block_id ) not in B_PASSABLE )
+
+    # Shorthand for checking if any part of the player is in a fluid
+    def is_in_fluid( self ):
+
+        controller = self.engine.get_instance( 'controller' )
+        for block_pos in self.get_adjacent_blocks():
+            if controller.is_block( block_pos ) and utils.b_string( controller.get_block_type( block_pos ) ) in B_FLUID:
+                return True
+        return False
 
     # Checks a sample of blocks around the player to see the most numerous one
     # This then returns an region ID for the controller to use

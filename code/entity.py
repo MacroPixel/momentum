@@ -75,7 +75,7 @@ class Entity( Game_Object ):
                 y_push_pos = temp_pos
 
             # Only add collision blocks after push-out is finished
-            for block_pos in self._get_adjacent_blocks():
+            for block_pos in self.get_adjacent_blocks():
                 if block_pos not in collision_positions:
                     collision_positions.append( block_pos )
 
@@ -121,7 +121,7 @@ class Entity( Game_Object ):
     # Also returns the block position
     def is_inside_block( self ):
 
-        adjacent_blocks = self._get_adjacent_blocks()
+        adjacent_blocks = self.get_adjacent_blocks()
 
         # For every grid space the position is inside of
         for block_pos in adjacent_blocks:
@@ -161,7 +161,7 @@ class Entity( Game_Object ):
         return block_pos
 
     # Returns a list of the vectors of any block position the entity
-    def _get_adjacent_blocks( self ):
+    def get_adjacent_blocks( self ):
 
         output = []
 

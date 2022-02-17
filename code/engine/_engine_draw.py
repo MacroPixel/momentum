@@ -3,11 +3,10 @@ from .vector import *
 from .bitmap_font import *
 
 # Initially loads the sprites into memory
-# Should only be called once
-def _load_sprites( self ):
+# Can be called multiple times to reload them
+def reload_sprites( self ):
 
-    if ( len( self._Engine__sprites ) != 0 ):
-        raise ValueError( 'Sprites have already been initialized' )
+    self._Engine__sprites = {}
 
     spr_file = open( self.get_path( '/textures/list.txt' ) ).read().split( '\n' )
 
@@ -144,7 +143,8 @@ def to_world_coord( self, screen_pos ):
 # Removes a sprite with a specific key from the zoom buffer
 def zoom_buffer_remove( self, key ):
 
-    self._Engine__zoom_buffer.pop( key )
+    if key in self._Engine__zoom_buffer:
+        self._Engine__zoom_buffer.pop( key )
 
 # Returns a sprite surface for other objects to use
 def get_sprite( self, sprite_id, frame ):

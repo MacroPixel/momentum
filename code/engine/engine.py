@@ -44,14 +44,14 @@ class Engine:
 
         # All sprites are broken into subimages and stored in self.__sprites
         self.__sprites = {}
-        self._load_sprites()
+        self.reload_sprites()
 
         # All sound objects are stored in self.__sound_paths
         # 32 sounds can be played at once
         pygame.mixer.set_num_channels( 32 )
         self.__sounds = {}
         self.__music = {}
-        self._load_sounds()
+        self.reload_sounds()
         self._next_song = {}
         self.MUSIC_END = pygame.USEREVENT + 1
 
@@ -204,7 +204,7 @@ class Engine:
     from ._engine_instances import get_tagged_instances
 
     # Drawing methods (preferred over pygame ones because they account for the game view)
-    from ._engine_draw import _load_sprites
+    from ._engine_draw import reload_sprites
     from ._engine_draw import draw_line
     from ._engine_draw import draw_surface
     from ._engine_draw import draw_sprite
@@ -218,7 +218,7 @@ class Engine:
     from ._engine_draw import create_bitmap_font
 
     # Sound methods
-    from ._engine_mixer import _load_sounds
+    from ._engine_mixer import reload_sounds
     from ._engine_mixer import play_sound
     from ._engine_mixer import play_music
     from ._engine_mixer import queue_music

@@ -124,7 +124,8 @@ class LevelController:
         meta_file = open( self.__engine.get_path( f'/data/{ self._level_name }/level_meta.json' ), 'w' )
         meta_dict = {
             'size': level_surf.get_size(),
-            'player_spawn': player_spawn.l()
+            'player_spawn': player_spawn.l(),
+            'deaths': 0
         }
         meta_file.write( json.dumps( meta_dict ) )
 
@@ -236,6 +237,16 @@ class LevelController:
     def get_level_meta( self, key ):
 
         return self.__level_meta[ key ]
+
+    # Set and save metadata
+    def set_level_meta( self, key, value ):
+
+        # Data is saved as JSON
+        if key in self.__level_meta:
+            self.__level_meta[ key ] = value
+
+        meta_file = open( self.__engine.get_path( f'/data/{ self._level_name }/level_meta.json' ), 'w' )
+        meta_file.write( json.dumps( self.__level_meta ) )
 
     # Check whether anything exists at a position
     def is_object( self, pos ):
