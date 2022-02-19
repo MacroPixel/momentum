@@ -58,6 +58,9 @@ class Bitmap_Font:
         # Then, account for the separator between every character
         output_width += sep * ( len( text ) - 1 )
 
+        # Make sure the output width is at least 1
+        output_width = max( 1, output_width )
+
         # Iterate through every character and draw it onto a surface
         output_surf = pygame.Surface( ( output_width, self.char_size.y ), pygame.SRCALPHA, 32 )
         current_x = 0

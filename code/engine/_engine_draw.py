@@ -112,7 +112,7 @@ def draw_text_bitmap( self, text, bitmap_font, scale, pos, is_ui, color = ( 255,
     # Change the color if necessary (from reddit.com/r/pygame/comments/hprkpr/how_to_change_the_color_of_an_image_in_pygame/)
     if ( color != ( 255, 255, 255 ) ):
         text_array = pygame.PixelArray( text_surf )
-        text_array.replace( ( 255, 255, 255, 255 ), ( *color, 255 ) )
+        text_array.replace( ( 255, 255, 255, 255 ), ( *color, 255 ) if len( color ) == 3 else color )
         del text_array
 
     self.draw_surface( text_surf, pos, is_ui, **kwargs )

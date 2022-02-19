@@ -7,9 +7,6 @@ class Menu_Controller ( Game_Object ):
         # Nothing to store
         super().__init__( engine, 'menu_controller', layer = 1 )
 
-        # This is when the game is first loaded, so fonts must be initialized
-        engine.create_bitmap_font( '/textures/font_1.png', 'main', space_width = 6 )
-
     def update( self ):
         
         # Goto main room if button is pressed

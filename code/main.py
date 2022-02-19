@@ -7,14 +7,19 @@ import traceback
 from constants import *
 from rooms import *
 
-BETA = False
-
 def main():
 
-    g_engine = Engine( V2( 1280, 720 ), 'Untitled Platformer',
+    # Read the filepath from the path file
+    # Defaults to /res
+    try:
+        res_path = open( 'res_path.txt' ).read()
+    except FileNotFoundError:
+        res_path = '/res'
+
+    g_engine = Engine( V2( 1280, 720 ), 'Momentum',
         room_dict = ROOM_DICT,
-        start_room = 'frontend',
-        root_dir = os.path.dirname( os.getcwd() ) + '/res',
+        start_room = 'splash',
+        root_dir = os.path.dirname( os.getcwd() ) + res_path,
         icon_source = '/textures/icon.png',
         fps_limit = 0,
         zoom_level = V2( 3, 3 )
@@ -23,10 +28,9 @@ def main():
 
 if __name__ == '__main__':
 
-    if BETA:
-        try:
-            main()
-        except:
-            open( 'error.txt', 'w' ).write( traceback.format_exc() )
-    else:
+    try:
         main()
+    except:
+        open( 'error.txt', 'w' ).write( traceback.format_exc() )
+        # print( traceback.format_exc() )
+        # input()

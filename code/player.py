@@ -1,21 +1,26 @@
 from basic_imports import *
 from entity import *
+import random
 
 # It's you :D
 class Player ( Entity ):
 
-    def __init__( self, engine, spawn_pos ):
+    def __init__( self, engine, spawn_pos, abilities ):
 
         super().__init__( engine, 'player', spawn_pos, V2(), ( 44 / 48, 44 / 48, 2 / 48, 4 / 48 ), LAYER_PLAYER )
         self.entity_destroy_on_death = False
         self._reset_basic_vars()
 
         # Stores whether the player has each ability
+        # Then, grant abilities present in metadata
         self._has_ability = { ability: False for ability in ABILITY_STRINGS }
+        for ability_id in abilities:
+            self.grant_ability( ABILITY_STRINGS[ ability_id ], do_file_update = False )
 
         # Other variables
         self._checkpoint_pos = spawn_pos
         self._can_invert = False
+        self._is_stomping = False
         self._can_teleport = False
         self._hook_obj = None
         self._slot_item = -1
@@ -25,12 +30,6 @@ class Player ( Entity ):
 
         # Debug variables
         self._is_invincible = False
-
-        # (Don't) automatically give all abilities
-        if False:
-            for ability in ABILITY_STRINGS:
-                if not self.has_ability( ability ):
-                    self.grant_ability( ability )
 
     # Allows easy initializing/resetting of a group of variables
     def _reset_basic_vars( self ):
@@ -150,7 +149,14 @@ class Player ( Entity ):
         # If touching hazardous entity, die
         for entity in self.engine.get_tagged_instances( 'hazardous' ):
             if utils.collision_check( self.pos, entity.pos, self.hitbox, entity.hitbox ):
-                self.die()
+
+                # Kill the enemy if possible
+                if entity.has_tag( 'enemy' ) and self.is_stomping:
+                    entity.die()
+
+                # Otherwise, kill the player
+                else:
+                    self.die()
 
         # If touching non-current checkpoint, update the current checkpoint
         for checkpoint in self.engine.get_instances( 'checkpoint' ):
@@ -160,6 +166,11 @@ class Player ( Entity ):
         # If touching powerup, give the player the ability and delete the powerup
         for powerup in self.engine.get_instances( 'powerup' ):
             if utils.collision_check( self.pos, powerup.pos, self.hitbox, powerup.hitbox ):
+
+                # Show tooltip if this is the first ability
+                if len( [ True for a in self._has_ability if self._has_ability[ a ] ] ) == 0:
+                    self.engine.get_instance( 'controller' ).show_ability_tooltip( 5 )
+
                 self.grant_ability( ABILITY_STRINGS[ powerup.ability_id ] )
                 powerup.delete()
 
@@ -209,13 +220,20 @@ class Player ( Entity ):
         if ( self.is_invincible or self._debug_grab ):
             return
 
+        # Death effects
+        controller = self.engine.get_instance( 'controller' )
         for i in range( 25 ):
             self.engine.get_instance( 'controller' )._Controller__c_particle.create_simple(
                 self.pos.c().a( 0.5 ), ( 2, 6 ), ( 0, 360 ), ( 1, 2 ), [ ( 200, 0, 0 ), ( 150, 0, 0 ), ( 180, 0, 0 ) ], ( 0.4, 0.9 ), ( 1.5, 2 ) )
         self._is_alive = False
-        self.engine.get_instance( 'controller' ).new_death_string()
-        self.engine.get_instance( 'controller' ).shake_screen( 2, 0.3 )
+        controller.new_death_string()
+        controller.shake_screen( 2, 0.3 )
         self.engine.play_sound( 'death' )
+
+        # Store death in controller
+        controller.set_level_meta( 'deaths', controller.get_level_meta( 'deaths' ) + 1 )
+
+        # Parent event
         super().die()
 
     # Updates the checkpoint (if necessary) & plays sound effect
@@ -306,9 +324,13 @@ class Player ( Entity ):
         return False
 
     # Shorthand for checking solid block below player
+    # Also includes solid entities
     def is_on_solid( self ):
 
-        return self.test_block_below( lambda block_id: utils.b_string( block_id ) not in B_PASSABLE )
+        if self.test_block_below( lambda block_id: utils.b_string( block_id ) not in B_PASSABLE ):
+            return True
+
+        return False
 
     # Shorthand for checking solid block beside player
     def is_beside_solid( self, to_left ):
@@ -402,6 +424,10 @@ class Player ( Entity ):
     @property
     def can_invert( self ):
         return self._can_invert
+
+    @property
+    def is_stomping( self ):
+        return self._is_stomping
 
     @property
     def can_teleport( self ):

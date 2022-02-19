@@ -22,6 +22,9 @@ class Controller( Game_Object ):
         # Pause level determines the amount of movement allowed
         self.pause_level = PAUSE_NONE
 
+        # Variables controlling visible UI
+        self._ability_info = -1
+
         # Initialize specialized sub-controllers
         self.__c_level = LevelController( self )
         self.__c_ui = UIController( self )
@@ -29,10 +32,9 @@ class Controller( Game_Object ):
         self.__c_region = RegionController( self )
 
         # The player can now be initialized
-        Player( self.engine, V2( self.get_level_meta( 'player_spawn' ) ) )
+        Player( self.engine, V2( self.get_level_meta( 'player_spawn' ) ), self.get_level_meta( 'abilities' ) )
 
-        # Death messages are loaded from res/data/death_strings.txt
-        self.__death_strings = open( self.engine.get_path( '/data/death_strings.txt' ) ).read().split( '\n' )
+        # A new death string is chosen every time the player dies
         self._death_string_current = 'ERROR'
 
         # View stuff
@@ -52,8 +54,28 @@ class Controller( Game_Object ):
 
             if self.pause_level == PAUSE_NONE:
                 self.pause_level = PAUSE_NORMAL
-            elif self.pause_level == PAUSE_NORMAL:
+            elif self.pause_level == PAUSE_NORMAL and self._ability_info == -1:
                 self.pause_level = PAUSE_NONE
+            elif self.pause_level == PAUSE_NORMAL and self._ability_info != -1:
+                self._ability_info = -1
+
+        # Ability stuff
+        player = self.engine.get_instance( 'player' )
+        valid_abilities = [ ABILITY_STRINGS.index( a ) for a in ABILITY_STRINGS if player.has_ability( a ) ]
+
+        # Open abilities menu
+        if ( self.pause_level == PAUSE_NORMAL and self.engine.get_key( K_a, 1 ) and self.ability_info == -1 and len( valid_abilities ) > 0 ):
+            self._ability_info = valid_abilities[0] # Start on the first valid ability instead of ability 0
+
+        # Cycle through abilities menu
+        if ( ( self.engine.get_key( K_RIGHT, 1 ) or self.engine.get_key( K_LEFT, 1 ) ) and self.ability_info != -1 ):
+
+            # Get the list of abilities the player has
+            valid_abilities = [ ABILITY_STRINGS.index( a ) for a in ABILITY_STRINGS if player.has_ability( a ) ]
+
+            # Only allow the user to cycle through valid abilities
+            addend = 1 if self.engine.get_key( K_RIGHT, 1 ) else -1
+            self._ability_info = ( valid_abilities[ ( valid_abilities.index( self._ability_info ) + addend ) % len( valid_abilities ) ] )
 
         # Switch debug mode if allowed
         if self.__allow_debug and self.engine.get_key( pygame.K_RALT, 1 ):
@@ -61,6 +83,7 @@ class Controller( Game_Object ):
 
         # Quit the game is paused
         if ( self.engine.get_key( K_q, 1 ) and self.pause_level == PAUSE_NORMAL ):
+            self.save_level_meta()
             self.engine.switch_room( 'frontend' )
 
         # Restart the game if player is dead and game is unpaused
@@ -142,6 +165,10 @@ class Controller( Game_Object ):
     def set_level_meta( self, key, value ):
         return self.__c_level.set_level_meta( key, value )
 
+    # Rewrite data from memory into file
+    def save_level_meta( self ):
+        self.__c_level.save_level_meta()
+
     # Check whether anything exists at a position
     def is_object( self, pos ):
         return self.__c_level.is_object( pos )
@@ -187,7 +214,12 @@ class Controller( Game_Object ):
     # Choose a new death message
     def new_death_string( self ):
 
-        self._death_string_current = self.__death_strings[ random.randint( 0, len( self.__death_strings ) - 1 ) ]
+        self._death_string_current = lang.DEATH_STRINGS[ random.randint( 0, len( lang.DEATH_STRINGS ) - 1 ) ]
+
+    # Show a tooltip for abilities menu
+    def show_ability_tooltip( self, seconds ):
+
+        self.__c_ui.show_ability_tooltip( seconds )
 
     # Screen-shake related functions
     from _controller_shake import shake_reset
@@ -243,3 +275,7 @@ class Controller( Game_Object ):
     def view_shake( self, value ):
         self._view_shake = value
         self.engine.view_pos = self.net_view_pos
+
+    @property
+    def ability_info( self ):
+        return self._ability_info

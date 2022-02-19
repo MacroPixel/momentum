@@ -4,6 +4,9 @@ from bg_region_2 import *
 from bg_region_3 import *
 from bg_region_4 import *
 from bg_region_5 import *
+from bg_region_6 import *
+from bg_region_7 import *
+from bg_region_8 import *
 
 from drawer import *
 

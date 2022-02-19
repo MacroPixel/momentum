@@ -18,6 +18,7 @@ B_STRINGS = [
     'default',
     'goop',
     'leaf',
+    'leaf_color',
     'wood',
     'lava',
     'cloud',
@@ -36,6 +37,7 @@ B_TEXTURES = [
     'block_default',
     'block_goop',
     'block_leaf',
+    'block_leaf_color',
     'block_wood',
     'block_lava',
     'block_cloud',
@@ -54,6 +56,7 @@ B_COLORS = [
     '7f7f7f',
     'ff7fff',
     'dbf87a',
+    'ff8bc3',
     '7f3f00',
     '7f0000',
     'bfffff',
@@ -76,7 +79,8 @@ BDM_REPLACE = 2
 B_DRAW_MODES = [
     BDM_OVERLAY,
     BDM_REPLACE,
-    BDM_NORMAL,
+    BDM_REPLACE,
+    BDM_REPLACE,
     BDM_OVERLAY,
     BDM_OVERLAY,
     BDM_REPLACE,
@@ -93,16 +97,17 @@ B_DRAW_MODES = [
 B_DRAW_VARIANTS = [
     1,
     5,
-    4,
     3,
     3,
     3,
+    3,
+    3,
     1,
     1,
     1,
     1,
-    1,
-    1,
+    3,
+    3,
     3,
     3
 ]
@@ -112,7 +117,11 @@ B_NO_CONNECT = [
     'spikes',
     'goop',
     'bounce',
-    'water'
+    'bounce_extra',
+    'water',
+    'sand',
+    'leaf',
+    'leaf_color'
 ]
 
 # List of blocks that entities can go through
@@ -200,7 +209,10 @@ REGION_STRINGS = [
     'purple',
     'steampunk',
     'ocean',
-    'forest'
+    'forest',
+    'sawmill',
+    'volcano',
+    'cloud'
 ]
 
 # The blocks that trigger each region
@@ -209,7 +221,10 @@ REGION_BLOCKS = [
     [ 'goop' ],
     [ 'metal', 'metal_alt' ],
     [ 'sand' ],
-    [ 'leaf' ]
+    [ 'leaf', 'leaf_color' ],
+    [ 'wood' ],
+    [ 'lava' ],
+    [ 'cloud' ]
 ]
 
 # Lists the music to be played in each region
@@ -218,7 +233,10 @@ REGION_SONGS = [
     'mus_purple',
     'mus_steampunk',
     'mus_ocean',
-    'mus_forest'
+    'mus_forest',
+    'mus_sawmill',
+    'mus_volcano',
+    'mus_clouds'
 ]
 
 # Defines a background for each region (listed in the same order)
@@ -229,7 +247,10 @@ REGION_BGS = [
     'Background_Region_2',
     'Background_Region_3',
     'Background_Region_4',
-    'Background_Region_5'
+    'Background_Region_5',
+    'Background_Region_6',
+    'Background_Region_7',
+    'Background_Region_8'
 ]
 
 # Different UI levels
@@ -285,10 +306,21 @@ ABILITY_BLOCKS = [
     'goop',
     'metal_alt',
     'sand',
-    'goop',
-    'goop',
-    'goop',
-    'goop'
+    'leaf',
+    'wood',
+    'lava',
+    'cloud'
+]
+
+# The color used for each ability's title
+ABILITY_COLORS = [
+    'f387ff',
+    'ffaf74',
+    'ff7474',
+    '7fff8b',
+    '3260ff',
+    'ffeb85',
+    'e4e4e4'
 ]
 
 # Internal name for each item

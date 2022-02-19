@@ -1,0 +1,39 @@
+Rotation
+When used, it rotates the player's velocity vector 90 degrees counterclockwise.
+After using, it cannot be used again until the player is on solid ground.
+
+Press the UP ABILITY keybind to activate.
+
+Tip 1: Righward velocity can be rotated to gain altitude.
+Tip 2: Upward-rightward velocity can be rotated to jump over tall obstacles.
+<NEXT>
+Wall Jump
+Allows the player to jump off of a wall, keeping some of their velocity
+and also providing a vertical boost.
+
+Press the RIGHT ABILITY or LEFT ABILITY keybind (depending on whether the wall
+is to the player's right or left) to activate.
+<NEXT>
+Stomp
+Forces the player towards the ground, killing enemies on contact.
+
+Press the JUMP and DOWN ABILITY keybinds simultaneously to activate.
+
+Tip 1: Jumping gives the player a small speed boost, so constantly jumping
+and stomping helps build up speed within a short amount of time.
+<NEXT>
+Teleportation
+Teleports the player forward in the direction they're currently moving.
+Allows traveling through non-solid blocks and objects.
+After using, it cannot be used again until the player is on solid ground.
+
+Press the DOWN ABILITY keybind while in the air to activate.
+<NEXT>
+Inventory
+a
+<NEXT>
+Rope
+a
+<NEXT>
+Glide
+a

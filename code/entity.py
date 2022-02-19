@@ -82,22 +82,31 @@ class Entity( Game_Object ):
         # Perform the aforementioned push functions
         for xy in 'xy': # Doing it this way reduces boilerplate code
 
-            if eval( f'{xy}_push_pos' ) is not None:
+            push_result = eval( f'{xy}_push_pos' )
 
-                block_pos = eval( f'{xy}_push_pos' )
-                block_id = self.controller.get_block_type( block_pos )
+            if push_result is not None:
 
-                # Execute the custom push function
-                # Skips defaults if returns False
-                if ( eval( f'{xy}_push_func' ) is not None ):
-                    exec( f'self.{xy}_push_func( block_id )' )
-                
-                # Cancel the velocity if it's a normal block
-                block_string = utils.b_string( block_id )
-                if ( block_string not in B_BOUNCE ):
+                # Cancel velocity if it's an entity
+                if ( push_result is -1 ):
                     exec( f'self.vel.{xy} = 0' )
-                elif ( block_string in B_BOUNCE ):
-                    exec( f'self.vel.{xy} *= -B_BOUNCE[ block_string ]' )
+
+                # Do other stuff for blocks
+                else:
+
+                    block_pos = eval( f'{xy}_push_pos' )
+                    block_id = self.controller.get_block_type( block_pos )
+
+                    # Execute the custom push function
+                    # Skips defaults if returns False
+                    if ( eval( f'{xy}_push_func' ) is not None ):
+                        exec( f'self.{xy}_push_func( block_id )' )
+                    
+                    # Cancel the velocity if it's a normal block
+                    block_string = utils.b_string( block_id )
+                    if ( block_string not in B_BOUNCE ):
+                        exec( f'self.vel.{xy} = 0' )
+                    elif ( block_string in B_BOUNCE ):
+                        exec( f'self.vel.{xy} *= -B_BOUNCE[ block_string ]' )
 
         # Perform the aforementioned collision functions
         has_died = False # Only allow 1 death
@@ -117,7 +126,16 @@ class Entity( Game_Object ):
                 self.die()
                 has_died = True
 
-    # Returns the block ID the player is inside of, or none if in air/passable block
+    # Returns the entity the player is inside of
+    # Only works on entities with 'solid_entity' tag
+    def is_inside_entity( self ):
+
+        for entity in [ i for i in self.engine.get_tagged_instances( 'solid_entity' ) if i is not self ]:
+            if utils.collision_check( *utils.collision_vars( self, entity ) ):
+                return entity
+        return None
+
+    # Returns the block position the player is inside of, or none if in air/passable block
     # Also returns the block position
     def is_inside_block( self ):
 
@@ -144,15 +162,24 @@ class Entity( Game_Object ):
         return None
 
     # Push an entity out of any adjacent blocks
-    # Returns whether a push-out occured
+    # Returns block position, -1, or None for block, entity, and no collision
     def _push_out( self, is_x_axis ):
+
+        xy = 'x' if is_x_axis else 'y' # Reduce boilerplate code
+
+        # Check for entities before blocks
+        entity = self.is_inside_entity()
+        if ( entity is not None ):
+
+            direction = -1 if eval( f'self.pos.{xy} < entity.pos.{xy}' ) else 1
+            exec( f'self.pos.{xy} = ( entity.pos.{xy} + entity.hitbox_offset.{xy} ) + direction * ( self.hitbox.{xy} + self.hitbox_offset.{xy} )' )
+            return -1
 
         block_pos = self.is_inside_block()
         if ( block_pos is None ):
             return None
-        block_id = self.controller.get_block_type( block_pos )
 
-        xy = 'x' if is_x_axis else 'y' # Reduce boilerplate code
+        block_id = self.controller.get_block_type( block_pos )
 
         # Push out based on their position within the block
         # The is_x_axis argument determines the axis it's pushed along

@@ -12,6 +12,11 @@ class utils:
             return 0
         return -1 if x < 0 else 1
 
+    @staticmethod
+    def clamp( x, min_val, max_val ):
+
+        return max( min( x, max_val ), min_val )
+
     # Linear interpolation
     # d argument can act as delta time
     @staticmethod
@@ -24,6 +29,12 @@ class utils:
     def dist( pos_a, pos_b ):
 
         return abs( ( pos_b.x - pos_a.x ) ** 2 + ( pos_b.y - pos_a.y ) ** 2 ) ** 0.5
+
+    # Gets the collision parameters from two entities
+    @staticmethod
+    def collision_vars( entity_a, entity_b ):
+
+        return ( entity_a.pos.c(), entity_b.pos.c(), entity_a.hitbox, entity_b.hitbox, entity_a.hitbox_offset, entity_b.hitbox_offset )
 
     # Checks for a collision between two rectangles defined by their position and dimensions (using AABB, of course)
     @staticmethod
@@ -122,6 +133,7 @@ class utils:
         return E_STRINGS[ e_id ]
 
     # Checks and converts a object ID to a block ID
+    @staticmethod
     def obj_id_to_block( obj_id ):
 
         if ( 0 <= obj_id < len( B_STRINGS ) ):
@@ -130,6 +142,7 @@ class utils:
             return None
 
     # Checks and converts a object ID to a entity ID
+    @staticmethod
     def obj_id_to_entity( entity_id ):
 
         if ( len( B_STRINGS ) <= entity_id < len( O_STRINGS ) ):
@@ -138,10 +151,19 @@ class utils:
             return None
 
     # Extracts information from a hitbox list
+    @staticmethod
     def get_hitbox_width( hitbox ):
 
         return V2( hitbox[:2] )
 
+    @staticmethod
     def get_hitbox_offset( hitbox ):
 
         return V2( hitbox[2:4] )
+
+    # Draws a text object on top of a background text object
+    def draw_text_shadow( engine, text, bitmap_font, scale, pos, is_ui, color = ( 255, 255, 255 ), shadow = ( 255, 255, 255 ), **kwargs ):
+
+        # Draw the background with the shadow color, then the normal one
+        engine.draw_text_bitmap( text, bitmap_font, scale, pos.c().s( scale ), is_ui, shadow, **kwargs )
+        engine.draw_text_bitmap( text, bitmap_font, scale, pos.c(), is_ui, color, **kwargs )

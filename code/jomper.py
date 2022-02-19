@@ -38,7 +38,7 @@ class Jomper ( Enemy ):
                 angle = atan( ( player.pos.y - self.pos.y ) / ( player.pos.x - self.pos.x ) )
                 if ( player.pos.x - self.pos.x ) < 0:
                     angle += pi
-                self.vel = V2( cos( angle ), sin( angle ) ).m( 15 ).a( 0, -5 )
+                self.vel = V2( cos( angle ), sin( angle ) ).m( random.uniform( 11, 15 ) ).a( 0, -5 )
                 self.is_facing_right = self.vel.x > 0
 
         # Apply friction to velocity

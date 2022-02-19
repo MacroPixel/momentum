@@ -1,0 +1,4 @@
+Press Space
+[ESC] Pause
+[ESC] Resume
+[ESC] Back

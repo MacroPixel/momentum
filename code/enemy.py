@@ -10,3 +10,9 @@ class Enemy ( Entity ):
         # Tags allow quick indexing of all enemies
         self.add_tag( 'enemy' )
         self.add_tag( 'hazardous' )
+
+    # Play sound when killed
+    def die( self ):
+
+        self.engine.play_sound( 'enemy_death' )
+        super().die()

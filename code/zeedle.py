@@ -34,7 +34,7 @@ class Zeedle ( Enemy ):
             if utils.collision_check( player.pos.c(), self.pos.c(), player.hitbox.c(), V2( 16, 5 ), player.hitbox_offset.c(), V2( -8, -2.5 ) ):
                 
                 # Set the velocity to match the player
-                self.vel.x = 15 * utils.sign( player.pos.x - self.pos.x )
+                self.vel.x = random.uniform( 11, 15 ) * utils.sign( player.pos.x - self.pos.x )
                 self.is_facing_right = self.vel.x > 0
 
         # Apply friction to velocity

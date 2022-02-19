@@ -13,6 +13,10 @@ class Box ( Entity ):
         self.add_tag( 'pickupable' )
         self.add_tag( 'solid_entity' )
 
+    def update( self ):
+
+        super().entity_update()
+
     # Shift the box upward when placed down
     def on_drop( self ):
 

@@ -126,7 +126,7 @@ class Engine:
                     obj.update()
 
                 # After resetting the draw window, draw() can be called for all GameObjects
-                self.__screen.fill( ( 21, 21, 21 ) )
+                self.__screen.fill( ( 0, 0, 0 ) )
                 for obj in self.__draw_instances:
                     obj.draw()
                 

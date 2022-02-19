@@ -2,11 +2,24 @@ from basic_imports import *
 from entity_list import *
 
 # Functions to modify and query abilities
-def grant_ability( self, string ):
-    self._has_ability[ string ] = True
+# Involve writing to world file
+def grant_ability( self, string, do_file_update = True ):
 
-def revoke_ability( self, string ):
+    self._has_ability[ string ] = True
+    
+    if ( do_file_update ):
+        prev_abilities = self.engine.get_instance( 'controller' ).get_level_meta( 'abilities' )
+        prev_abilities.append( ABILITY_STRINGS.index( string ) )
+        self.engine.get_instance( 'controller' ).set_level_meta( 'abilities', prev_abilities )
+
+def revoke_ability( self, string, do_file_update = True ):
+
     self._has_ability[ string ] = False
+
+    if ( do_file_update ):
+        prev_abilities = self.engine.get_instance( 'controller' ).get_level_meta( 'abilities' )
+        prev_abilities.remove( ABILITY_STRINGS.index( string ) )
+        self.engine.get_instance( 'controller' ).set_level_meta( 'abilities', prev_abilities )
 
 def has_ability( self, string ):
     return self._has_ability[ string ]
@@ -46,13 +59,13 @@ def ability_wall_jump( self, has_ability = True ):
         # Make sure the player is next to the correct wall
         left_hold = self.engine.get_key( BINDS[ 'left_action' ], 0 )
         right_hold = self.engine.get_key( BINDS[ 'right_action' ], 0 )
-        has_grip_left = ( left_hold and self.is_beside_solid( to_left = True ) and self.engine.get_key( BINDS[ 'move_left' ] ) )
-        has_grip_right = ( right_hold and self.is_beside_solid( to_left = False ) and self.engine.get_key( BINDS[ 'move_right' ] ) )
-        if ( ( has_grip_left or has_grip_right ) and abs( self.wall_vel.x ) > PLAYER_MIN_WALL_VEL ):
+        has_grip_left = ( left_hold and self.is_beside_solid( to_left = True ) )
+        has_grip_right = ( right_hold and self.is_beside_solid( to_left = False ) )
+        if ( ( has_grip_left or has_grip_right ) and abs( self.wall_vel.x ) > 2 ):
 
             # Reflect position and apply jump boost
             # Position is clamped so its magnitude doesn't exceed PLAYER_MAX_WALL_VEL
-            self.vel.x = min( max( -PLAYER_MAX_WALL_VEL, -self.wall_vel.x ), PLAYER_MAX_WALL_VEL )
+            self.vel.x = min( max( -PLAYER_MAX_WALL_VEL, -self.wall_vel.x * 0.7 ), PLAYER_MAX_WALL_VEL )
             self.vel.y = -PLAYER_JUMP_POWER
 
     # Store the current velocity for next update
@@ -63,6 +76,11 @@ def ability_stomp( self, has_ability = True ):
 
     if ( has_ability and self._resolve_down_press() == 'stomp' ):
         self.vel.y = max( 60, self.vel.y )
+        self._is_stomping = True
+
+    # Reset stomp if player is on ground
+    if ( self.is_on_solid() ):
+        self._is_stomping = False
 
 # Moves the player forward in the direction of their current velocity
 # Only goes through passable blocks and entities
@@ -74,7 +92,7 @@ def ability_teleport( self, has_ability = True ):
     if ( has_ability and self._resolve_down_press() == 'teleport' and self.can_teleport ):
         
         self.entity_dies_to_hazards = False
-        self.shift_pos( self.vel.c().m( 0.25 ) )
+        self.shift_pos( self.vel.c().m( 0.2 ), iterations = 15 )
         self.entity_dies_to_hazards = True
         self._can_teleport = False
 
