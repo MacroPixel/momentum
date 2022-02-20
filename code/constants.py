@@ -99,7 +99,7 @@ B_DRAW_MODES = [
     BDM_OVERLAY,
     BDM_REPLACE,
     BDM_REPLACE,
-    BDM_NORMAL
+    BDM_REPLACE
 ]
 
 B_DRAW_VARIANTS = [
@@ -108,7 +108,7 @@ B_DRAW_VARIANTS = [
     3,
     3,
     3,
-    3,
+    5,
     3,
     3,
     1,
@@ -119,7 +119,7 @@ B_DRAW_VARIANTS = [
     3,
     3,
     3,
-    1
+    3
 ]
 
 # List of blocks that don't connect to blocks of different types
@@ -242,7 +242,7 @@ REGION_BLOCKS = [
     [ 'leaf', 'leaf_color' ],
     [ 'wood' ],
     [ 'magma' ],
-    [ 'cloud' ]
+    [ 'cloud', 'gold' ]
 ]
 
 # Lists the music to be played in each region
@@ -374,4 +374,5 @@ MUS_VOLUME = 0.5
 # Used by controller's pause_level variable
 PAUSE_NONE = 0
 PAUSE_NORMAL = 1
-PAUSE_TOTAL = 2
+PAUSE_CUTSCENE = 2
+PAUSE_TOTAL = 3

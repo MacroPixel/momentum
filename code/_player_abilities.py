@@ -67,6 +67,7 @@ def ability_wall_jump( self, has_ability = True ):
             # Position is clamped so its magnitude doesn't exceed PLAYER_MAX_WALL_VEL
             self.vel.x = min( max( -PLAYER_MAX_WALL_VEL, -self.wall_vel.x * 0.7 ), PLAYER_MAX_WALL_VEL )
             self.vel.y = -PLAYER_JUMP_POWER
+            self._image_wall_jump = 0.25
 
     # Store the current velocity for next update
     self._wall_vel = self.vel.c()
@@ -112,6 +113,7 @@ def ability_slot( self, has_ability = True ):
         # Pick up the first item that's close enough
         for entity in self.engine.get_tagged_instances( 'pickupable' ):
             if self._try_pickup( entity ):
+                self._image_drop = 0.15
                 break
         else:
             self._slot_set( -1 )
@@ -119,6 +121,7 @@ def ability_slot( self, has_ability = True ):
         # Drop the previous item
         if ( prev_item != -1 ):
             self._drop_item( prev_item )
+            self._image_drop = 0.15
 
 # Allows the player to hook onto a rope and swing from it
 # This method also handles other rope updates

@@ -12,8 +12,12 @@ class Trophy ( Entity ):
 
     def update( self ):
 
-        self._current_image += 24 * self.engine.delta_time
+        # Cancel if game is paused
+        if ( self.engine.get_instance( 'controller' ).pause_level >= PAUSE_NORMAL ):
+            return
 
+        # Perform image/entity update
+        self._current_image += 24 * self.engine.delta_time
         super().entity_update( iterations = 1 )
 
     def draw( self ):

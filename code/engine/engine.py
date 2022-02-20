@@ -116,7 +116,8 @@ class Engine:
 
                 # Music queue
                 elif event.type == self.MUSIC_END:
-                    self.play_music( self._next_song[ 'name' ], **self._next_song[ 'kwargs' ] )
+                    if 'name' in self._next_song:
+                        self.play_music( self._next_song[ 'name' ], **self._next_song[ 'kwargs' ] )
 
             # Cancel updating/drawing if room is switched
             try:

@@ -35,8 +35,8 @@ class Saw ( Entity ):
 
     def update( self ):
 
-        # Don't run if paused
-        if ( self.engine.get_instance( 'controller' ).pause_level != PAUSE_NONE ):
+        # Cancel if game is paused
+        if ( self.engine.get_instance( 'controller' ).pause_level >= PAUSE_NORMAL ):
             return
 
         # Rotate

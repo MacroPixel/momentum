@@ -38,7 +38,9 @@ class Player ( Entity ):
         self._image_dir = 1
         self._image_walk = 0
         self._image_bob = 0
-        self._image_attack = 0
+        self._image_swim = 0
+        self._image_wall_jump = 0
+        self._image_drop = 0
         self._has_released_jump = 5
 
         # Other vars
@@ -126,6 +128,7 @@ class Player ( Entity ):
         # Also can get smaller boost from water
         elif ( self.is_in_fluid() and self.engine.get_key( BINDS[ 'jump' ], 1 ) and released_jump ):
             self.vel.y = min( self.vel.y, -PLAYER_SWIM_POWER )
+            self._image_swim = 0
 
         # Water reduces the amount of gravity
         self.entity_gravity_multiplier = 0.4 if self.is_in_fluid() else 1
@@ -148,7 +151,7 @@ class Player ( Entity ):
 
         # If touching hazardous entity, die
         for entity in self.engine.get_tagged_instances( 'hazardous' ):
-            if utils.collision_check( self.pos, entity.pos, self.hitbox, entity.hitbox ):
+            if utils.collision_check( *utils.collision_vars( self, entity ) ):
 
                 # Kill the enemy if possible
                 if entity.has_tag( 'enemy' ) and self.is_stomping:
@@ -160,12 +163,17 @@ class Player ( Entity ):
 
         # If touching non-current checkpoint, update the current checkpoint
         for checkpoint in self.engine.get_instances( 'checkpoint' ):
-            if utils.collision_check( self.pos, checkpoint.pos, self.hitbox, checkpoint.hitbox ):
+            if utils.collision_check( *utils.collision_vars( self, checkpoint ) ):
                 self.set_checkpoint( checkpoint.real_pos )
+
+        # If touching trophy, run the controller's win sequence
+        for trophy in self.engine.get_instances( 'trophy' ):
+            if utils.collision_check( *utils.collision_vars( self, trophy ) ):
+                self.engine.get_instance( 'controller' ).start_win_sequence()
 
         # If touching powerup, give the player the ability and delete the powerup
         for powerup in self.engine.get_instances( 'powerup' ):
-            if utils.collision_check( self.pos, powerup.pos, self.hitbox, powerup.hitbox ):
+            if utils.collision_check( *utils.collision_vars( self, powerup ) ):
 
                 # Show tooltip if this is the first ability
                 if len( [ True for a in self._has_ability if self._has_ability[ a ] ] ) == 0:
@@ -191,9 +199,12 @@ class Player ( Entity ):
         elif ( self.vel.x > 0.01 ):
             self._image_dir = 1
 
-        # If attack is > 0, it goes through 1 frame every 0.05 seconds
-        if ( self.image_attack > 0 ):
-            self._image_attack = max( 0, self._image_attack - self.engine.delta_time / 0.05 )
+        # Swim is lerped to last image
+        self._image_swim = utils.lerp( self._image_swim, 0, 0.9, self.engine.delta_time * 4 )
+
+        # Drop and wall jump work on a timer
+        self._image_wall_jump -= self.engine.delta_time
+        self._image_drop -= self.engine.delta_time
 
     # Abilities
     from _player_abilities import grant_ability
@@ -279,14 +290,24 @@ class Player ( Entity ):
         if ( self.hook_obj is not None ):
             self.engine.draw_line( self.pos.c().m( GRID ).a( GRID / 2 ), self.hook_obj.pos.c().m( GRID ).a( GRID / 2 ), False, ( 125, 99, 75 ), is_aa = True )
 
-        # Draw the actual player
-        draw_pos = self.pos.c().m( GRID )
-        if ( self._image_attack > 0 ):
-            draw_image = V2( 2, min( 2, 2 - floor( self.image_attack ) ) )
+        # Draw swim animation if player has recently swam up
+        if ( self._image_swim > 0.1 ):
+            draw_image = V2( 2, round( 2 - self._image_swim ) )
+
+        # Then, try drawing wall jump or drop if timers are active
+        elif ( self._image_wall_jump > 0 ):
+            draw_image = V2( 3, 0 )
+        elif ( self._image_drop > 0 ):
+            draw_image = V2( 4, 0 )
+
+        # Then, default to walking/passive animations
         elif abs( self.vel.x ) < 0.5:
             draw_image = V2( 0, floor( self.image_bob ) % 2 )
         else:
             draw_image = V2( 1, floor( self.image_walk ) % 8 )
+
+        # Draw the actual player
+        draw_pos = self.pos.c().m( GRID )
         self.engine.draw_sprite( 'player', draw_image, draw_pos.c(), False, flip = V2( self.image_dir, 1 ) )
 
         # Draw the player's item above their head if they have one

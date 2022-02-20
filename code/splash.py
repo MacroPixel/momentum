@@ -16,9 +16,6 @@ class Splash ( Game_Object ):
         self._time = -1
         self._surf = pygame.transform.scale( self.engine.get_sprite( 'splash', V2() ), self.engine.screen_size.l() )
 
-        # Play startup song
-        self.engine.play_music( 'mus_menu_2', volume = 0.6 )
-
     # Let time tick/check if room should switch
     def update( self ):
 

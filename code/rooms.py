@@ -1,6 +1,7 @@
 from basic_imports import *
 from controller import *
 from player import *
+from frontend_controller import *
 from menu_controller import *
 from splash import *
 
@@ -11,10 +12,15 @@ def room_main( engine ):
 
     Controller( engine )
 
-# MENU ROOM
+# FRONTEND ROOM
 # Where the game starts
-# Allows going to other rooms
 def room_frontend( engine ):
+
+    Frontend_Controller( engine )
+
+# MENU ROOM
+# Allows access to settings, etc.
+def room_menu( engine ):
 
     Menu_Controller( engine )
 
@@ -27,6 +33,7 @@ def room_splash( engine ):
 # Defines each room with a string
 ROOM_DICT = {
     'frontend': room_frontend,
+    'menu': room_menu,
     'main': room_main,
     'splash': room_splash
 }

@@ -73,9 +73,9 @@ class UIController():
             has_abilities = len( [ 0 for ability in ABILITY_STRINGS if player.has_ability( ability ) ] ) > 0
             if has_abilities:
                 self.engine.draw_text_bitmap( '[A] Abilities', 'main', 2, V2( 15, 40 ), True )
-                self.engine.draw_text_bitmap( '[Q] Quit', 'main', 2, V2( 15, 65 ), True )
+                self.engine.draw_text_bitmap( '[Q] Save and Quit', 'main', 2, V2( 15, 65 ), True )
             else:
-                self.engine.draw_text_bitmap( '[Q] Quit', 'main', 2, V2( 15, 40 ), True )
+                self.engine.draw_text_bitmap( '[Q] Save and Quit', 'main', 2, V2( 15, 40 ), True )
 
         # Ability info UI
         elif ( self.controller.ability_info != -1 ):

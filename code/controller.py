@@ -84,7 +84,7 @@ class Controller( Game_Object ):
         # Quit the game is paused
         if ( self.engine.get_key( K_q, 1 ) and self.pause_level == PAUSE_NORMAL ):
             self.save_level_meta()
-            self.engine.switch_room( 'frontend' )
+            self.engine.switch_room( 'menu' )
 
         # Restart the game if player is dead and game is unpaused
         if ( self.pause_level == PAUSE_NONE and self.engine.get_key( K_SPACE, 1 ) and not self.engine.get_instance( 'player' ).is_alive ):
@@ -216,6 +216,16 @@ class Controller( Game_Object ):
     def show_ability_tooltip( self, seconds ):
 
         self.__c_ui.show_ability_tooltip( seconds )
+
+    # Pause the game and start drawing win stuff
+    def start_win_sequence( self ):
+
+        # Freeze the game
+        self.pause_level = PAUSE_CUTSCENE
+
+        # Play victory sound
+        pygame.mixer.music.stop()
+        self.engine.play_sound( 'victory' )
 
     # Screen-shake related functions
     from _controller_shake import shake_reset
