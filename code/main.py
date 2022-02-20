@@ -32,5 +32,5 @@ if __name__ == '__main__':
         main()
     except:
         open( 'error.txt', 'w' ).write( traceback.format_exc() )
-        # print( traceback.format_exc() )
-        # input()
+        print( traceback.format_exc() )
+        input()

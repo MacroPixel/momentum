@@ -9,12 +9,8 @@ Traceback (most recent call last):
     self.__c_level.update()
   File "C:\Users\colli\Documents\Python\Platformer Game\code\_controller_level.py", line 97, in update
     self.load_chunk( chunk_pos )
-  File "C:\Users\colli\Documents\Python\Platformer Game\code\_controller_level.py", line 131, in load_chunk
-    self.__c_block.create_buffer( chunk_pos )
-  File "C:\Users\colli\Documents\Python\Platformer Game\code\_controller_block.py", line 46, in create_buffer
-    surf.blit( self.render_block( block_pos ), ( xx * GRID, yy * GRID ) )
-  File "C:\Users\colli\Documents\Python\Platformer Game\code\_controller_block.py", line 72, in render_block
-    surf = self.__engine.get_sprite( sprite_id, V2( variant, 0 ) ).copy()
-  File "C:\Users\colli\Documents\Python\Platformer Game\code\engine\_engine_draw.py", line 152, in get_sprite
-    return self._Engine__sprites[ sprite_id ][ frame.x ][ frame.y ]
-IndexError: list index out of range
+  File "C:\Users\colli\Documents\Python\Platformer Game\code\_controller_level.py", line 124, in load_chunk
+    if ( self.is_entity( entity_pos ) ):
+  File "C:\Users\colli\Documents\Python\Platformer Game\code\_controller_level.py", line 201, in is_entity
+    color = self.__level_surf.get_at( pos.l() )
+AttributeError: 'NoneType' object has no attribute 'get_at'

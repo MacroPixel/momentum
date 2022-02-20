@@ -103,6 +103,8 @@ class Entity( Game_Object ):
                     
                     # Cancel the velocity if it's a normal block
                     block_string = utils.b_string( block_id )
+                    if ( abs( eval( f'self.vel.{xy}' ) ) < 0.0001 ):
+                        exec( f'self.vel.{xy} = 0' )
                     if ( block_string not in B_BOUNCE ):
                         exec( f'self.vel.{xy} = 0' )
                     elif ( block_string in B_BOUNCE ):

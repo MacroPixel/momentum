@@ -10,6 +10,7 @@ class Box ( Entity ):
 
         # They can also be picked up/are solid
         self.entity_item = 'box'
+        self.entity_dies_to_hazards = False
         self.add_tag( 'pickupable' )
         self.add_tag( 'solid_entity' )
 
@@ -24,7 +25,9 @@ class Box ( Entity ):
         
         # Destroy if inside block
         if ( self.is_inside_block() is not None ):
-            self.delete()
+            block_id = self.engine.get_instance( 'controller' ).get_block_type( self.is_inside_block() )
+            if ( block_id not in B_PASSABLE ):
+                self.delete()
 
     def draw( self ):
 

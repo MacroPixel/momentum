@@ -172,11 +172,12 @@ ENTITY_STRINGS = [
     'checkpoint',
     'hook',
     'box',
+    'box_long',
     'powerup',
     'twig',
     'launcher',
     'saw',
-    'trophy'
+    'trophy',
 ]
 
 # The color of each entity when being loaded in from a PNG
@@ -187,6 +188,7 @@ ENTITY_COLORS = [
     '3fffbf',
     'bfbfbf',
     'a46a4a',
+    '935838',
     'ff9f7f',
     'a06642',
     '93f0b0',
@@ -202,6 +204,7 @@ ENTITY_CLASSES = [
     'Checkpoint',
     'Rope_Hook',
     'Box',
+    'Box_Long',
     'Powerup',
     'Twig',
     'Launcher',
@@ -345,18 +348,21 @@ ABILITY_COLORS = [
 # The name that's actually shown to the player
 # is in a different dictionary
 ITEM_STRINGS = [
-    'box'
+    'box',
+    'box_long'
 ]
 
 # Item names that are actually displayed to the player
 ITEM_NAMES = [
-    'Box'
+    'Box',
+    'Long Box'
 ]
 
 # The entities that are created when items are dropped
 # Use the internal names of the entity
 ITEM_ENTITIES = [
-    'box'
+    'box',
+    'box_long'
 ]
 
 # Keybinds (will probably be moved to settings object in the future)

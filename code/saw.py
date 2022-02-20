@@ -26,6 +26,7 @@ class Saw ( Entity ):
                     break
         else:
             self.delete()
+            return
 
         self._sprite = saw_blocks[ saw_block ]
 

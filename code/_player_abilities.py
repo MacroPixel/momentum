@@ -51,10 +51,10 @@ def ability_invert( self, has_ability = True ):
 # Reflects x-velocity off a wall and gives a y-velocity boost
 def ability_wall_jump( self, has_ability = True ):
 
-    # Must hold right/left key
+    # Must hold right XOR left key
     right_hold = self.engine.get_key( BINDS[ 'right_action' ] )
     left_hold = self.engine.get_key( BINDS[ 'left_action' ] )
-    if ( has_ability and ( right_hold or left_hold ) ):
+    if ( has_ability and ( right_hold != left_hold ) ):
 
         # Make sure the player is next to the correct wall
         left_hold = self.engine.get_key( BINDS[ 'left_action' ], 0 )
