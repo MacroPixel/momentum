@@ -86,7 +86,7 @@ def ability_stomp( self, has_ability = True ):
 # Only goes through passable blocks and entities
 def ability_teleport( self, has_ability = True ):
 
-    # In total, the player moves 0.25s worth of distance
+    # In total, the player moves 0.2s worth of distance
     # It uses the entity class' collision methods to move,
     # but disables the normal entity/hazard events
     if ( has_ability and self._resolve_down_press() == 'teleport' and self.can_teleport ):
@@ -109,17 +109,10 @@ def ability_slot( self, has_ability = True ):
         # Store what item used to be in the slot
         prev_item = self.slot_item
 
-        # Pick up the closest pickupable item
-        min_dist = 5
-        nearest_obj = None
+        # Pick up the first item that's close enough
         for entity in self.engine.get_tagged_instances( 'pickupable' ):
-            dist = utils.dist( self.pos.c(), entity.pos.c() )
-            if dist < min_dist:
-                min_dist = dist
-                nearest_obj = entity
-
-        if nearest_obj is not None:
-            self._slot_set( nearest_obj.pickup() )
+            if self._try_pickup( entity ):
+                break
         else:
             self._slot_set( -1 )
 
@@ -189,14 +182,30 @@ def _slot_set( self, value ):
     else:
         self._slot_item = max( -1, int( value ) )
 
+# Attemps to pick up an entity
+# Picking up succeeds if player is within 0.1 of the entity's hitbox
+def _try_pickup( self, entity ):
+
+    if ( utils.collision_check( self.pos.c(), entity.pos.c(), self.hitbox.c().a( 0.2 ), entity.hitbox, self.hitbox_offset.c().s( 0.1 ), entity.hitbox_offset ) ):
+        self._slot_set( entity.pickup() )
+        return True
+    return False
+
 # Creates an entity from its corresponding item ID
 def _drop_item( self, item_id ):
 
+    # Create the item in the player's position
     entity_id = ENTITY_STRINGS.index( ITEM_ENTITIES[ item_id ] )
     engine_ref = self.engine
-    entity_pos = self.pos.c().a( self.image_dir, 0 )
-    dropped_obj = eval( f"{ ENTITY_CLASSES[ entity_id ] }( engine_ref, entity_pos )" )
-    dropped_obj.on_drop()
+    entity = eval( f"{ ENTITY_CLASSES[ entity_id ] }( engine_ref, self.pos.c() )" )
+
+    # Move it according to its hitbox
+    is_facing_right = self.image_dir == 1
+    entity_offset = ( self.hitbox.x - entity.hitbox_offset.x ) if is_facing_right else ( -entity.hitbox.x - entity.hitbox_offset.x )
+    entity.pos.x += self.hitbox_offset.x + entity_offset
+
+    # Execute special drop function
+    entity.on_drop()
 
 # Returns a hook object within range of the player
 # If no hook is within range, it returns None

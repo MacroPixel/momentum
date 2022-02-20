@@ -101,10 +101,6 @@ class Controller( Game_Object ):
             if ( self.engine.get_key( pygame.K_F2, 1 ) ):
                 self._advanced_info = not self.advanced_info
 
-            # Rewrite level
-            if ( self.engine.get_key( pygame.K_F3, 1 ) ):
-                self.__c_level.rewrite_level()
-
             # Reset level
             if ( self.engine.get_key( pygame.K_F4, 1 ) ):
                 self.reset_level()

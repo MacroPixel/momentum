@@ -30,10 +30,24 @@ After using, it cannot be used again until the player is on solid ground.
 Press the DOWN ABILITY keybind while in the air to activate.
 <NEXT>
 Inventory
-a
+Allows the player to pick up and place down specific entities.
+The current item is displayed over the player's head.
+
+Press the DOWN ABILITY keybind while on the ground to activate.
+
+Tip 1: Many items have unique effects when placed down.
+Tip 2: Entities respawn/despawn when the player gets a far enough
+distance away from them.
 <NEXT>
 Rope
-a
+Allows the player to slingshot themselves and swing over obstacles.
+Requires a rope hook to use.
+
+Press and hold the DOWN ABILITY keybind while on top of a rope hook to activate.
+Release the DOWN ABILITY keybind to unhook the rope.
+
+Tip 1: The player gains a speed boost from releasing the rope
+depending on how stretched out the rope currently is.
 <NEXT>
 Glide
 a

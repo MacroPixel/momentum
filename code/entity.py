@@ -87,7 +87,7 @@ class Entity( Game_Object ):
             if push_result is not None:
 
                 # Cancel velocity if it's an entity
-                if ( push_result is -1 ):
+                if ( push_result == -1 ):
                     exec( f'self.vel.{xy} = 0' )
 
                 # Do other stuff for blocks
@@ -171,8 +171,9 @@ class Entity( Game_Object ):
         entity = self.is_inside_entity()
         if ( entity is not None ):
 
-            direction = -1 if eval( f'self.pos.{xy} < entity.pos.{xy}' ) else 1
-            exec( f'self.pos.{xy} = ( entity.pos.{xy} + entity.hitbox_offset.{xy} ) + direction * ( self.hitbox.{xy} + self.hitbox_offset.{xy} )' )
+            is_rightward_push = eval( f'self.pos.{xy} > entity.pos.{xy}' )
+            push_offset = eval( f'entity.hitbox.{xy} - self.hitbox_offset.{xy}' ) if is_rightward_push else eval( f'-self.hitbox.{xy} - self.hitbox_offset.{xy}' )
+            exec( f'self.pos.{xy} = entity.pos.{xy} + entity.hitbox_offset.{xy} + push_offset' )
             return -1
 
         block_pos = self.is_inside_block()
@@ -183,8 +184,9 @@ class Entity( Game_Object ):
 
         # Push out based on their position within the block
         # The is_x_axis argument determines the axis it's pushed along
-        direction = -1 if eval( f'self.pos.{xy} < block_pos.{xy}' ) else 1
-        exec( f'self.pos.{xy} = block_pos.{xy} + direction * ( self.hitbox.{xy} + self.hitbox_offset.{xy} )' )
+        is_rightward_push = eval( f'self.pos.{xy} > block_pos.{xy}' )
+        push_offset = eval( f'1 - self.hitbox_offset.{xy}' ) if is_rightward_push else eval( f'-self.hitbox.{xy} - self.hitbox_offset.{xy}' )
+        exec( f'self.pos.{xy} = block_pos.{xy} + push_offset' )
         return block_pos
 
     # Returns a list of the vectors of any block position the entity

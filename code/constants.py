@@ -20,6 +20,7 @@ B_STRINGS = [
     'leaf',
     'leaf_color',
     'wood',
+    'magma',
     'lava',
     'cloud',
     'bounce',
@@ -29,7 +30,8 @@ B_STRINGS = [
     'metal',
     'metal_alt',
     'sand',
-    'water'
+    'water',
+    'gold'
 ]
 
 # Block textures (listed in order of ID)
@@ -39,6 +41,7 @@ B_TEXTURES = [
     'block_leaf',
     'block_leaf_color',
     'block_wood',
+    'block_magma',
     'block_lava',
     'block_cloud',
     'block_bounce',
@@ -48,7 +51,8 @@ B_TEXTURES = [
     'block_metal',
     'block_metal_alt',
     'block_sand',
-    'block_water'
+    'block_water',
+    'block_gold'
 ]
 
 # The color of each block when being loaded in from a PNG
@@ -59,6 +63,7 @@ B_COLORS = [
     'ff8bc3',
     '7f3f00',
     '7f0000',
+    'ff754d',
     'bfffff',
     'ff00ff',
     '6300ff',
@@ -67,7 +72,8 @@ B_COLORS = [
     '764d47',
     '4d3b39',
     'f3d681',
-    '3ccff3'
+    '3ccff3',
+    'de9e00'
 ]
 
 # Determines how the sprite of a block type conencts
@@ -86,12 +92,14 @@ B_DRAW_MODES = [
     BDM_REPLACE,
     BDM_REPLACE,
     BDM_REPLACE,
-    BDM_OVERLAY,
-    BDM_REPLACE,
     BDM_REPLACE,
     BDM_OVERLAY,
     BDM_REPLACE,
-    BDM_REPLACE
+    BDM_REPLACE,
+    BDM_OVERLAY,
+    BDM_REPLACE,
+    BDM_REPLACE,
+    BDM_NORMAL
 ]
 
 B_DRAW_VARIANTS = [
@@ -102,6 +110,7 @@ B_DRAW_VARIANTS = [
     3,
     3,
     3,
+    3,
     1,
     1,
     1,
@@ -109,7 +118,8 @@ B_DRAW_VARIANTS = [
     3,
     3,
     3,
-    3
+    3,
+    1
 ]
 
 # List of blocks that don't connect to blocks of different types
@@ -119,14 +129,18 @@ B_NO_CONNECT = [
     'bounce',
     'bounce_extra',
     'water',
+    'lava',
     'sand',
     'leaf',
-    'leaf_color'
+    'leaf_color',
+    'gold',
+    'cloud'
 ]
 
 # List of blocks that entities can go through
 B_PASSABLE = [
     'spikes',
+    'lava',
     'water'
 ]
 
@@ -144,7 +158,8 @@ B_BOUNCE = {
 
 # List of blocks that kill entities
 B_HAZARD = [
-    'spikes'
+    'spikes',
+    'lava'
 ]
 
 # Internal names of each entity
@@ -160,7 +175,8 @@ ENTITY_STRINGS = [
     'powerup',
     'twig',
     'launcher',
-    'saw'
+    'saw',
+    'trophy'
 ]
 
 # The color of each entity when being loaded in from a PNG
@@ -174,7 +190,8 @@ ENTITY_COLORS = [
     'ff9f7f',
     'a06642',
     '93f0b0',
-    '6e6e6e'
+    '6e6e6e',
+    'ffd62b'
 ]
 
 # A string representation of each entity class
@@ -188,7 +205,8 @@ ENTITY_CLASSES = [
     'Powerup',
     'Twig',
     'Launcher',
-    'Saw'
+    'Saw',
+    'Trophy'
 ]
 
 # Object arrays use the block and entity arrays
@@ -223,7 +241,7 @@ REGION_BLOCKS = [
     [ 'sand' ],
     [ 'leaf', 'leaf_color' ],
     [ 'wood' ],
-    [ 'lava' ],
+    [ 'magma' ],
     [ 'cloud' ]
 ]
 
@@ -260,7 +278,7 @@ UI_DEAD = 2
 
 # The size of a block grid/chunk grid space
 GRID = 16
-C_GRID = 16
+C_GRID = 12
 
 # How far the player has to go to the side of the screen
 # for the view to scroll
@@ -268,7 +286,7 @@ VIEW_BOUNDS = ( 128, 64 )
 
 # The maximum range (in block coords) away from the center
 # within which the game should attempt to render blocks
-RENDER_BOUNDS = ( 1, 1 )
+RENDER_BOUNDS = ( 2, 1 )
 
 # Entity physics constants
 GRAVITY = 32
@@ -308,7 +326,7 @@ ABILITY_BLOCKS = [
     'sand',
     'leaf',
     'wood',
-    'lava',
+    'magma',
     'cloud'
 ]
 

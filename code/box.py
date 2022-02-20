@@ -15,12 +15,16 @@ class Box ( Entity ):
 
     def update( self ):
 
-        super().entity_update()
+        super().entity_update( iterations = 1 )
 
     # Shift the box upward when placed down
     def on_drop( self ):
 
         self.pos.y -= 1
+        
+        # Destroy if inside block
+        if ( self.is_inside_block() is not None ):
+            self.delete()
 
     def draw( self ):
 

@@ -3,24 +3,13 @@ Traceback (most recent call last):
     main()
   File "C:\Users\colli\Documents\Python\Platformer Game\code\main.py", line 27, in main
     g_engine.run()
-  File "C:\Users\colli\Documents\Python\Platformer Game\code\engine\engine.py", line 142, in run
-    self.load_room( room.func )
-  File "C:\Users\colli\Documents\Python\Platformer Game\code\engine\engine.py", line 183, in load_room
-    self.__room_dict[ room_function ]( self )
-  File "C:\Users\colli\Documents\Python\Platformer Game\code\rooms.py", line 12, in room_main
-    Controller( engine )
-  File "C:\Users\colli\Documents\Python\Platformer Game\code\controller.py", line 29, in __init__
-    self.__c_level = LevelController( self )
-  File "C:\Users\colli\Documents\Python\Platformer Game\code\_controller_level.py", line 29, in __init__
-    self.load_level( 'level_main' )
-  File "C:\Users\colli\Documents\Python\Platformer Game\code\_controller_level.py", line 49, in load_level
-    level_meta = json.load( level_meta )
-  File "C:\Users\colli\AppData\Local\Programs\Python\Python39\lib\json\__init__.py", line 293, in load
-    return loads(fp.read(),
-  File "C:\Users\colli\AppData\Local\Programs\Python\Python39\lib\json\__init__.py", line 346, in loads
-    return _default_decoder.decode(s)
-  File "C:\Users\colli\AppData\Local\Programs\Python\Python39\lib\json\decoder.py", line 337, in decode
-    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
-  File "C:\Users\colli\AppData\Local\Programs\Python\Python39\lib\json\decoder.py", line 355, in raw_decode
-    raise JSONDecodeError("Expecting value", s, err.value) from None
-json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+  File "C:\Users\colli\Documents\Python\Platformer Game\code\engine\engine.py", line 126, in run
+    obj.update()
+  File "C:\Users\colli\Documents\Python\Platformer Game\code\controller.py", line 135, in update
+    self.__c_level.update()
+  File "C:\Users\colli\Documents\Python\Platformer Game\code\_controller_level.py", line 97, in update
+    self.load_chunk( chunk_pos )
+  File "C:\Users\colli\Documents\Python\Platformer Game\code\_controller_level.py", line 128, in load_chunk
+    exec( f"{ ENTITY_CLASSES[ entity_id ] }( engine_ref, entity_pos )" )
+  File "<string>", line 1, in <module>
+NameError: name 'Trophy' is not defined

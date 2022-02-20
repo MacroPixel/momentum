@@ -90,4 +90,6 @@ class V2:
 
   # Compares two vectors
   def __eq__( self, other ):
-    return self.x == other.x and self.y == other.y
+    if isinstance( other, V2 ):
+      return self.x == other.x and self.y == other.y
+    return False

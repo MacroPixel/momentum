@@ -23,7 +23,8 @@ class LevelController:
 
         # Basic data
         # Initialized with a function to allow easy resetting
-        self.reset_data( ( 1, 1 ) )
+        self.reset_data()
+        self._level_colors = [ utils.hex_to_rgb( c ) for c in O_COLORS ]
 
         # Load the level data from 'level.txt'
         self.load_level( 'level_main' )
@@ -32,103 +33,48 @@ class LevelController:
         Drawer( self.__engine, LAYER_BLOCK, self.draw )
 
     # Initially creates local data; can also be used to reset data
-    def reset_data( self, level_size ):
+    def reset_data( self ):
 
-        self.__objects = {} # Maps a position vector to an object ID
-        self.__chunks = {} # Maps a chunk vector to a list of position vectors
         self.__loaded_chunks = [] # Holds a position vector for each currently loaded chunk
         self.__level_meta = {} # Holds additional important info (e.g. player spawn)
+        self.__level_surf = None # Test
 
-    # Loads the level data into memory
-    def load_level( self, level_name ):
+    # Specifically resets level metadata
+    def reset_meta( self, level_surf ):
 
-        # Reset any pre-existing level data
-        self._level_name = level_name
-        level_data = open( self.__engine.get_path( f'/data/{ self._level_name }/level.txt' ) ).read().split( '\n' )
-        level_meta = open( self.__engine.get_path( f'/data/{ self._level_name }/level_meta.json' ) )
-        level_meta = json.load( level_meta )
-
-        self.reset_data( level_meta[ 'size' ] )
-        self.__c_block.reset_buffers()
-        self.__c_block.reset_data()
-
-        # Initially parse level metadata
-        self.__level_meta = level_meta
-
-        # Iterate through every line in the file
-        for line in level_data:
-
-            # If blank line, do nothing
-            if len( line ) == 0:
-                pass
-
-            # Otherwise, create a block/entity at the listed positions
-            else:
-
-                # Split the line by spaces
-                # The first token is the object ID, and the subsequent tokens
-                # represent coordinate pairs at which the objects should be created
-                line = line.split( ' ' )
-                object_id = utils.o_id( line[0] )
-                object_positions = [ V2( line[ i : i + 2 ] ).i() for i in range( 1, len( line ), 2 ) ]
-
-                # Now, loop through coordinates and set the objects
-                for obj_pos in object_positions:
-                    self._set_object( obj_pos, object_id )
-        
-    # Recreates the level data from a PNG image
-    def rewrite_level( self ):
-
-        # Load the PNG into memory
-        level_surf = pygame.image.load( self.__engine.get_path( f'/data/{ self._level_name }/level.png' ) )
-
-        objects = {} # Lists an object ID and all the positions associated with it
-        player_spawn = V2( 0, 0 ) # Player spawnpoint can be changed
-
-        # Find the positions of each object relative to top-left
-        # using the defined color values
+        # Must loop through file to determine player spawnpoint
+        player_spawn = V2()
         for xx in range( level_surf.get_width() ):
             for yy in range( level_surf.get_height() ):
-                
-                # Store color of pixel
-                pos = V2( xx, yy )
-                this_color = level_surf.get_at( pos.l() )
+                if ( level_surf.get_at( ( xx, yy ) ) == ( 255, 255, 255, 255 ) ):
+                    player_spawn = V2( xx, yy )
 
-                # Skip if transparent
-                if ( this_color[3] == 0 ):
-                    continue
-
-                # Change the player spawn if the pixel is white
-                if ( this_color == ( 255, 255, 255, 255 ) ):
-                    player_spawn = pos
-                    continue
-
-                # Otherwise, store the position in the appropriate object
-                for object_id in range( len( O_STRINGS ) ):
-                    if ( level_surf.get_at( pos.l() ) == utils.hex_to_rgb( O_COLORS[ object_id ] ) ):
-
-                        if ( object_id not in objects ):
-                            objects[ object_id ] = []
-                        objects[ object_id ].append( pos )
-
-        # Actually write to the file
-        file = open( self.__engine.get_path( f'/data/{ self._level_name }/level.txt' ), 'w' )
-        for object_id in objects:
-
-            # Create a list of all the positions at which this object should be created
-            # Positions are relative to the player spawn, hence the .s( player_spawn )
-            object_positions = [ utils.vec_to_str( pos ).replace( ':', ' ' ) for pos in objects[ object_id ] ]
-            file.write( f"{ utils.o_string( object_id ) } { ' '.join( object_positions ) }\n" )
-
-        # Write data to metadata file
-        meta_file = open( self.__engine.get_path( f'/data/{ self._level_name }/level_meta.json' ), 'w' )
-        meta_dict = {
+        self.__level_meta = {
             'size': level_surf.get_size(),
             'player_spawn': player_spawn.l(),
             'deaths': 0,
             'abilities': []
         }
-        meta_file.write( json.dumps( meta_dict ) )
+
+    # Loads the level data into memory
+    def load_level( self, level_name ):
+
+        self.reset_data()
+        self.__c_block.reset_buffers()
+        self.__c_block.reset_data()
+        self._level_name = level_name
+
+        try:
+            self.__level_surf = pygame.image.load( self.__engine.get_path( f'/data/{ self._level_name }/level.png' ) )
+        except FileNotFoundError:
+            print( 'Level file "level.png" not found' )
+
+        # Re-create level metadata if necessary
+        try:
+            level_meta = open( self.__engine.get_path( f'/data/{ self._level_name }/level_meta.json' ) )
+            self.__level_meta = json.load( level_meta )
+        except ( FileNotFoundError, json.decoder.JSONDecodeError ):
+            self.reset_meta( self.__level_surf )
 
     # Loads necessary chunks into memory based off of view position
     def update( self ):
@@ -209,31 +155,6 @@ class LevelController:
 
         self.__c_block.draw()
 
-    # Set block/entity at target position
-    def _set_object( self, pos, object_id ):
-
-        # Initialize the object data
-        self.__objects[ pos ] = object_id
-
-        block_id = utils.obj_id_to_block( object_id )
-        entity_id = utils.obj_id_to_entity( object_id )
-
-        # Do any necessary block setup
-        if ( block_id is not None ):
-            pass
-
-        # Do any necessary entity setup
-        elif ( entity_id is not None ):
-            pass
-
-        # Make sure the parent chunk exists, then store
-        # the position and object ID within the parent chunk
-        chunk_pos, rel_pos = utils.block_pos_to_chunk( pos )
-        if chunk_pos not in self.__chunks:
-            self.__chunks[ chunk_pos.c() ] = []
-        if ( rel_pos not in self.__chunks[ chunk_pos ] ):
-            self.__chunks[ chunk_pos ].append( rel_pos )
-
     # Get the metadata of the whole level
     def get_level_meta( self, key ):
 
@@ -245,50 +166,59 @@ class LevelController:
         # Data is saved as JSON
         if key in self.__level_meta:
             self.__level_meta[ key ] = value
-
-        meta_file = open( self.__engine.get_path( f'/data/{ self._level_name }/level_meta.json' ), 'w' )
+        self.save_level_meta()
 
     # Save all metadata
     def save_level_meta( self ):
-
-        meta_file = open( self.__engine.get_path( f'/data/{ self._level_name }/level_meta.json' ), 'w' )
-        meta_file.write( json.dumps( self.__level_meta ) )
+        
+        try:
+            meta_file = open( self.__engine.get_path( f'/data/{ self._level_name }/level_meta.json' ), 'w' )
+            meta_file.write( json.dumps( self.__level_meta ) )
+        finally:
+            meta_file.close()
 
     # Check whether anything exists at a position
     def is_object( self, pos ):
 
-        return self.__objects[ pos ] != -1
+        return self.__level_surf.get_at( pos.l() )[3] == 255
+        # return self.__objects[ pos ] != -1
 
     # Check whether a block exists at a position
     def is_block( self, pos ):
 
         try:
-            return utils.obj_id_to_block( self.__objects[ pos ] ) != None
-        except KeyError:
+            color = self.__level_surf.get_at( pos.l() )
+            if color[3] == 0:
+                return False
+            return utils.obj_id_to_block( self._level_colors.index( color ) ) != None
+        except ( IndexError, ValueError ):
             return False
 
     # Check whether an entity exists at a position
     def is_entity( self, pos ):
 
         try:
-            return utils.obj_id_to_entity( self.__objects[ pos ] ) != None
-        except KeyError:
+            color = self.__level_surf.get_at( pos.l() )
+            if color[3] == 0:
+                return False
+            return utils.obj_id_to_entity( self._level_colors.index( color ) ) != None
+        except ( IndexError, ValueError ):
             return False
 
     # Get the object id of a position
     def get_object_type( self, pos ):
 
-        return self.__objects[ pos ]
+        return self._level_colors.index( self.__level_surf.get_at( pos.l() ) )
 
     # Get the block type of a position
     def get_block_type( self, pos ):
 
-        return utils.obj_id_to_block( self.__objects[ pos ] )
+        return utils.obj_id_to_block( self._level_colors.index( self.__level_surf.get_at( pos.l() ) ) )
 
     # Get the entity type of a position
     def get_entity_type( self, pos ):
 
-        return utils.obj_id_to_entity( self.__objects[ pos ] )
+        return utils.obj_id_to_entity( self._level_colors.index( self.__level_surf.get_at( pos.l() ) ) )
 
     # Performs an operation on the block the player is hovering over
     def object_debug( self ):

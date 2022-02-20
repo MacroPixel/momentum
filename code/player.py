@@ -209,6 +209,7 @@ class Player ( Entity ):
     from _player_abilities import ability_glide
     from _player_abilities import _resolve_down_press
     from _player_abilities import _slot_set
+    from _player_abilities import _try_pickup
     from _player_abilities import _drop_item
     from _player_abilities import _rope_check
     from _player_abilities import _rope_unhook
@@ -229,6 +230,9 @@ class Player ( Entity ):
         controller.new_death_string()
         controller.shake_screen( 2, 0.3 )
         self.engine.play_sound( 'death' )
+
+        # Unhook rope
+        self._hook_obj = None
 
         # Store death in controller
         controller.set_level_meta( 'deaths', controller.get_level_meta( 'deaths' ) + 1 )
@@ -326,6 +330,11 @@ class Player ( Entity ):
     # Shorthand for checking solid block below player
     # Also includes solid entities
     def is_on_solid( self ):
+
+        temp_offset = self.hitbox_offset.c().a( 0, self.hitbox.y )
+        for entity in self.engine.get_tagged_instances( 'solid_entity' ):
+            if ( utils.collision_check( self.pos.c(), entity.pos.c(), V2( self.hitbox.x, COLLISION_EPSILON ), entity.hitbox, temp_offset, entity.hitbox_offset ) ):
+                return True
 
         if self.test_block_below( lambda block_id: utils.b_string( block_id ) not in B_PASSABLE ):
             return True
