@@ -125,10 +125,15 @@ class Player ( Entity ):
             elif self.is_on_solid() and self.engine.get_key( BINDS[ 'move_left' ] ):
                 self.vel.x -= PLAYER_HSPEED_BOOST
 
+            # Sound effect
+            self.engine.play_sound( 'jump' )
+
         # Also can get smaller boost from water
         elif ( self.is_in_fluid() and self.engine.get_key( BINDS[ 'jump' ], 1 ) and released_jump ):
+
             self.vel.y = min( self.vel.y, -PLAYER_SWIM_POWER )
             self._image_swim = 2
+            self.engine.play_sound( 'swim' )
 
         # Water reduces the amount of gravity
         self.entity_gravity_multiplier = 0.4 if self.is_in_fluid() else 1

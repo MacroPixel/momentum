@@ -43,6 +43,7 @@ def ability_invert( self, has_ability = True ):
     if ( has_ability and self.engine.get_key( BINDS[ 'up_action' ], 1 ) and self.can_invert ):
         self.vel.x, self.vel.y = self.vel.y, -self.vel.x
         self._can_invert = False
+        self.engine.play_sound( 'rotate' )
 
     # The player's ability refreshes when they're on a solid block
     if ( self.is_on_solid() ):
@@ -68,6 +69,7 @@ def ability_wall_jump( self, has_ability = True ):
             self.vel.x = min( max( -PLAYER_MAX_WALL_VEL, -self.wall_vel.x * 0.7 ), PLAYER_MAX_WALL_VEL )
             self.vel.y = -PLAYER_JUMP_POWER
             self._image_wall_jump = 0.25
+            self.engine.play_sound( 'jump' )
 
     # Store the current velocity for next update
     self._wall_vel = self.vel.c()
@@ -96,6 +98,7 @@ def ability_teleport( self, has_ability = True ):
         self.shift_pos( self.vel.c().m( 0.2 ), iterations = 15 )
         self.entity_dies_to_hazards = True
         self._can_teleport = False
+        self.engine.play_sound( 'tele' )
 
     # The player's ability refreshes when they're on a solid block
     if ( self.is_on_solid() ):

@@ -59,12 +59,11 @@ def play_sound( self, name, variant = -1 ):
     # Play the sound
     sound_list[ variant ].play()
 
-def play_music( self, name, volume = 1, loops = -1, fade_in = 0 ):
+def play_music( self, name, loops = -1, fade_in = 0 ):
 
     # Play it
     pygame.mixer.music.load( self.get_path( '/sounds/' + self._Engine__music[ name ] ) )
     pygame.mixer.music.play( loops, fade_ms = floor( fade_in * 1000 ) )
-    pygame.mixer.music.set_volume( volume )
     self._next_song = {}
     pygame.mixer.music.set_endevent()
 
@@ -81,3 +80,15 @@ def queue_music( self, fade_out, name, **kwargs ):
     pygame.mixer.music.set_endevent( self.MUSIC_END )
     pygame.mixer.music.fadeout( floor( fade_out * 1000 ) )
     self._next_song = { 'name': name, 'kwargs': kwargs }
+
+# Change sound/music volume (sound doesn't immediately take effect)
+def set_sound_volume( self, volume ):
+
+    for sound_name in self._Engine__sounds:
+        for variant in self._Engine__sounds[ sound_name ]:
+            variant.set_volume( volume )
+
+# Change sound/music volume (sound doesn't immediately take effect)
+def set_music_volume( self, volume ):
+
+    pygame.mixer.music.set_volume( volume )

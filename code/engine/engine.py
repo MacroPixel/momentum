@@ -227,6 +227,8 @@ class Engine:
     from ._engine_mixer import play_sound
     from ._engine_mixer import play_music
     from ._engine_mixer import queue_music
+    from ._engine_mixer import set_sound_volume
+    from ._engine_mixer import set_music_volume
 
     # Returns a value from a dictionary if found,
     # otherwise returns the default value passed into the function

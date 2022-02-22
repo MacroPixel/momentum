@@ -65,7 +65,7 @@ class UIController():
                 self.draw_debug_text()
 
         # Pause menu UI
-        elif ( self.controller.pause_level == PAUSE_NORMAL and self.controller.ability_info == -1 ):
+        elif ( self.controller.pause_level == PAUSE_NORMAL and self.controller.ability_info == -1 and not self.controller.is_viewing_settings ):
 
             self.engine.draw_text_bitmap( '[ESC] Resume', 'main', 2, V2( 15, 15 ), True )
 
@@ -73,9 +73,11 @@ class UIController():
             has_abilities = len( [ 0 for ability in ABILITY_STRINGS if player.has_ability( ability ) ] ) > 0
             if has_abilities:
                 self.engine.draw_text_bitmap( '[A] Abilities', 'main', 2, V2( 15, 40 ), True )
-                self.engine.draw_text_bitmap( '[Q] Save and Quit', 'main', 2, V2( 15, 65 ), True )
+                self.engine.draw_text_bitmap( '[S] Settings', 'main', 2, V2( 15, 65 ), True )
+                self.engine.draw_text_bitmap( '[Q] Save and Quit', 'main', 2, V2( 15, 90 ), True )
             else:
-                self.engine.draw_text_bitmap( '[Q] Save and Quit', 'main', 2, V2( 15, 40 ), True )
+                self.engine.draw_text_bitmap( '[S] Settings', 'main', 2, V2( 15, 40 ), True )
+                self.engine.draw_text_bitmap( '[Q] Save and Quit', 'main', 2, V2( 15, 65 ), True )
 
         # Ability info UI
         elif ( self.controller.ability_info != -1 ):
@@ -96,6 +98,16 @@ class UIController():
 
             for i, line in enumerate( lang.ABILITY_INFO[ self.controller.ability_info ][1:] ):
                 self.engine.draw_text_bitmap( line, 'main', 2, V2( self.engine.screen_size.x / 2, 200 + 25 * i ), True, anchor = V2( 0.5, 0 ) )
+
+        # Settings UI
+        elif ( self.controller.is_viewing_settings ):
+
+            # Draw black background
+            temp_surf = pygame.Surface( self.engine.screen_size.l(), pygame.SRCALPHA, 32 )
+            temp_surf.fill( ( 0, 0, 0, 200 ) )
+            self.engine.draw_surface( temp_surf, V2(), True )
+            
+            self.controller._settings_obj.draw_settings()
 
     # Reduces code clutter
     def draw_debug_text( self ):

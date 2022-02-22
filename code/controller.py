@@ -8,6 +8,7 @@ from _controller_region import *
 from jomper import *
 from player import *
 from drawer import *
+from settings import *
 
 import random
 
@@ -25,6 +26,7 @@ class Controller( Game_Object ):
 
         # Variables controlling visible UI
         self._ability_info = -1
+        self.is_viewing_settings = False
 
         # Initialize specialized sub-controllers
         self.__c_level = LevelController( self )
@@ -38,8 +40,8 @@ class Controller( Game_Object ):
         # A new death string is chosen every time the player dies
         self._death_string_current = 'ERROR'
 
-        # Hold the game's settings
-        self._settings = {}
+        # Hold the settings object
+        self._settings_obj = SettingsController( self.engine )
 
         # View stuff
         self._view_pos = V2()
@@ -58,15 +60,17 @@ class Controller( Game_Object ):
     # Mostly just debug stuff
     def update( self ):
 
-        # Toggle pause
+        # Toggle pause/ability/settings menu
         if self.engine.get_key( pygame.K_ESCAPE, 1 ):
 
             if self.pause_level == PAUSE_NONE:
                 self.pause_level = PAUSE_NORMAL
-            elif self.pause_level == PAUSE_NORMAL and self._ability_info == -1:
+            elif self.pause_level == PAUSE_NORMAL and self._ability_info == -1 and not self.is_viewing_settings:
                 self.pause_level = PAUSE_NONE
             elif self.pause_level == PAUSE_NORMAL and self._ability_info != -1:
                 self._ability_info = -1
+            elif self.pause_level == PAUSE_NORMAL and self.is_viewing_settings:
+                self.is_viewing_settings = False
 
         # Ability stuff
         player = self.engine.get_instance( 'player' )
@@ -75,6 +79,10 @@ class Controller( Game_Object ):
         # Open abilities menu
         if ( self.pause_level == PAUSE_NORMAL and self.engine.get_key( K_a, 1 ) and self.ability_info == -1 and len( valid_abilities ) > 0 ):
             self._ability_info = valid_abilities[0] # Start on the first valid ability instead of ability 0
+
+        # Open settings menu
+        if ( self.pause_level == PAUSE_NORMAL and self.engine.get_key( K_s, 1 ) and not self.is_viewing_settings ):
+            self.is_viewing_settings = True
 
         # Cycle through abilities menu
         if ( ( self.engine.get_key( K_RIGHT, 1 ) or self.engine.get_key( K_LEFT, 1 ) ) and self.ability_info != -1 ):
@@ -85,6 +93,10 @@ class Controller( Game_Object ):
             # Only allow the user to cycle through valid abilities
             addend = 1 if self.engine.get_key( K_RIGHT, 1 ) else -1
             self._ability_info = ( valid_abilities[ ( valid_abilities.index( self._ability_info ) + addend ) % len( valid_abilities ) ] )
+
+        # Cycle through settings menu
+        if ( self.is_viewing_settings ):
+            self._settings_obj.navigate_settings()
 
         # Switch debug mode if allowed
         if self.__allow_debug and self.engine.get_key( pygame.K_RALT, 1 ):

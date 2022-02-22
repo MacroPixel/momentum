@@ -1,9 +1,12 @@
-punch = SOUND punch_1.wav punch_2.wav punch_3.wav punch_4.wav punch_5.wav punch_6.wav
 death = SOUND death_1.wav
 enemy_death = SOUND enemy_death.wav
 checkpoint = SOUND checkpoint.wav
-step = SOUND step_1.wav step_2.wav step_3.wav step_4.wav
+jump = SOUND jump.wav
+swim = SOUND swim_1.wav swim_2.wav swim_3.wav
+rotate = SOUND rotate_1.wav rotate_2.wav rotate_3.wav
+tele = SOUND tele.wav
 victory = SOUND victory.wav
+bounce = SOUND bounce.wav
 mus_intro = MUSIC music/intro.mp3
 mus_menu_1 = MUSIC music/menu_1.mp3
 mus_menu_2 = MUSIC music/menu_2.mp3

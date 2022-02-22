@@ -1,12 +1,3 @@
-from engine.engine import *
-
-import pygame
-import os
-import traceback
-
-from constants import *
-from rooms import *
-
 def main():
 
     # Read the filepath from the path file
@@ -29,8 +20,18 @@ def main():
 if __name__ == '__main__':
 
     try:
+
+        from engine.engine import *
+
+        import pygame
+        import os
+        import traceback
+
+        from constants import *
+        from rooms import *
+
         main()
+
     except:
+        
         open( 'error.txt', 'w' ).write( traceback.format_exc() )
-        # print( traceback.format_exc() )
-        # input()

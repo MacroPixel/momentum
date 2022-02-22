@@ -1,4 +1,5 @@
 from basic_imports import *
+from settings import *
 
 class Splash ( Game_Object ):
 
@@ -11,6 +12,9 @@ class Splash ( Game_Object ):
 
         # Initialize fonts
         engine.create_bitmap_font( '/textures/font_1.png', 'main', space_width = 6 )
+
+        # Apply settings
+        SettingsController( self.engine ).apply_settings()
 
         # Time controls fade animation/room switch
         self._time = -1

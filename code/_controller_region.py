@@ -77,6 +77,9 @@ class RegionController:
             if ( new_region_id != -1 and new_region_id != self.region_id ):
                 self.set_region( new_region_id )
 
+            # Resize the background to fit the screen size
+            self.__bg_cover = pygame.transform.scale( self.__bg_cover, self.engine.screen_size.l() )
+
         # Perform update if more than BG_UPDATE_INTERVAL seconds has elapsed
         self.__bg_elapsed += self.engine.delta_time
         if ( self.__bg_elapsed >= self.BG_UPDATE_INTERVAL ):
@@ -153,7 +156,7 @@ class RegionController:
     # Changes the currently active region
     def set_region( self, region_id ):
 
-        self.engine.queue_music( self.TRANSITION, REGION_SONGS[ region_id ], volume = MUS_VOLUME, fade_in = self.TRANSITION )
+        self.engine.queue_music( self.TRANSITION, REGION_SONGS[ region_id ], fade_in = self.TRANSITION )
         self._region_id = region_id
         self.__fade_out_elapsed = 0
 

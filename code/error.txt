@@ -1,18 +1,12 @@
 Traceback (most recent call last):
-  File "C:\Users\colli\Documents\Python\Platformer Game\code\main.py", line 32, in <module>
+  File "C:\Users\colli\Documents\Python\Platformer Game\code\main.py", line 33, in <module>
     main()
-  File "C:\Users\colli\Documents\Python\Platformer Game\code\main.py", line 27, in main
+  File "C:\Users\colli\Documents\Python\Platformer Game\code\main.py", line 18, in main
     g_engine.run()
   File "C:\Users\colli\Documents\Python\Platformer Game\code\engine\engine.py", line 136, in run
     obj.draw()
   File "C:\Users\colli\Documents\Python\Platformer Game\code\drawer.py", line 16, in draw
     self.__draw_function()
-  File "C:\Users\colli\Documents\Python\Platformer Game\code\controller.py", line 168, in fade_draw
-    utils.draw_text_shadow( self.engine, 'VICTORY', 'main', 6, self.engine.screen_size.c().d( 2 ).s( 0, 200 ), True, ( 0, 255, 255 ), ( 0, 120, 120 ), anchor = ( 0.5, 0.5 ) )
-  File "C:\Users\colli\Documents\Python\Platformer Game\code\utils.py", line 168, in draw_text_shadow
-    engine.draw_text_bitmap( text, bitmap_font, scale, pos.c().s( scale ), is_ui, shadow, **kwargs )
-  File "C:\Users\colli\Documents\Python\Platformer Game\code\engine\_engine_draw.py", line 118, in draw_text_bitmap
-    self.draw_surface( text_surf, pos, is_ui, **kwargs )
-  File "C:\Users\colli\Documents\Python\Platformer Game\code\engine\_engine_draw.py", line 90, in draw_surface
-    pos.s( anchor.c().m( surf.get_size() ) )
-AttributeError: 'tuple' object has no attribute 'c'
+  File "C:\Users\colli\Documents\Python\Platformer Game\code\_controller_ui.py", line 104, in draw
+    self._settings_obj.draw_settings()
+AttributeError: 'UIController' object has no attribute '_settings_obj'

@@ -363,7 +363,6 @@ BINDS = {
     'left_action': K_LEFT,
     'right_action': K_RIGHT
 }
-MUS_VOLUME = 0.5
 
 # Used by controller's pause_level variable
 PAUSE_NONE = 0
