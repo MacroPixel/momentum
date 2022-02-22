@@ -6,10 +6,12 @@ from pygame.locals import *
 LAYER_BACKGROUND = 0
 LAYER_BLOCK = 1
 LAYER_ENTITY = 2
-LAYER_PLAYER = 3
-LAYER_PARTICLE = 4
-LAYER_RAGDOLL = 5
-LAYER_UI = 6
+LAYER_FADEOUT = 3
+LAYER_PLAYER = 4
+LAYER_TROPHY = 5
+LAYER_PARTICLE = 6
+LAYER_RAGDOLL = 7
+LAYER_UI = 8
 
 # Internal names of each block
 # Every other block array uses the order of this list
@@ -25,13 +27,11 @@ B_STRINGS = [
     'cloud',
     'bounce',
     'bounce_extra',
-    'spring',
     'spikes',
     'metal',
     'metal_alt',
     'sand',
-    'water',
-    'gold'
+    'water'
 ]
 
 # Block textures (listed in order of ID)
@@ -46,13 +46,11 @@ B_TEXTURES = [
     'block_cloud',
     'block_bounce',
     'block_bounce_extra',
-    'block_spring',
     'block_spikes',
     'block_metal',
     'block_metal_alt',
     'block_sand',
-    'block_water',
-    'block_gold'
+    'block_water'
 ]
 
 # The color of each block when being loaded in from a PNG
@@ -67,13 +65,11 @@ B_COLORS = [
     'bfffff',
     'ff00ff',
     '6300ff',
-    '7fff7f',
     'ff7f7f',
     '764d47',
     '4d3b39',
     'f3d681',
-    '3ccff3',
-    'de9e00'
+    '3ccff3'
 ]
 
 # Determines how the sprite of a block type conencts
@@ -93,11 +89,9 @@ B_DRAW_MODES = [
     BDM_REPLACE,
     BDM_REPLACE,
     BDM_REPLACE,
-    BDM_OVERLAY,
     BDM_REPLACE,
     BDM_REPLACE,
     BDM_OVERLAY,
-    BDM_REPLACE,
     BDM_REPLACE,
     BDM_REPLACE
 ]
@@ -114,8 +108,6 @@ B_DRAW_VARIANTS = [
     1,
     1,
     1,
-    1,
-    3,
     3,
     3,
     3,
@@ -133,7 +125,6 @@ B_NO_CONNECT = [
     'sand',
     'leaf',
     'leaf_color',
-    'gold',
     'cloud'
 ]
 
@@ -168,7 +159,6 @@ B_HAZARD = [
 ENTITY_STRINGS = [
     'jomper',
     'zeedle',
-    'flooter',
     'checkpoint',
     'hook',
     'box',
@@ -184,7 +174,6 @@ ENTITY_STRINGS = [
 ENTITY_COLORS = [
     'ff3fff',
     'ffbc8b',
-    'fff94f',
     '3fffbf',
     'bfbfbf',
     'a46a4a',
@@ -200,7 +189,6 @@ ENTITY_COLORS = [
 ENTITY_CLASSES = [
     'Jomper',
     'Zeedle',
-    'Flooter',
     'Checkpoint',
     'Rope_Hook',
     'Box',
@@ -380,5 +368,5 @@ MUS_VOLUME = 0.5
 # Used by controller's pause_level variable
 PAUSE_NONE = 0
 PAUSE_NORMAL = 1
-PAUSE_CUTSCENE = 2
+PAUSE_TROPHY = 2
 PAUSE_TOTAL = 3

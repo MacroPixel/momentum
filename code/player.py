@@ -50,42 +50,42 @@ class Player ( Entity ):
     def update( self ):
 
         # Cancel if game is paused
-        if ( self.engine.get_instance( 'controller' ).pause_level >= PAUSE_NORMAL ):
-            return
+        if ( self.engine.get_instance( 'controller' ).pause_level == PAUSE_NONE ):
 
-        # Set the view once after the controller is created
-        if not self._has_intially_set_view:
-            self.engine.get_instance( 'controller' ).view_pos = self.pos.c().m( GRID ).a( 0.5, 0.5 )
-            self._has_intially_set_view = True
+            # Set the view once after the controller is created
+            if not self._has_intially_set_view:
+                self.engine.get_instance( 'controller' ).view_pos = self.pos.c().m( GRID ).a( 0.5, 0.5 )
+                self._has_intially_set_view = True
 
-        # Only perform gameplay actions if player is alive
-        if ( self.is_alive ):
+            # Only perform gameplay actions if player is alive
+            if ( self.is_alive ):
 
-            # Only alters velocity
-            # Position is calculated during entity_update()
-            self.update_movement()
+                # Only alters velocity
+                # Position is calculated during entity_update()
+                self.update_movement()
 
-            # Alters velocity further as well as other variables
-            self.update_abilities()
+                # Alters velocity further as well as other variables
+                self.update_abilities()
 
-            # Check collisions with other entities
-            self.update_collisions()
+                # Check collisions with other entities
+                self.update_collisions()
 
-            # Choose which animation frame to use during draw event
-            self.update_image()
+                # Choose which animation frame to use during draw event
+                self.update_image()
 
-            # Controlls velocity, collisions, and interactions with other enemies
-            # Skip if debugging
-            if ( not self._debug_grab ):
-                super().entity_update()
+                # Controlls velocity, collisions, and interactions with other enemies
+                # Skip if debugging
+                if ( not self._debug_grab ):
+                    super().entity_update()
 
-        # Update view regardless
-        controller = self.engine.get_instance( 'controller' )
-        new_view = controller.view_pos
-        new_view.x = utils.lerp( new_view.x, ( self.pos.x + 0.5 ) * GRID, 0.85, self.engine.delta_time * 10 )
-        new_view.y = utils.lerp( new_view.y, ( self.pos.y + 0.5 ) * GRID, 0.85, self.engine.delta_time * 10 )
-        new_view.fn( lambda a: round( a, 2 ) )
-        controller.view_pos = new_view
+        # Update view as long as not actually paused
+        if ( self.engine.get_instance( 'controller' ).pause_level != PAUSE_NORMAL ):
+            controller = self.engine.get_instance( 'controller' )
+            new_view = controller.view_pos
+            new_view.x = utils.lerp( new_view.x, ( self.pos.x + 0.5 ) * GRID, 0.85, self.engine.delta_time * 10 )
+            new_view.y = utils.lerp( new_view.y, ( self.pos.y + 0.5 ) * GRID, 0.85, self.engine.delta_time * 10 )
+            new_view.fn( lambda a: round( a, 2 ) )
+            controller.view_pos = new_view
 
     # Alter the player's velocity
     def update_movement( self ):
@@ -128,7 +128,7 @@ class Player ( Entity ):
         # Also can get smaller boost from water
         elif ( self.is_in_fluid() and self.engine.get_key( BINDS[ 'jump' ], 1 ) and released_jump ):
             self.vel.y = min( self.vel.y, -PLAYER_SWIM_POWER )
-            self._image_swim = 0
+            self._image_swim = 2
 
         # Water reduces the amount of gravity
         self.entity_gravity_multiplier = 0.4 if self.is_in_fluid() else 1
@@ -169,6 +169,7 @@ class Player ( Entity ):
         # If touching trophy, run the controller's win sequence
         for trophy in self.engine.get_instances( 'trophy' ):
             if utils.collision_check( *utils.collision_vars( self, trophy ) ):
+                self._image_walk = 0
                 self.engine.get_instance( 'controller' ).start_win_sequence()
 
         # If touching powerup, give the player the ability and delete the powerup

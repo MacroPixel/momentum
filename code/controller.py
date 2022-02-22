@@ -7,6 +7,7 @@ from _controller_region import *
 
 from jomper import *
 from player import *
+from drawer import *
 
 import random
 
@@ -37,9 +38,17 @@ class Controller( Game_Object ):
         # A new death string is chosen every time the player dies
         self._death_string_current = 'ERROR'
 
+        # Hold the game's settings
+        self._settings = {}
+
         # View stuff
         self._view_pos = V2()
         self.shake_reset()
+
+        # Cutscene variables are a function of time elapsed
+        # Also requires drawer for drawing behind player
+        self._cutscene_time = 0
+        Drawer( self.engine, LAYER_FADEOUT, self.fade_draw )
 
         # Debug mode can be toggled with right alt
         self.__allow_debug = True
@@ -139,6 +148,28 @@ class Controller( Game_Object ):
         # Do screen shake
         self.update_shake()
 
+        # Do trophy cutscene
+        if ( self.pause_level == PAUSE_TROPHY ):
+
+            self._cutscene_time += self.engine.delta_time
+
+            if ( self._cutscene_time > 9 ):
+                self.engine.switch_room( 'menu' )
+
+    # Draws a fade out behind the player
+    def fade_draw( self ):
+
+        if ( self.pause_level != PAUSE_TROPHY ):
+            return
+
+        surf = pygame.Surface( self.engine.screen_size.l() )
+        surf.fill( ( 0, 0, 0 ) )
+        surf.set_alpha( utils.clamp( ( self._cutscene_time - 3.5 ) / 1.5, 0, 1 ) * 255 )
+        self.engine.draw_surface( surf, V2(), True )
+
+        if ( self._cutscene_time > 5 ):
+            utils.draw_text_shadow( self.engine, 'VICTORY', 'main', 6, self.engine.screen_size.c().d( 2 ).s( 0, 150 ), True, ( 120, 0, 255 ), ( 40, 0, 120 ), anchor = V2( 0.5, 0.5 ) )
+
     # Reset the player
     def load_checkpoint( self ):
 
@@ -221,7 +252,10 @@ class Controller( Game_Object ):
     def start_win_sequence( self ):
 
         # Freeze the game
-        self.pause_level = PAUSE_CUTSCENE
+        self.pause_level = PAUSE_TROPHY
+
+        # Reset cutscene
+        self._cutscene_time = 0
 
         # Play victory sound
         pygame.mixer.music.stop()

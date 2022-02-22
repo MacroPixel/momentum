@@ -4,6 +4,7 @@ enemy_death = SOUND enemy_death.wav
 checkpoint = SOUND checkpoint.wav
 step = SOUND step_1.wav step_2.wav step_3.wav step_4.wav
 victory = SOUND victory.wav
+mus_intro = MUSIC music/intro.mp3
 mus_menu_1 = MUSIC music/menu_1.mp3
 mus_menu_2 = MUSIC music/menu_2.mp3
 mus_tutorial = MUSIC music/tutorial.mp3

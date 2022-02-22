@@ -162,6 +162,7 @@ class utils:
         return V2( hitbox[2:4] )
 
     # Draws a text object on top of a background text object
+    @staticmethod
     def draw_text_shadow( engine, text, bitmap_font, scale, pos, is_ui, color = ( 255, 255, 255 ), shadow = ( 255, 255, 255 ), **kwargs ):
 
         # Draw the background with the shadow color, then the normal one

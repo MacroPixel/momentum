@@ -11,7 +11,7 @@ class Background_Region_3 ( Background ):
 
     def update_surf( self, delta_time ):
 
-        # Load surface into memory, scaling it up 2x
+        # Load surface into memory
         surf = self.engine.get_sprite( 'bg3_img0', V2( 0, 0 ) ).copy()
 
         # Then, draw the other stuff onto it

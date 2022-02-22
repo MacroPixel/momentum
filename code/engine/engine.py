@@ -27,7 +27,7 @@ class Engine:
         # Create the window with the desired screen size
         pygame.init()
         pygame.display.set_caption( caption )
-        self.__screen = pygame.display.set_mode( self.screen_size.l() )
+        self.__screen = pygame.display.set_mode( self.screen_size.l(), pygame.RESIZABLE )
         self.__clock = pygame.time.Clock()
         self.__fps_clock = pygame.time.Clock()
 
@@ -103,6 +103,10 @@ class Engine:
                 # Quit the game
                 if event.type == pygame.QUIT:
                     self.__is_running = False
+
+                # Resize the window
+                if event.type == pygame.VIDEORESIZE:
+                    self._screen_size = V2( event.size )
 
                 # Log key/mouse inputs
                 elif event.type == pygame.KEYDOWN:

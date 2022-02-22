@@ -50,4 +50,7 @@ Tip 1: The player gains a speed boost from releasing the rope
 depending on how stretched out the rope currently is.
 <NEXT>
 Glide
-a
+Allows the player to fall downward at a constant speed.
+
+Hold the RIGHT ABILITY and LEFT ABILITY keys
+simultaneously to activate.
