@@ -5,7 +5,7 @@ def main():
     try:
         res_path = open( 'res_path.txt' ).read()
     except FileNotFoundError:
-        res_path = '/res'
+        res_path = '/momentum/res'
 
     g_engine = Engine( V2( 1280, 720 ), 'Momentum',
         room_dict = ROOM_DICT,

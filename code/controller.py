@@ -53,8 +53,8 @@ class Controller( Game_Object ):
         Drawer( self.engine, LAYER_FADEOUT, self.fade_draw )
 
         # Debug mode can be toggled with right alt
-        self.__allow_debug = True
-        self._debug = True
+        self.__allow_debug = False
+        self._debug = False
         self._advanced_info = False
 
     # Mostly just debug stuff
