@@ -50,4 +50,5 @@ class Velocity_Entity ( Entity ):
     def collide_effect( self, entity ):
 
         self._cooldown = 1
+        self.engine.get_instance( 'controller' ).shake_screen( 2, 0.3 )
         entity.vel.m( self._modifier )

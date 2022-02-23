@@ -101,11 +101,17 @@ class SettingsController:
         finally:
             file.close()
 
+    def get_setting( self, name ):
+
+        return self._settings[ name ]
+
     # Applies any side effects changing the settings should have
     # Can be set to only change a specific settings
     def apply_settings( self, specific = None ):
 
+        # Use the SQUARE ROOT of the volume to make it more in line with
+        # how human ears perceive sound
         if ( specific is None or specific == 0 ):
-            self.engine.set_sound_volume( float( self._settings[ 'sound_volume' ] ) )
+            self.engine.set_sound_volume( float( self._settings[ 'sound_volume' ] ) ** 2 )
         if ( specific is None or specific == 1 ):
-            self.engine.set_music_volume( float( self._settings[ 'music_volume' ] ) )
+            self.engine.set_music_volume( float( self._settings[ 'music_volume' ] ) ** 2 )

@@ -72,6 +72,10 @@ class Controller( Game_Object ):
             elif self.pause_level == PAUSE_NORMAL and self.is_viewing_settings:
                 self.is_viewing_settings = False
 
+        # Tick up time if unpaused
+        if ( self.pause_level == PAUSE_NONE ):
+            self.set_level_meta( 'time', self.get_level_meta( 'time' ) + self.engine.delta_time * 1000, do_save = False )
+
         # Ability stuff
         player = self.engine.get_instance( 'player' )
         valid_abilities = [ ABILITY_STRINGS.index( a ) for a in ABILITY_STRINGS if player.has_ability( a ) ]
@@ -165,7 +169,7 @@ class Controller( Game_Object ):
 
             self._cutscene_time += self.engine.delta_time
 
-            if ( self._cutscene_time > 9 ):
+            if ( self._cutscene_time > 14 ):
                 self.engine.switch_room( 'menu' )
 
     # Draws a fade out behind the player
@@ -179,8 +183,14 @@ class Controller( Game_Object ):
         surf.set_alpha( utils.clamp( ( self._cutscene_time - 3.5 ) / 1.5, 0, 1 ) * 255 )
         self.engine.draw_surface( surf, V2(), True )
 
-        if ( self._cutscene_time > 5 ):
+        if ( self._cutscene_time > 5.5 ):
             utils.draw_text_shadow( self.engine, 'VICTORY', 'main', 6, self.engine.screen_size.c().d( 2 ).s( 0, 150 ), True, ( 120, 0, 255 ), ( 40, 0, 120 ), anchor = V2( 0.5, 0.5 ) )
+
+        if ( self._cutscene_time > 6.5 ):
+            time_str = 'Total time: ' + utils.format_ms( self.get_level_meta( 'time' ) )
+            death_str = 'Total deaths: ' + str( self.get_level_meta( 'deaths' ) )
+            utils.draw_text_shadow( self.engine, time_str, 'main', 3, self.engine.screen_size.c().d( 2 ).a( 0, 150 ), True, shadow = ( 50, 50, 50 ), anchor = V2( 0.5, 0.5 ) )
+            utils.draw_text_shadow( self.engine, death_str, 'main', 3, self.engine.screen_size.c().d( 2 ).a( 0, 210 ), True, shadow = ( 50, 50, 50 ), anchor = V2( 0.5, 0.5 ) )
 
     # Reset the player
     def load_checkpoint( self ):
@@ -201,8 +211,8 @@ class Controller( Game_Object ):
         return self.__c_level.get_level_meta( key )
 
     # Set level metadata/immediately write to file
-    def set_level_meta( self, key, value ):
-        return self.__c_level.set_level_meta( key, value )
+    def set_level_meta( self, key, value, do_save = True ):
+        return self.__c_level.set_level_meta( key, value, do_save )
 
     # Rewrite data from memory into file
     def save_level_meta( self ):

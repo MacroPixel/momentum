@@ -53,6 +53,7 @@ class LevelController:
             'size': level_surf.get_size(),
             'player_spawn': player_spawn.l(),
             'deaths': 0,
+            'time': 0,
             'abilities': []
         }
 
@@ -161,18 +162,19 @@ class LevelController:
         return self.__level_meta[ key ]
 
     # Set and save metadata
-    def set_level_meta( self, key, value ):
+    def set_level_meta( self, key, value, do_save = True ):
 
         # Data is saved as JSON
         if key in self.__level_meta:
             self.__level_meta[ key ] = value
-        self.save_level_meta()
+        if do_save:
+            self.save_level_meta()
 
     # Save all metadata
     def save_level_meta( self ):
         
+        meta_file = open( self.__engine.get_path( f'/data/{ self._level_name }/level_meta.json' ), 'w' )
         try:
-            meta_file = open( self.__engine.get_path( f'/data/{ self._level_name }/level_meta.json' ), 'w' )
             meta_file.write( json.dumps( self.__level_meta ) )
         finally:
             meta_file.close()

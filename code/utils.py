@@ -59,6 +59,16 @@ class utils:
 
         return overlap
 
+    # Formats a time in ms into 0:00:00.0 format
+    def format_ms( time ):
+
+        time = int( floor( time ) )
+        hours = time // ( 1000 * 60 * 60 )
+        mins = ( time % ( 1000 * 60 * 60 ) ) // ( 1000 * 60 )
+        secs = ( time % ( 1000 * 60 ) ) // ( 1000 )
+        ms = time % 1000
+        return ( str( hours ) + ':' + str( mins ).rjust( 2, '0' ) + ':' + str( secs ).rjust( 2, '0' ) + ':' + str( ms // 100 ) )
+
     # Returns a RGB or RGBA tuple from a hex string
     @staticmethod
     def hex_to_rgb( str, alpha = True ):

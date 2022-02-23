@@ -5,8 +5,8 @@ Traceback (most recent call last):
     g_engine.run()
   File "C:\Users\colli\Documents\Python\Platformer Game\code\engine\engine.py", line 136, in run
     obj.draw()
-  File "C:\Users\colli\Documents\Python\Platformer Game\code\drawer.py", line 16, in draw
-    self.__draw_function()
-  File "C:\Users\colli\Documents\Python\Platformer Game\code\_controller_ui.py", line 104, in draw
-    self._settings_obj.draw_settings()
-AttributeError: 'UIController' object has no attribute '_settings_obj'
+  File "C:\Users\colli\Documents\Python\Platformer Game\code\player.py", line 331, in draw
+    self.engine.draw_sprite( 'items', V2( 0, self.slot_item ), draw_pos.c().s( 0, 16 ), False )
+  File "C:\Users\colli\Documents\Python\Platformer Game\code\engine\_engine_draw.py", line 98, in draw_sprite
+    sprite_surf = self._Engine__sprites[ sprite_id ][ frame.x ][ frame.y ]
+TypeError: list indices must be integers or slices, not NoneType

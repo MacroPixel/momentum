@@ -89,13 +89,13 @@ def ability_stomp( self, has_ability = True ):
 # Only goes through passable blocks and entities
 def ability_teleport( self, has_ability = True ):
 
-    # In total, the player moves 0.2s worth of distance
+    # In total, the player moves 0.4s worth of distance
     # It uses the entity class' collision methods to move,
     # but disables the normal entity/hazard events
     if ( has_ability and self._resolve_down_press() == 'teleport' and self.can_teleport ):
         
         self.entity_dies_to_hazards = False
-        self.shift_pos( self.vel.c().m( 0.2 ), iterations = 15 )
+        self.shift_pos( self.vel.c().fn( lambda a: ( min( abs( a ) * 0.4, 7 ) ) * utils.sign( a ) ), iterations = 10 )
         self.entity_dies_to_hazards = True
         self._can_teleport = False
         self.engine.play_sound( 'tele' )

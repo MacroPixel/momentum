@@ -39,4 +39,4 @@ class Splash ( Game_Object ):
 
         opacity = utils.clamp( 2.5 - abs( self._time - 2.5 ), 0, 1 )
         self._surf.set_alpha( opacity * 255 )
-        self.engine.draw_surface( self._surf, V2(), True )
+        self.engine.draw_surface( self._surf, self.engine.screen_size.c().d( 2 ), True, anchor = V2( 0.5, 0.5 ) )

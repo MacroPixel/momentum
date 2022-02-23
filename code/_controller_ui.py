@@ -22,6 +22,7 @@ class UIController():
         # Shorthand variables
         player = self.engine.get_instance( 'player' )
         screen_size = self.engine.screen_size.c()
+        has_abilities = len( [ 0 for ability in ABILITY_STRINGS if player.has_ability( ability ) ] ) > 0
 
         # Tick down timers
         self._ability_tooltip_timer -= self.engine.delta_time
@@ -31,6 +32,13 @@ class UIController():
 
             # Pause text
             self.engine.draw_text_bitmap( '[ESC] Pause', 'main', 2, V2( 15, 15 ), True )
+
+            # Timer text
+            if ( self.controller._settings_obj.get_setting( 'show_timer' ) != '0' ):
+
+                time_str = utils.format_ms( self.controller.get_level_meta( 'time' ) )
+                time_pos = V2( 10, screen_size.y - 10 ).s( 0, 25 if has_abilities else 0 )
+                self.engine.draw_text_bitmap( time_str, 'main', 2, time_pos, True, ( 20, 100, 255 ), anchor = V2( 0, 1 ) )
 
             # Ability badges
             x_offset = 0
@@ -45,7 +53,7 @@ class UIController():
             if ( self._ability_tooltip_timer > 0 ):
 
                 opacity = min( self._ability_tooltip_timer, 1 )
-                self.engine.draw_text_bitmap( 'Press [ESC] to view abilities', 'main', 2, V2( 10, screen_size.y - 30 ), True, ( 255, 255, 255, opacity * 255 ), anchor = V2( 0, 1 ) )
+                self.engine.draw_text_bitmap( 'Abilities menu unlocked', 'main', 2, V2( screen_size.x / 2, 150 ), True, ( 255, 255, 255, opacity * 255 ), anchor = V2( 0.5, 0.5 ) )
 
             # Death text
             if ( not player.is_alive ):
@@ -70,7 +78,6 @@ class UIController():
             self.engine.draw_text_bitmap( '[ESC] Resume', 'main', 2, V2( 15, 15 ), True )
 
             # Abilities are only shown if the player has one or more abilities
-            has_abilities = len( [ 0 for ability in ABILITY_STRINGS if player.has_ability( ability ) ] ) > 0
             if has_abilities:
                 self.engine.draw_text_bitmap( '[A] Abilities', 'main', 2, V2( 15, 40 ), True )
                 self.engine.draw_text_bitmap( '[S] Settings', 'main', 2, V2( 15, 65 ), True )
@@ -106,7 +113,6 @@ class UIController():
             temp_surf = pygame.Surface( self.engine.screen_size.l(), pygame.SRCALPHA, 32 )
             temp_surf.fill( ( 0, 0, 0, 200 ) )
             self.engine.draw_surface( temp_surf, V2(), True )
-            
             self.controller._settings_obj.draw_settings()
 
     # Reduces code clutter

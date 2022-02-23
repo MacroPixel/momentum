@@ -40,6 +40,6 @@ class Trophy ( Entity ):
         if ( self._current_alpha == 1 ):
             self.engine.draw_sprite( 'trophy', V2( 0, floor( self._current_image ) % 60 ), self.pos.c().m( GRID ), False, scale = ( 0.33, 0.33 ) )
         else:
-            surf = self.engine.get_sprite( 'trophy',  V2( 0, floor( self._current_image ) % 60 ) )
+            surf = self.engine.get_sprite( 'trophy',  V2( 0, floor( self._current_image ) % 60 ) ).copy()
             surf.set_alpha( utils.clamp( self._current_alpha, 0, 1 ) * 255 )
             self.engine.draw_surface( surf, self.pos.c().m( GRID ), False, scale = ( 0.33, 0.33 ) )

@@ -168,6 +168,8 @@ ENTITY_STRINGS = [
     'launcher',
     'saw',
     'trophy',
+    'bomb',
+    'guart'
 ]
 
 # The color of each entity when being loaded in from a PNG
@@ -182,7 +184,9 @@ ENTITY_COLORS = [
     'a06642',
     '93f0b0',
     '6e6e6e',
-    'ffd62b'
+    'ffd62b',
+    '3b3b3b',
+    'ff6060'
 ]
 
 # A string representation of each entity class
@@ -197,7 +201,9 @@ ENTITY_CLASSES = [
     'Twig',
     'Launcher',
     'Saw',
-    'Trophy'
+    'Trophy',
+    'Bomb',
+    'Guart'
 ]
 
 # Object arrays use the block and entity arrays
@@ -337,20 +343,23 @@ ABILITY_COLORS = [
 # is in a different dictionary
 ITEM_STRINGS = [
     'box',
-    'box_long'
+    'box_long',
+    'bomb'
 ]
 
 # Item names that are actually displayed to the player
 ITEM_NAMES = [
     'Box',
-    'Long Box'
+    'Long Box',
+    'Bomb'
 ]
 
 # The entities that are created when items are dropped
 # Use the internal names of the entity
 ITEM_ENTITIES = [
     'box',
-    'box_long'
+    'box_long',
+    'bomb'
 ]
 
 # Keybinds (will probably be moved to settings object in the future)

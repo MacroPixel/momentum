@@ -186,6 +186,7 @@ class Player ( Entity ):
                     self.engine.get_instance( 'controller' ).show_ability_tooltip( 5 )
 
                 self.grant_ability( ABILITY_STRINGS[ powerup.ability_id ] )
+                self.engine.play_sound( 'powerup' )
                 powerup.delete()
 
     # Make the player bob, walk, swing, etc.
@@ -238,9 +239,17 @@ class Player ( Entity ):
         if ( self.is_invincible or self._debug_grab ):
             return
 
+        # Don't die twice lol
+        if ( not self._is_alive ):
+            return
+
+        # Reset abilities
+        self._hook_obj = None
+        self._slot_item = -1
+
         # Death effects
         controller = self.engine.get_instance( 'controller' )
-        for i in range( 25 ):
+        for _ in range( 25 ):
             self.engine.get_instance( 'controller' )._Controller__c_particle.create_simple(
                 self.pos.c().a( 0.5 ), ( 2, 6 ), ( 0, 360 ), ( 1, 2 ), [ ( 200, 0, 0 ), ( 150, 0, 0 ), ( 180, 0, 0 ) ], ( 0.4, 0.9 ), ( 1.5, 2 ) )
         self._is_alive = False

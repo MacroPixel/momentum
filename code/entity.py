@@ -109,7 +109,7 @@ class Entity( Game_Object ):
                         exec( f'self.vel.{xy} = 0' )
                     elif ( block_string in B_BOUNCE ):
                         exec( f'self.vel.{xy} *= -B_BOUNCE[ block_string ]' )
-                        if ( abs( eval( f'self.vel.{xy}' ) ) > 0.2 ):
+                        if ( abs( eval( f'self.vel.{xy}' ) ) > 1.2 ):
                             self.engine.play_sound( 'bounce' )
 
         # Perform the aforementioned collision functions
