@@ -4,14 +4,16 @@ from math import sin
 
 class Velocity_Entity ( Entity ):
 
-    def __init__( self, engine, object_id, pos, hitbox, sprite, modifier ):
+    def __init__( self, engine, object_id, pos, hitbox, sprite, modifier, color, sound_str = None ):
 
         super().__init__( engine, object_id, pos, V2(), hitbox, layer = LAYER_ENTITY )
 
         self.__hover_time = 0
         self._cooldown = 0
         self._sprite = sprite
-        self._modifier = modifier
+        self._modifier = modifier # Should be a lambda
+        self._color = color
+        self._sound_str = sound_str
 
     def update( self ):
 
@@ -44,11 +46,34 @@ class Velocity_Entity ( Entity ):
     def draw( self ):
 
         hover_offset = sin( self.__hover_time ) / 4
-        self.engine.draw_sprite( self._sprite, V2(), self.pos.c().a( 0, hover_offset ).m( GRID ), False )
+
+        # Transparency
+        if ( self._cooldown <= 0 ):
+            self.engine.draw_sprite( self._sprite, V2(), self.pos.c().a( 0, hover_offset ).m( GRID ), False )
+        else:
+            surf = self.engine.get_sprite( self._sprite, V2() ).copy()
+            surf.set_alpha( 120 )
+            self.engine.draw_surface( surf, self.pos.c().a( 0, hover_offset ).m( GRID ), False )
 
     # Modifies velocity, starts cooldown, plays sound effect
     def collide_effect( self, entity ):
 
         self._cooldown = 1
         self.engine.get_instance( 'controller' ).shake_screen( 2, 0.3 )
-        entity.vel.m( self._modifier )
+        entity.vel.fn( self._modifier )
+
+        # Play sound
+        if ( self._sound_str is not None ):
+            self.engine.play_sound( self._sound_str )
+
+        # Particles
+        for _ in range( 15 ):
+            self.engine.get_instance( 'controller' )._Controller__c_particle.create_simple(
+                self.pos.c().a( 0.5 ),
+                ( 2, 4 ),
+                ( 0, 360 ),
+                ( 1, 2 ),
+                [ self._color ],
+                ( 0.4, 0.9 ),
+                ( 1.5, 2 )
+            )

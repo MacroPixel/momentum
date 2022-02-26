@@ -1,0 +1,7 @@
+A - Run left
+D - Run right
+
+Up Arrow - Up Ability
+Down Arrow - Down Ability
+Left Arrow - Left Ability
+Right Arrow - Right Ability

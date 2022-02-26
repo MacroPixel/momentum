@@ -3,10 +3,16 @@ Traceback (most recent call last):
     main()
   File "C:\Users\colli\Documents\Python\Platformer Game\code\main.py", line 18, in main
     g_engine.run()
-  File "C:\Users\colli\Documents\Python\Platformer Game\code\engine\engine.py", line 136, in run
-    obj.draw()
-  File "C:\Users\colli\Documents\Python\Platformer Game\code\player.py", line 331, in draw
-    self.engine.draw_sprite( 'items', V2( 0, self.slot_item ), draw_pos.c().s( 0, 16 ), False )
-  File "C:\Users\colli\Documents\Python\Platformer Game\code\engine\_engine_draw.py", line 98, in draw_sprite
-    sprite_surf = self._Engine__sprites[ sprite_id ][ frame.x ][ frame.y ]
-TypeError: list indices must be integers or slices, not NoneType
+  File "C:\Users\colli\Documents\Python\Platformer Game\code\engine\engine.py", line 131, in run
+    obj.update()
+  File "C:\Users\colli\Documents\Python\Platformer Game\code\player.py", line 68, in update
+    self.update_abilities()
+  File "C:\Users\colli\Documents\Python\Platformer Game\code\_player_abilities.py", line 36, in update_abilities
+    self.ability_rope( self.has_ability( 'rope' ) )
+  File "C:\Users\colli\Documents\Python\Platformer Game\code\_player_abilities.py", line 142, in ability_rope
+    self._rope_unhook()
+  File "C:\Users\colli\Documents\Python\Platformer Game\code\_player_abilities.py", line 245, in _rope_unhook
+    self.engine.play_sound( f'rope_release_p{ pitch_index }' )
+  File "C:\Users\colli\Documents\Python\Platformer Game\code\engine\_engine_mixer.py", line 49, in play_sound
+    raise KeyError( f'Unknown sound "{ name }"' )
+KeyError: 'Unknown sound "rope_release_p5"'

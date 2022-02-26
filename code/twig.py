@@ -6,4 +6,4 @@ class Twig ( Velocity_Entity ):
 
     def __init__( self, engine, pos ):
 
-        super().__init__( engine, 'twig', pos.c().a( 0, -0.5 ), ( 0.8, 0.8, 0.4, 0.4 ), 'twig', 0.5 )
+        super().__init__( engine, 'twig', pos, ( 1, 1, 0, 0 ), 'twig', lambda a: a * 0.5, ( 107, 77, 49 ), 'stick' )

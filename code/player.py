@@ -251,7 +251,14 @@ class Player ( Entity ):
         controller = self.engine.get_instance( 'controller' )
         for _ in range( 25 ):
             self.engine.get_instance( 'controller' )._Controller__c_particle.create_simple(
-                self.pos.c().a( 0.5 ), ( 2, 6 ), ( 0, 360 ), ( 1, 2 ), [ ( 200, 0, 0 ), ( 150, 0, 0 ), ( 180, 0, 0 ) ], ( 0.4, 0.9 ), ( 1.5, 2 ) )
+                self.pos.c().a( 0.5 ),
+                ( 2, 6 ),
+                ( 0, 360 ),
+                ( 1, 2 ),
+                [ ( 200, 0, 0 ), ( 150, 0, 0 ), ( 180, 0, 0 ) ],
+                ( 0.4, 0.9 ),
+                ( 1.5, 2 )
+            )
         self._is_alive = False
         controller.new_death_string()
         controller.shake_screen( 2, 0.3 )

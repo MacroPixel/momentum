@@ -11,4 +11,6 @@ class lang:
         cls.ABILITY_INFO = open( engine.get_path( '/data/lang/ability_info.txt' ) ).read().split( '\n<NEXT>\n' )
         cls.ABILITY_INFO = [ line.split( '\n' ) for line in cls.ABILITY_INFO ]
 
+        cls.KEYBIND_INFO = open( engine.get_path( '/data/lang/keybind_info.txt' ) ).read().split( '\n' )
+
         cls.DEATH_STRINGS = open( engine.get_path( '/data/lang/death_strings.txt' ) ).read().split( '\n' )

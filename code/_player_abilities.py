@@ -135,9 +135,10 @@ def ability_rope( self, has_ability = True ):
         hook_obj = self._rope_check()
         if ( hook_obj is not None ):
             self._hook_obj = hook_obj
+            self.engine.play_sound( 'rope_attach' )
 
-    # Release hook if down is pressed
-    if ( self.engine.get_key( BINDS[ 'down_action' ], 2 ) ):
+    # Release hook if down is released
+    if ( self.engine.get_key( BINDS[ 'down_action' ], 2 ) and self._hook_obj is not None ):
         self._rope_unhook()
 
     # Additional physics if hooked onto rope
@@ -230,7 +231,14 @@ def _rope_unhook( self ):
 
         # First, apply a large "elastic force" to the velocity
         # I know this isn't realistic, but it's fun, so idc
-        self.vel.a( self.hook_obj.get_acceleration().d( 5 ).fn( lambda a: abs( a ) ** 1.3 * ( -1 if a < 0 else 1 ) ) )
+        delta_vel = self.hook_obj.get_acceleration().d( 5 ).fn( lambda a: abs( a ) ** 1.3 * utils.sign( a ) )
+        self.vel.a( delta_vel )
 
         # Then, relinquish the reference to the hook
         self._hook_obj = None
+
+        # The pitch of the sound played scales with the tension of the rope
+        tension = ( delta_vel.x ** 2 + delta_vel.y ** 2 ) ** 0.5
+        if tension > 5:
+            pitch_index = min( int( ( tension - 5 ) // 15 ), 4 )
+            self.engine.play_sound( f'rope_release_p{ pitch_index + 1 }' )

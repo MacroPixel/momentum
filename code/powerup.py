@@ -6,7 +6,7 @@ class Powerup ( Entity ):
 
     def __init__( self, engine, pos ):
 
-        super().__init__( engine, 'powerup', pos.c().a( 0, -0.5 ), V2(), ( 0.7, 0.7, 0.35, 0.35 ), layer = LAYER_BLOCK )
+        super().__init__( engine, 'powerup', pos.c().a( 0, -0.5 ), V2(), ( 0.7, 0.7, 0.15, 0.15 ), layer = LAYER_BLOCK )
 
         # The ability this powerup grants depends on the block below it
         # It looks for the first block below it that isn't air
@@ -29,6 +29,7 @@ class Powerup ( Entity ):
             self.delete()
 
         self.__hover_time = 0
+        self.__pulse_time = 0 # For background
 
         # Entity variables
         self.entity_gravity_multiplier = 0
@@ -43,11 +44,15 @@ class Powerup ( Entity ):
         super().entity_update()
 
         # Add to hover time (controls hover animation)
+        # Also add to pulse time to control white background
         self.__hover_time += self.engine.delta_time * 1.5
+        self.__pulse_time += self.engine.delta_time * 4
 
     def draw( self ):
 
         hover_offset = sin( self.__hover_time ) / 4
+        pulse = round( sin( self.__pulse_time ) * 1.5 + 1.5 )
+        self.engine.draw_sprite( 'powerup_bg', V2( 0, pulse ), self.pos.c().a( 0, hover_offset ).m( GRID ).s( 2 ), False )
         self.engine.draw_sprite( 'powerup', V2( 0, self.ability_id ), self.pos.c().a( 0, hover_offset ).m( GRID ), False )
 
     # Getters/setters

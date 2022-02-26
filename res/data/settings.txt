@@ -1,3 +1,3 @@
-sound_volume = 0.4999999999999996
-music_volume = 0.4999999999999996
+sound_volume = 0.8999999999999999
+music_volume = 0.6999999999999997
 show_timer = 0

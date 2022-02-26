@@ -28,6 +28,8 @@ B_STRINGS = [
     'bounce',
     'bounce_extra',
     'spikes',
+    'purple_spikes',
+    'thorns',
     'metal',
     'metal_alt',
     'sand',
@@ -47,6 +49,8 @@ B_TEXTURES = [
     'block_bounce',
     'block_bounce_extra',
     'block_spikes',
+    'block_purple_spikes',
+    'block_thorns',
     'block_metal',
     'block_metal_alt',
     'block_sand',
@@ -66,6 +70,8 @@ B_COLORS = [
     'ff00ff',
     '6300ff',
     'ff7f7f',
+    'e4628c',
+    '6a7b60',
     '764d47',
     '4d3b39',
     'f3d681',
@@ -91,6 +97,8 @@ B_DRAW_MODES = [
     BDM_REPLACE,
     BDM_REPLACE,
     BDM_REPLACE,
+    BDM_REPLACE,
+    BDM_REPLACE,
     BDM_OVERLAY,
     BDM_REPLACE,
     BDM_REPLACE
@@ -108,6 +116,8 @@ B_DRAW_VARIANTS = [
     1,
     1,
     1,
+    1,
+    3,
     3,
     3,
     3,
@@ -131,6 +141,8 @@ B_NO_CONNECT = [
 # List of blocks that entities can go through
 B_PASSABLE = [
     'spikes',
+    'purple_spikes',
+    'thorns',
     'lava',
     'water'
 ]
@@ -150,6 +162,8 @@ B_BOUNCE = {
 # List of blocks that kill entities
 B_HAZARD = [
     'spikes',
+    'purple_spikes',
+    'thorns',
     'lava'
 ]
 
